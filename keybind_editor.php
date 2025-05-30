@@ -12,7 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
     }
     $xml = simplexml_load_file($xmlFile);
     if (!$xml) {
-        echo '<p>Erreur lors du chargement du fichier XML.</p>';
+        $errorMsg = 'Erreur lors du chargement du fichier XML.';
+        include __DIR__ . '/templates/error.php';
         exit;
     }
     // Détection de la racine et du chemin vers les actionmaps
@@ -24,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         // Cas 2 : <ActionMaps><actionmap>...</actionmap></ActionMaps>
         $actionmaps_root = $xml;
     } else {
-        echo '<p>Format XML non reconnu.</p>';
+        $errorMsg = 'Format XML non reconnu.';
+        include __DIR__ . '/templates/error.php';
         exit;
     }
     // Compter toutes les actions et celles utilisées (input non vide et différent de js1_ ou js2_)
@@ -58,12 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         $iframe_url = 'https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=' . rawurlencode($file_title) . '&dark=auto#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fafronob%2Fsc-vkb-config%2Fmain%2Fjoy%2F' . rawurlencode($file_title);
         $joysticks[] = '<a href="#" class="jslink" data-url="' . htmlspecialchars($iframe_url) . '" data-title="' . htmlspecialchars($file_title) . '">js' . $instance . ' : ' . htmlspecialchars($product_clean) . '</a>';
     }
-    if ($joysticks) {
-        echo $actionsInfo;
-        echo '<div style="margin-bottom:1em;"><b>Joysticks détectés :</b><br>' . implode('<br>', $joysticks) . '</div>';
-        echo '<div id="joy_iframe_container" style="display:none;position:absolute;top:20px;right:20px;z-index:1000;background:#fff;border:1px solid #888;box-shadow:2px 2px 10px #888;padding:0;"></div>';
-        echo '<script src="joy_iframe.js"></script>';
-    }
     // Si l'utilisateur a soumis des modifications
     if (isset($_POST['save'])) {
         foreach ($_POST['input'] as $cat => $actions) {
@@ -92,9 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         file_put_contents($tmpFile, $xmlStr);
         $now = date('Ymd_His');
         $downloadName = 'modified_' . pathinfo($xmlName, PATHINFO_FILENAME) . '_' . $now . '.xml';
-        echo '<h3>Modifications enregistrées !</h3>';
-        echo '<a href="data:application/xml;charset=utf-8,' . rawurlencode($xmlStr) . '" download="' . htmlspecialchars($downloadName) . '">Télécharger le XML modifié</a>';
-        echo '<hr><a href="' . htmlspecialchars($_SERVER['PHP_SELF']) . '">Retour</a>';
+        include __DIR__ . '/templates/success.php';
         exit;
     }
     // Charger le mapping action => name depuis le CSV
@@ -114,23 +108,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         'xmlName' => $xmlName,
         'xml' => $xml,
         'actionNames' => $actionNames,
-        'actionmaps_root' => $actionmaps_root
+        'actionmaps_root' => $actionmaps_root,
+        'joysticks' => $joysticks,
+        'actionsInfo' => $actionsInfo
     ];
     extract($templateVars);
-    include __DIR__ . '/edit_form_template.php';
+    include __DIR__ . '/templates/edit_form.php';
     exit;
 }
 // Formulaire d'upload
+include __DIR__ . '/templates/upload_form.php';
+exit;
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title>
-<style>body { font-family: monospace; }</style></head>
-<body>
-<h2>Uploader un fichier XML de keybinds Star Citizen</h2>
-<form method="post" enctype="multipart/form-data">
-    <input type="file" name="xmlfile" accept=".xml" required />
-    <button type="submit">Charger</button>
-</form>
-</body>
-</html>

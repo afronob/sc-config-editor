@@ -16,6 +16,7 @@ WORKDIR /var/www/html
 COPY *.php ./
 COPY *.js ./
 COPY files/ ./files/
+COPY templates/ ./templates/
 
 # Add custom php.ini to increase max_input_vars
 COPY php.ini /usr/local/etc/php/conf.d/
