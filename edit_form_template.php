@@ -1,6 +1,10 @@
 <?php
 // Template pour afficher le formulaire d'édition des keybinds
 // Variables attendues : $xmlName, $xml, $actionNames
+
+echo '<!DOCTYPE html><html lang="fr">';
+echo '<head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title><style>body { font-family: monospace; }</style></head>';
+echo '<body>';
 ?>
 <form method="post">
     <input type="hidden" name="save" value="1">
@@ -45,3 +49,5 @@
     </table>
     <button type="submit">Enregistrer et générer le lien de téléchargement</button>
 </form>
+<?php
+echo '</body></html>';

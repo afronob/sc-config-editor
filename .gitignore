@@ -1,4 +1,5 @@
 default_mapping
 files
+Profiles
 *.csv
 *.xml

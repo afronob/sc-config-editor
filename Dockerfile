@@ -31,3 +31,5 @@ CMD ["apache2-foreground"]
 
 # sudo docker build -t sc-keybind-editor .
 # sudo docker run -p 8080:80 sc-keybind-editor
+
+# sudo docker build -t sc-keybind-editor . && sudo docker run -p 8080:80 sc-keybind-editor
