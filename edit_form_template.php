@@ -1,11 +1,10 @@
 <?php
 // Template pour afficher le formulaire d'édition des keybinds
-// Variables attendues : $xmlName, $xml, $actionNames
-
-echo '<!DOCTYPE html><html lang="fr">';
-echo '<head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title><style>body { font-family: monospace; }</style></head>';
-echo '<body>';
+// Variables attendues : $xmlName, $xml, $actionNames, $actionmaps_root
 ?>
+<!DOCTYPE html><html lang="fr">
+<head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title><style>body { font-family: monospace; }</style></head>
+<body>
 <form method="post">
     <input type="hidden" name="save" value="1">
     <input type="hidden" name="xmlname" value="<?= htmlspecialchars($xmlName) ?>">
@@ -19,7 +18,7 @@ echo '<body>';
             <th>opts</th>
             <th>value</th>
         </tr>
-        <?php foreach ($xml->actionmap as $actionmap):
+        <?php foreach ($actionmaps_root->actionmap as $actionmap):
             $cat = (string)$actionmap['name'];
             foreach ($actionmap->action as $action):
                 $act = (string)$action['name'];
@@ -49,5 +48,4 @@ echo '<body>';
     </table>
     <button type="submit">Enregistrer et générer le lien de téléchargement</button>
 </form>
-<?php
-echo '</body></html>';
+</body></html>

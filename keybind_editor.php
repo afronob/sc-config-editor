@@ -15,10 +15,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         echo '<p>Erreur lors du chargement du fichier XML.</p>';
         exit;
     }
+    // Détection de la racine et du chemin vers les actionmaps
+    $actionmaps_root = null;
+    if (isset($xml->ActionProfiles)) {
+        // Cas 1 : <ActionMaps><ActionProfiles>...</ActionProfiles></ActionMaps>
+        $actionmaps_root = $xml->ActionProfiles;
+    } elseif (isset($xml->actionmap)) {
+        // Cas 2 : <ActionMaps><actionmap>...</actionmap></ActionMaps>
+        $actionmaps_root = $xml;
+    } else {
+        echo '<p>Format XML non reconnu.</p>';
+        exit;
+    }
     // Compter toutes les actions et celles utilisées (input non vide et différent de js1_ ou js2_)
     $totalActions = 0;
     $usedActions = 0;
-    foreach ($xml->actionmap as $actionmap) {
+    foreach ($actionmaps_root->actionmap as $actionmap) {
         foreach ($actionmap->action as $action) {
             $totalActions++;
             $isUsed = false;
@@ -101,7 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
     $templateVars = [
         'xmlName' => $xmlName,
         'xml' => $xml,
-        'actionNames' => $actionNames
+        'actionNames' => $actionNames,
+        'actionmaps_root' => $actionmaps_root
     ];
     extract($templateVars);
     include __DIR__ . '/edit_form_template.php';
