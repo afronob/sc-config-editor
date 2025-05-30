@@ -2,3 +2,5 @@ default_mapping
 Profiles
 ./*.csv
 ./*.xml
+*.log
+external/*
