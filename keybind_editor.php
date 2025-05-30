@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         $product_clean = trim(preg_replace('/\s*\{[^}]+\}\s*$/', '', $product));
         // Générer le nom du fichier pour diagrams.net (ex: t16000m.drawio)
         $file_title = strtolower(preg_replace('/[^a-zA-Z0-9]+/', '', $product_clean)) . '.drawio';
-        $iframe_url = 'https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=' . rawurlencode($file_title) . '&dark=auto#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fafronob%2Fsc-vkb-config%2Fmain%2F' . rawurlencode($file_title);
+        $iframe_url = 'https://viewer.diagrams.net/?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=' . rawurlencode($file_title) . '&dark=auto#Uhttps%3A%2F%2Fraw.githubusercontent.com%2Fafronob%2Fsc-vkb-config%2Fmain%2Fjoy%2F' . rawurlencode($file_title);
         $joysticks[] = '<a href="#" class="jslink" data-url="' . htmlspecialchars($iframe_url) . '" data-title="' . htmlspecialchars($file_title) . '">js' . $instance . ' : ' . htmlspecialchars($product_clean) . '</a>';
     }
     if ($joysticks) {
