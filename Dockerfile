@@ -13,8 +13,8 @@ RUN a2enmod rewrite
 WORKDIR /var/www/html
 
 # Copy PHP, JS, Python, and XML files
-COPY keybind_editor.php ./
-COPY joy_iframe.js ./
+COPY *.php ./
+COPY *.js ./
 COPY files/ ./files/
 
 # Add custom php.ini to increase max_input_vars

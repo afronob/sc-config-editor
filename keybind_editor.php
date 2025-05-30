@@ -97,44 +97,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         }
         fclose($handle);
     }
-    // Affichage du formulaire d'édition
-    echo '<form method="post">';
-    echo '<input type="hidden" name="save" value="1">';
-    echo '<input type="hidden" name="xmlname" value="' . htmlspecialchars($xmlName) . '">';
-    echo '<input type="hidden" name="xmldata" value="' . htmlspecialchars($xml->asXML()) . '">';
-    echo '<table border="1" cellpadding="4"><tr><th>category</th><th>action</th><th>name</th><th>input</th><th>opts</th><th>value</th></tr>';
-    foreach ($xml->actionmap as $actionmap) {
-        $cat = (string)$actionmap['name'];
-        foreach ($actionmap->action as $action) {
-            $act = (string)$action['name'];
-            $name = isset($actionNames[$act]) ? $actionNames[$act] : '';
-            $i = 0;
-            foreach ($action->rebind as $rebind) {
-                $input = (string)$rebind['input'];
-                $opts = '';
-                $value = '';
-                foreach ($rebind->attributes() as $k => $v) {
-                    if ($k != 'input') {
-                        $opts = $k;
-                        $value = (string)$v;
-                        break;
-                    }
-                }
-                echo '<tr>';
-                echo '<td>' . htmlspecialchars($cat) . '</td>';
-                echo '<td>' . htmlspecialchars($act) . '</td>';
-                echo '<td>' . htmlspecialchars($name) . '</td>';
-                echo '<td><input name="input[' . htmlspecialchars($cat) . '][' . htmlspecialchars($act) . '][' . $i . ']" value="' . htmlspecialchars($input) . '" /></td>';
-                echo '<td><input name="opts[' . htmlspecialchars($cat) . '][' . htmlspecialchars($act) . '][' . $i . ']" value="' . htmlspecialchars($opts) . '" /></td>';
-                echo '<td><input name="value[' . htmlspecialchars($cat) . '][' . htmlspecialchars($act) . '][' . $i . ']" value="' . htmlspecialchars($value) . '" /></td>';
-                echo '</tr>';
-                $i++;
-            }
-        }
-    }
-    echo '</table>';
-    echo '<button type="submit">Enregistrer et générer le lien de téléchargement</button>';
-    echo '</form>';
+    // Affichage du formulaire d'édition via template
+    $templateVars = [
+        'xmlName' => $xmlName,
+        'xml' => $xml,
+        'actionNames' => $actionNames
+    ];
+    extract($templateVars);
+    include __DIR__ . '/edit_form_template.php';
     exit;
 }
 // Formulaire d'upload
