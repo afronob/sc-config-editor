@@ -261,3 +261,4 @@ v_view_dynamic_zoom_abs_toggle,Dynamic Zoom Toggle (abs.)
 headtrack_camera_enabled,Enable Head Tracking (Toggle)
 tractor_beam_decrease_distance,Tractor Beam Vehicle Decrease Distance
 tractor_beam_increase_distance,Tractor Beam Vehicle Increase Distance
+v_speed_range_rel,Speed Limiter (rel)
