@@ -120,13 +120,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 html += '<div>Aucun binding trouvé.</div>';
             } else {
                 html += '<ul>';
-                Object.keys(bindingsByButton).sort().forEach(function(button) {
-                    html += '<li><b>' + button + '</b><ul>';
-                    bindingsByButton[button].forEach(function(item) {
-                        html += '<li>' + item.action + ' <span style="color:#888">(' + item.category + ')</span></li>';
+                Object.keys(bindingsByButton)
+                    .sort(function(a, b) {
+                        // Extraire le numéro du bouton pour tri naturel
+                        var reg = /_(\D+)?(\d+)$/;
+                        var ma = a.match(reg);
+                        var mb = b.match(reg);
+                        if (ma && mb && ma[2] && mb[2] && ma[1] === mb[1]) {
+                            // Même préfixe (ex: button), trier par numéro
+                            return parseInt(ma[2], 10) - parseInt(mb[2], 10);
+                        }
+                        return a.localeCompare(b);
+                    })
+                    .forEach(function(button) {
+                        html += '<li><b>' + button + '</b><ul>';
+                        bindingsByButton[button].forEach(function(item) {
+                            html += '<li>' + item.action + ' <span style="color:#888">(' + item.category + ')</span></li>';
+                        });
+                        html += '</ul></li>';
                     });
-                    html += '</ul></li>';
-                });
                 html += '</ul>';
             }
             modal.innerHTML = html;
