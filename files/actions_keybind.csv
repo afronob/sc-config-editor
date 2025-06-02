@@ -185,3 +185,77 @@ vehicle_general,Ground Vehicle - General
 view_director_mode,Camera - Advanced Camera Controls
 view_restore_defaults,Reset Current View
 zero_gravity_eva,E.V.A - All
+v_operator_mode_cycle_forward,Next Operator Mode
+v_ads_hold,@ui_v_ads_hold
+v_ads_toggle,@ui_v_ads_toggle
+v_view_dynamic_zoom_abs_toggle,Dynamic Zoom Toggle (abs.)
+v_atc_loading_area_request,Request Cargo Loading
+v_ifcs_throttle_swap_mode,Throttle - Cruise Mode - Toggle
+v_ifcs_toggle_esp,E.S.P. - Toggle On / Off (Press)
+v_master_mode_cycle_long,Cycle Master Mode (Long Press)
+v_strafe_longitudinal,Throttle - Forward / Back
+v_strafe_trim_reset_long,Throttle - Trim - Release (Long Press)
+v_strafe_trim_reset_short,Throttle - Trim - Release (Short Press)
+v_strafe_trim_set_100_long,Throttle - Trim - Set To 100% (Long Press)
+v_strafe_trim_set_short,Throttle - Trim - Set (Short Press)
+v_target_unlock,Unlock Current Target
+v_target_cycle_all_fwd,Cycle Lock - All - Forward
+v_target_cycle_all_reset,Cycle Lock - All - Reset to Closest
+v_target_cycle_attacker_fwd,Cycle Lock - Attackers - Forward
+v_target_cycle_attacker_reset,Cycle Lock - Attackers - Reset to Closest
+v_target_cycle_hostile_reset,Cycle Lock - Hostiles - Reset to Closest
+v_target_under_reticle,Lock Target Under Reticle
+v_target_hail,Hail Target
+v_decrease_mining_throttle,Decrease Mining Laser Power
+v_increase_mining_throttle,Increase Mining Laser Power
+tractor_beam_vehicle_decrease_distance,Tractor Beam Vehicle Decrease Distance
+tractor_beam_vehicle_increase_distance,Tractor Beam Vehicle Increase Distance
+v_salvage_cycle_modifiers_structural,Cycle Structural Salvage Modes
+v_salvage_focus_all_heads,Focus all salvage heads
+v_salvage_focus_disintegrate,Focus Disintegration tool
+v_salvage_focus_fracture,Focus Fracture tool
+v_salvage_focus_left,Focus left salvage head
+v_salvage_focus_right,Focus right salvage head
+v_salvage_reset_gimbal,Salvage Mode Gimbal Reset
+v_salvage_toggle_fire_disintegrate,Toggle Fire Disintegrate
+v_salvage_toggle_fire_focused,Toggle Fire Focused
+v_salvage_toggle_fire_fracture,Toggle Fire Fracture
+v_salvage_toggle_fire_left,Toggle Fire Left
+v_salvage_toggle_fire_right,Toggle Fire Right
+turret_gyromode,Turret Gyro Stabilization (Toggle)
+turret_remote_exit,Exit Remote Turret
+turret_change_firemode,Cycle fire mode (staggered / combined)
+turret_change_position,Change turret Position
+turret_limiter_rel,Turret Speed Limiter (rel)
+v_weapon_pip_toggle_lead_lag,Toggle Lead / Lag PIPs
+v_weapon_preset_attack,Weapon Preset Fire
+v_weapon_preset_fire_guns1,Weapon Presets Fire Guns Group 2
+v_weapon_preset_fire_guns2,Weapon Presets Set Guns Group 3
+v_weapon_preset_next_overflow,Weapon Presets Next (Overflow)
+v_weapon_preset_prev_overflow,Weapon Presets Previous (Overflow)
+v_weapon_bombing_hud_range_decrease,Bombs - Decrease HUD Range
+v_weapon_bombing_hud_range_increase,Bombs - Increase HUD Range
+v_weapon_bombing_hud_range_reset,Bombs - Reset HUD Range
+v_weapon_bombing_toggle_desired_impact_point,Bombs - Toggle Desired Impact Point (Tap)
+v_weapon_reset_max_missiles,Reset Number of Armed Missiles
+v_engineering_assignment_engine_decrease,Engines Decrease (Tap)
+v_engineering_assignment_engine_increase,Engines Increase (Tap)
+v_engineering_assignment_engine_max,Engines Set to Max (Hold)
+v_engineering_assignment_reset,Reset Assignments
+v_engineering_assignment_shields_decrease,Shields Decrease (Tap)
+v_engineering_assignment_shields_increase,Shields Increase (Tap)
+v_engineering_assignment_shields_max,Shields Set to Max (Hold)
+v_engineering_assignment_weapons_decrease,Weapons Decrease (Tap)
+v_engineering_assignment_weapons_increase,Weapons Increase (Tap)
+v_engineering_assignment_weapons_max,Weapons Set to Max (Hold)
+v_power_toggle,Flight / Systems Ready
+eva_boost,Boost
+eva_brake,Brake
+eva_roll,Roll Left/Right
+eva_strafe_lateral,Strafe Left/Right
+eva_strafe_longitudinal,Strafe Forward/Backward
+eva_strafe_vertical,Strafe Up/Down
+eva_toggle_headlook_mode,Freelook (Hold)
+eva_view_pitch,View Up/Down
+v_view_dynamic_zoom_abs_toggle,Dynamic Zoom Toggle (abs.)
+headtrack_camera_enabled,Enable Head Tracking (Toggle)
