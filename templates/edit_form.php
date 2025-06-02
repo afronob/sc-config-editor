@@ -10,11 +10,15 @@
     <div style="margin-bottom:1em;"><b>Joysticks détectés :</b><br><?= implode('<br>', $joysticks) ?></div>
 <?php endif; ?>
 <?= isset($actionsInfo) ? $actionsInfo : '' ?>
+<!-- Filtres -->
+<div style="margin-bottom:1em;"><b>Filtres</b><br>
+    <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label>
+</div>
 <form method="post">
     <input type="hidden" name="save" value="1">
     <input type="hidden" name="xmlname" value="<?= htmlspecialchars($xmlName) ?>">
     <input type="hidden" name="xmldata" value="<?= htmlspecialchars($xml->asXML()) ?>">
-    <table border="1" cellpadding="4">
+    <table border="1" cellpadding="4" id="bindings-table">
         <tr>
             <th>category</th>
             <th>action</th>
@@ -55,5 +59,28 @@
 </form>
 <div id="joy_iframe_container" style="display:none;position:absolute;top:20px;right:20px;z-index:1000;background:#fff;border:1px solid #888;box-shadow:2px 2px 10px #888;padding:0;"></div>
 <script src="joy_iframe.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var filterBox = document.getElementById('filter-nonempty');
+    var table = document.getElementById('bindings-table');
+    function isBindingEmpty(val) {
+        return val.trim() === '' || /^((js|kb)[0-9]+_)$/i.test(val.trim());
+    }
+    filterBox.addEventListener('change', function() {
+        var showOnlyNonEmpty = filterBox.checked;
+        Array.from(table.rows).forEach(function(row, idx) {
+            if (idx === 0) return; // skip header
+            var inputCell = row.querySelector('input[name^="input["]');
+            if (!inputCell) return;
+            var val = inputCell.value;
+            if (showOnlyNonEmpty) {
+                row.style.display = isBindingEmpty(val) ? 'none' : '';
+            } else {
+                row.style.display = '';
+            }
+        });
+    });
+});
+</script>
 </body>
 </html>
