@@ -259,3 +259,5 @@ eva_toggle_headlook_mode,Freelook (Hold)
 eva_view_pitch,View Up/Down
 v_view_dynamic_zoom_abs_toggle,Dynamic Zoom Toggle (abs.)
 headtrack_camera_enabled,Enable Head Tracking (Toggle)
+tractor_beam_decrease_distance,Tractor Beam Vehicle Decrease Distance
+tractor_beam_increase_distance,Tractor Beam Vehicle Increase Distance
