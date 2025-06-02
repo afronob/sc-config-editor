@@ -111,8 +111,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     var button = match[0]; // ex: js1_button1
                     var action = row.cells[2].textContent;
                     var category = row.cells[0].textContent;
-                    if (!bindingsByButton[button]) bindingsByButton[button] = [];
-                    bindingsByButton[button].push({action: action, category: category});
+                    bindingsByButton[button] = bindingsByButton[button] || [];
+                    bindingsByButton[button].push({
+                        action: action,
+                        category: category,
+                        opts: row.cells[4].querySelector('input') ? row.cells[4].querySelector('input').value : '',
+                        value: row.cells[5].querySelector('input') ? row.cells[5].querySelector('input').value : ''
+                    });
                 }
             });
             var html = '<b>Bindings pour Joystick #' + instance + '</b> <button onclick="document.getElementById(\'joystick-bindings-modal\').style.display=\'none\'">✖</button><br>';
@@ -135,7 +140,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     .forEach(function(button) {
                         html += '<li><b>' + button + '</b><ul>';
                         bindingsByButton[button].forEach(function(item) {
-                            html += '<li>' + item.action + ' <span style="color:#888">(' + item.category + ')</span></li>';
+                            var prefix = '';
+                            // Cas 1 : activationMode=double_tap (insensible à la casse)
+                            if (item.opts.toLowerCase() === 'activationmode' && item.value.toLowerCase() === 'double_tap') {
+                                prefix = '[DT] ';
+                            }
+                            // Cas 2 : multiTap=2
+                            if (item.opts.toLowerCase() === 'multitap' && item.value === '2') {
+                                prefix = '[DT] ';
+                            }
+                            html += '<li>' + prefix + item.action + ' <span style="color:#888">(' + item.category + ')</span></li>';
                         });
                         html += '</ul></li>';
                     });
