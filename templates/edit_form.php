@@ -101,22 +101,34 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             var instance = this.getAttribute('data-instance');
             var rows = Array.from(document.querySelectorAll('#bindings-table tr')).slice(1); // skip header
-            var bindings = [];
+            var bindingsByButton = {};
             rows.forEach(function(row) {
                 var inputCell = row.querySelector('input[name^="input["]');
                 if (!inputCell) return;
                 var val = inputCell.value.trim();
                 var match = val.match(/^(js|kb)([0-9]+)_([\w\d]+)$/i);
                 if (match && match[2] == instance) {
-                    var button = match[3];
-                    bindings.push({button: button, action: row.cells[2].textContent, input: val});
+                    var button = match[0]; // ex: js1_button1
+                    var action = row.cells[2].textContent;
+                    var category = row.cells[0].textContent;
+                    if (!bindingsByButton[button]) bindingsByButton[button] = [];
+                    bindingsByButton[button].push({action: action, category: category});
                 }
             });
-            bindings.sort(function(a, b) { return a.button.localeCompare(b.button); });
-            var html = '<b>Bindings pour Joystick #' + instance + '</b> <button onclick="document.getElementById(\'joystick-bindings-modal\').style.display=\'none\'">✖</button><br><ul>';
-            if (bindings.length === 0) html += '<li>Aucun binding trouvé.</li>';
-            else bindings.forEach(function(b) { html += '<li><b>' + b.button + '</b> : ' + b.action + ' <span style="color:#888">(' + b.input + ')</span></li>'; });
-            html += '</ul>';
+            var html = '<b>Bindings pour Joystick #' + instance + '</b> <button onclick="document.getElementById(\'joystick-bindings-modal\').style.display=\'none\'">✖</button><br>';
+            if (Object.keys(bindingsByButton).length === 0) {
+                html += '<div>Aucun binding trouvé.</div>';
+            } else {
+                html += '<ul>';
+                Object.keys(bindingsByButton).sort().forEach(function(button) {
+                    html += '<li><b>' + button + '</b><ul>';
+                    bindingsByButton[button].forEach(function(item) {
+                        html += '<li>' + item.action + ' <span style="color:#888">(' + item.category + ')</span></li>';
+                    });
+                    html += '</ul></li>';
+                });
+                html += '</ul>';
+            }
             modal.innerHTML = html;
             modal.style.display = 'block';
         });
