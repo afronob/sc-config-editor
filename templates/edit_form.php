@@ -364,14 +364,16 @@ function renderGamepadDevicesList() {
         if (gp.buttons && gp.buttons.length) {
             let btns = [];
             for (let b = 0; b < gp.buttons.length; b++) {
-                btns.push(`js${instance}_button${b+1}`);
+                // Affichage raccourci : b0 (jsX_buttonY)
+                btns.push(`b${b} (js${instance}_button${b+1})`);
             }
             html += `<span>Boutons :</span> ${btns.join(', ')}<br>`;
         }
         if (gp.axes && gp.axes.length) {
             let axes = [];
             for (let a = 0; a < gp.axes.length; a++) {
-                axes.push(`js${instance}_axis${a+1}`);
+                // Affichage raccourci : a0 (jsX_axisY)
+                axes.push(`a${a} (js${instance}_axis${a+1})`);
             }
             html += `<span>Axes :</span> ${axes.join(', ')}<br>`;
         }
