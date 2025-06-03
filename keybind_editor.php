@@ -110,6 +110,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         }
         fclose($handle);
     }
+    // Chargement des fichiers JSON de devices
+    $deviceJsonFiles = glob(__DIR__ . '/files/*.json');
+    $devicesData = [];
+    foreach ($deviceJsonFiles as $jsonFile) {
+        $json = file_get_contents($jsonFile);
+        $data = json_decode($json, true);
+        if ($data && isset($data['id'])) {
+            $devicesData[] = $data;
+        }
+    }
+    // Création du mapping device id (ou product) => instance XML (jsX)
+    $deviceInstanceMap = [];
+    foreach ($xml->xpath('//options[@type="joystick"]') as $opt) {
+        $product = trim((string)$opt['Product']);
+        $instance = (string)$opt['instance'];
+        // On simplifie le nom pour matcher plus facilement (on retire les accolades et espaces)
+        $product_simple = preg_replace('/\{.*\}/', '', $product);
+        $product_simple = trim($product_simple);
+        $deviceInstanceMap[$product_simple] = $instance;
+    }
+    // Pour chaque device JSON, on tente de retrouver l'instance XML correspondante
+    foreach ($devicesData as &$device) {
+        $device['xml_instance'] = null;
+        foreach ($deviceInstanceMap as $product => $instance) {
+            // On simplifie aussi le nom du device détecté
+            $dev_id_simple = preg_replace('/\(Vendor:.*$/', '', $device['id']);
+            $dev_id_simple = trim($dev_id_simple);
+            if (stripos($dev_id_simple, $product) !== false || stripos($product, $dev_id_simple) !== false) {
+                $device['xml_instance'] = $instance;
+                break;
+            }
+        }
+    }
+    unset($device);
+    // Mapping fiable : index JSON + 1 = instance XML
+    foreach ($devicesData as &$device) {
+        $device['xml_instance'] = $device['index'] + 1;
+    }
+    unset($device);
     // Affichage du formulaire d'édition via template
     $templateVars = [
         'xmlName' => $xmlName,
@@ -117,7 +156,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         'actionNames' => $actionNames,
         'actionmaps_root' => $actionmaps_root,
         'joysticks' => $joysticks,
-        'actionsInfo' => $actionsInfo
+        'actionsInfo' => $actionsInfo,
+        'devicesData' => $devicesData
     ];
     extract($templateVars);
     include __DIR__ . '/templates/edit_form.php';

@@ -6,6 +6,22 @@
 <head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title><style>body { font-family: monospace; }</style></head>
 <body>
 <h2>Édition des actions</h2>
+<?php if (!empty($devicesData)) : ?>
+    <div style="margin-bottom:1em;">
+        <b>Devices détectés (JSON):</b><br>
+        <?php foreach ($devicesData as $device): ?>
+            <div style="margin-bottom:0.5em; padding-left:1em;">
+                <b><?= htmlspecialchars($device['id']) ?></b><br>
+                <?php if (!empty($device['buttons'])): ?>
+                    <span>Boutons :</span> <?= htmlspecialchars(implode(', ', $device['buttons'])) ?><br>
+                <?php endif; ?>
+                <?php if (!empty($device['axes'])): ?>
+                    <span>Axes :</span> <?= htmlspecialchars(implode(', ', $device['axes'])) ?><br>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 <?php if (!empty($joysticks)) : ?>
     <div style="margin-bottom:1em;"><b>Joysticks détectés :</b><br>
     <?php foreach ($joysticks as $idx => $joyHtml): ?>
@@ -179,6 +195,174 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+// --- Détection bouton joystick et navigation/auto-remplissage ---
+let lastButtonStates = {};
+let lastAxesStates = {};
+let buttonNamesByInstance = {};
+<?php if (!empty($devicesData)): ?>
+    <?php foreach ($devicesData as $device): if (!empty($device['xml_instance'])): ?>
+        buttonNamesByInstance[<?= json_encode($device['xml_instance']) ?>] = <?= json_encode($device['buttons']) ?>;
+    <?php endif; endforeach; ?>
+<?php endif; ?>
+
+function getActiveInput() {
+    return document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'text';
+}
+
+function highlightRow(row) {
+    row.style.background = '#ffe066';
+    setTimeout(() => { row.style.background = ''; }, 1500);
+    row.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function findRowsForButton(jsIdx, btnIdx, mode) {
+    // mode: '', 'double_tap', 'hold' (pour activationMode/multiTap)
+    let selector = `input[name^='input[']`;
+    let rows = [];
+    document.querySelectorAll(selector).forEach(input => {
+        let val = input.value.trim();
+        let regex = new RegExp(`^js${jsIdx}_button${btnIdx}$`, 'i');
+        if (regex.test(val)) {
+            let tr = input.closest('tr');
+            if (tr) {
+                // Vérifie activationMode/multiTap si demandé
+                let opts = tr.querySelector('input[name^="opts["]')?.value.toLowerCase() || '';
+                let value = tr.querySelector('input[name^="value["]')?.value.toLowerCase() || '';
+                if (mode === 'double_tap' && (opts === 'activationmode' && value === 'double_tap' || opts === 'multitap' && value === '2')) {
+                    rows.push(tr);
+                } else if (mode === 'hold' && (opts === 'activationmode' && value === 'hold')) {
+                    rows.push(tr);
+                } else if (!mode || (mode === '' && (!opts || (opts !== 'activationmode' && opts !== 'multitap')))) {
+                    rows.push(tr);
+                }
+            }
+        }
+    });
+    return rows;
+}
+
+function getInstanceFromGamepad(gamepad) {
+    // On cherche dans devicesData le device dont l'id correspond à gamepad.id
+    let found = null;
+    if (window.devicesDataJs) {
+        window.devicesDataJs.forEach(function(dev) {
+            // Correction : certains gamepad.id sont plus longs, on fait une recherche plus souple
+            if (gamepad.id && dev.id && (gamepad.id.indexOf(dev.id.trim()) !== -1 || dev.id.trim().indexOf(gamepad.id) !== -1) && dev.xml_instance) {
+                found = dev.xml_instance;
+            }
+        });
+    }
+    // Fallback : si pas trouvé, on tente par index
+    if (!found && gamepad.index !== undefined) {
+        // On cherche le device JSON qui a le même index
+        if (window.devicesDataJs) {
+            window.devicesDataJs.forEach(function(dev) {
+                if (dev.index == gamepad.index && dev.xml_instance) {
+                    found = dev.xml_instance;
+                }
+            });
+        }
+    }
+    return found;
+}
+
+// Affichage du bouton pressé en overlay
+const overlay = document.createElement('div');
+overlay.style.position = 'fixed';
+overlay.style.top = '30px';
+overlay.style.left = '50%';
+overlay.style.transform = 'translateX(-50%)';
+overlay.style.background = '#222';
+overlay.style.color = '#fff';
+overlay.style.fontSize = '2.2em';
+overlay.style.fontWeight = 'bold';
+overlay.style.padding = '0.4em 1.2em';
+overlay.style.borderRadius = '0.5em';
+overlay.style.boxShadow = '0 2px 16px #000a';
+overlay.style.zIndex = '9999';
+overlay.style.display = 'none';
+document.body.appendChild(overlay);
+
+function showOverlay(text) {
+    overlay.textContent = text;
+    overlay.style.display = 'block';
+    clearTimeout(overlay._timeout);
+    overlay._timeout = setTimeout(() => { overlay.style.display = 'none'; }, 1200);
+}
+
+function handleGamepadInput() {
+    let gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (let i = 0; i < gamepads.length; i++) {
+        let gp = gamepads[i];
+        if (!gp) continue;
+        // DEBUG : Affiche l'id du gamepad détecté
+        if (!gp._debugged) {
+            console.log('Gamepad détecté:', gp.id, 'index:', gp.index);
+            gp._debugged = true;
+        }
+        let instance = getInstanceFromGamepad(gp);
+        if (!instance) {
+            // DEBUG : Affiche un warning si aucune instance trouvée
+            console.warn('Aucune instance XML trouvée pour', gp.id, 'index:', gp.index);
+            continue;
+        }
+        if (!buttonNamesByInstance[instance]) {
+            console.warn('Pas de mapping buttonNamesByInstance pour instance', instance);
+            continue;
+        }
+        for (let b = 0; b < gp.buttons.length; b++) {
+            let pressed = gp.buttons[b].pressed;
+            if (!lastButtonStates[instance]) lastButtonStates[instance] = [];
+            if (pressed && !lastButtonStates[instance][b]) {
+                let btnName = `js${instance}_button${b}`;
+                let mode = '';
+                showOverlay(btnName);
+                console.log('Bouton pressé:', btnName, 'gamepad:', gp.id, 'instance:', instance);
+                if (getActiveInput()) {
+                    document.activeElement.value = btnName;
+                } else {
+                    let rows = findRowsForButton(instance, b, mode);
+                    if (rows.length) rows.forEach(highlightRow);
+                }
+            }
+            lastButtonStates[instance][b] = pressed;
+        }
+    }
+    requestAnimationFrame(handleGamepadInput);
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    requestAnimationFrame(handleGamepadInput);
+});
+window.devicesDataJs = <?php echo json_encode($devicesData); ?>;
+
+// --- DEBUG ---
+console.log('devicesDataJs:', window.devicesDataJs);
+
+function getInstanceFromGamepad(gamepad) {
+    let found = null;
+    if (window.devicesDataJs) {
+        window.devicesDataJs.forEach(function(dev) {
+            // On simplifie aussi côté JS pour matcher comme côté PHP
+            let devIdSimple = dev.id.replace(/\(Vendor:.*$/, '').trim();
+            let gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim();
+            if ((gamepadIdSimple && devIdSimple && (gamepadIdSimple.indexOf(devIdSimple) !== -1 || devIdSimple.indexOf(gamepadIdSimple) !== -1)) && dev.xml_instance) {
+                found = dev.xml_instance;
+            }
+        });
+    }
+    // Fallback : si pas trouvé, on tente par index
+    if (!found && gamepad.index !== undefined) {
+        if (window.devicesDataJs) {
+            window.devicesDataJs.forEach(function(dev) {
+                if (dev.index == gamepad.index && dev.xml_instance) {
+                    found = dev.xml_instance;
+                }
+            });
+        }
+    }
+    return found;
+}
 </script>
 </body>
 </html>
