@@ -35,10 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
     foreach ($actionmaps_root->actionmap as $actionmap) {
         foreach ($actionmap->action as $action) {
             $totalActions++;
-            $isUsed = false;
+            $isUsed = false; 
             foreach ($action->rebind as $rebind) {
                 $input = trim((string)$rebind['input']);
-                if ($input !== '' && !preg_match('/^(js|kb)[0-9]+_$/', $input)) {
+                if ($input !== '' && !preg_match('/^(js|kb|mo)[0-9]+_$/', $input)) {
                     $isUsed = true;
                     break;
                 }
@@ -81,6 +81,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
                     }
                 }
             }
+        }
+        // Mettre à jour les attributs profileName et label si fournis
+        if (isset($_POST['profileName'])) {
+            $xml['profileName'] = $_POST['profileName'];
+        }
+        if (isset($_POST['customLabel']) && isset($xml->CustomisationUIHeader)) {
+            $xml->CustomisationUIHeader['label'] = $_POST['customLabel'];
         }
         // Afficher un lien de téléchargement au lieu de forcer le download
         $xmlStr = $xml->asXML();

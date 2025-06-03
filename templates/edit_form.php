@@ -31,6 +31,20 @@
     <input type="hidden" name="save" value="1">
     <input type="hidden" name="xmlname" value="<?= htmlspecialchars($xmlName) ?>">
     <input type="hidden" name="xmldata" value="<?= htmlspecialchars($xml->asXML()) ?>">
+    <?php
+    $profileName = isset($xml['profileName']) ? (string)$xml['profileName'] : '';
+    $customLabel = isset($xml->CustomisationUIHeader['label']) ? (string)$xml->CustomisationUIHeader['label'] : '';
+    ?>
+    <div>
+        <label>profileName (ActionMaps) :
+            <input name="profileName" value="<?= htmlspecialchars($profileName) ?>" />
+        </label>
+    </div>
+    <div>
+        <label>label (CustomisationUIHeader) :
+            <input name="customLabel" value="<?= htmlspecialchars($customLabel) ?>" />
+        </label>
+    </div>
     <table border="1" cellpadding="4" id="bindings-table">
         <tr>
             <th>category</th>
