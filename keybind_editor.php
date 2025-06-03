@@ -144,11 +144,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         }
     }
     unset($device);
-    // Mapping fiable : index JSON + 1 = instance XML
+    // Mapping par correspondance de nom (plus fiable que l'ordre)
+    $xmlJoysticks = [];
+    foreach ($xml->xpath('//options[@type="joystick"]') as $opt) {
+        $product = (string)$opt['Product'];
+        $instance = (string)$opt['instance'];
+        $xmlJoysticks[] = [
+            'product' => $product,
+            'instance' => $instance,
+            'matched' => false
+        ];
+    }
+    // Pour chaque device détecté, on cherche le meilleur match par nom (id ou product)
     foreach ($devicesData as &$device) {
-        $device['xml_instance'] = $device['index'] + 1;
+        $dev_id_simple = preg_replace('/\(Vendor:.*$/', '', $device['id']);
+        $dev_id_simple = trim($dev_id_simple);
+        $found = false;
+        foreach ($xmlJoysticks as &$joy) {
+            $prod_simple = preg_replace('/\{.*\}/', '', $joy['product']);
+            $prod_simple = trim($prod_simple);
+            if (!$joy['matched'] && (stripos($dev_id_simple, $prod_simple) !== false || stripos($prod_simple, $dev_id_simple) !== false)) {
+                $device['xml_instance'] = $joy['instance'];
+                $joy['matched'] = true;
+                $found = true;
+                break;
+            }
+        }
+        unset($joy);
+        // Si aucun match, on prend la première instance XML non utilisée
+        if (!$found) {
+            foreach ($xmlJoysticks as &$joy) {
+                if (!$joy['matched']) {
+                    $device['xml_instance'] = $joy['instance'];
+                    $joy['matched'] = true;
+                    break;
+                }
+            }
+            unset($joy);
+        }
     }
     unset($device);
+    // Fonction utilitaire pour convertir un index de bouton JSON/Gamepad API en nom XML (jsX_buttonY)
+    function getXmlButtonName($xmlInstance, $buttonIndex) {
+        // Star Citizen indexe les boutons à partir de 1 (js1_button1), alors que la Gamepad API/JSON commence à 0
+        return 'js' . $xmlInstance . '_button' . ($buttonIndex + 1);
+    }
     // Affichage du formulaire d'édition via template
     $templateVars = [
         'xmlName' => $xmlName,

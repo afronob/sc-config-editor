@@ -6,22 +6,7 @@
 <head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title><style>body { font-family: monospace; }</style></head>
 <body>
 <h2>Édition des actions</h2>
-<?php if (!empty($devicesData)) : ?>
-    <div style="margin-bottom:1em;">
-        <b>Devices détectés (JSON):</b><br>
-        <?php foreach ($devicesData as $device): ?>
-            <div style="margin-bottom:0.5em; padding-left:1em;">
-                <b><?= htmlspecialchars($device['id']) ?></b><br>
-                <?php if (!empty($device['buttons'])): ?>
-                    <span>Boutons :</span> <?= htmlspecialchars(implode(', ', $device['buttons'])) ?><br>
-                <?php endif; ?>
-                <?php if (!empty($device['axes'])): ?>
-                    <span>Axes :</span> <?= htmlspecialchars(implode(', ', $device['axes'])) ?><br>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>
+<div id="gamepad-devices-list" style="margin-bottom:1em;"></div>
 <?php if (!empty($joysticks)) : ?>
     <div style="margin-bottom:1em;"><b>Joysticks détectés :</b><br>
     <?php foreach ($joysticks as $idx => $joyHtml): ?>
@@ -314,14 +299,15 @@ function handleGamepadInput() {
             let pressed = gp.buttons[b].pressed;
             if (!lastButtonStates[instance]) lastButtonStates[instance] = [];
             if (pressed && !lastButtonStates[instance][b]) {
-                let btnName = `js${instance}_button${b}`;
+                // Correction : Star Citizen indexe les boutons à partir de 1 (js1_button1)
+                let btnName = `js${instance}_button${b+1}`;
                 let mode = '';
                 showOverlay(btnName);
                 console.log('Bouton pressé:', btnName, 'gamepad:', gp.id, 'instance:', instance);
                 if (getActiveInput()) {
                     document.activeElement.value = btnName;
                 } else {
-                    let rows = findRowsForButton(instance, b, mode);
+                    let rows = findRowsForButton(instance, b+1, mode); // Correction ici aussi
                     if (rows.length) rows.forEach(highlightRow);
                 }
             }
@@ -363,6 +349,43 @@ function getInstanceFromGamepad(gamepad) {
     }
     return found;
 }
+
+function renderGamepadDevicesList() {
+    let html = '<b>Devices connectés (API Gamepad):</b><br>';
+    let gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    let any = false;
+    for (let i = 0; i < gamepads.length; i++) {
+        let gp = gamepads[i];
+        if (!gp) continue;
+        any = true;
+        let instance = getInstanceFromGamepad(gp) || '?';
+        html += `<div style="margin-bottom:0.5em; padding-left:1em;">
+            <b>${gp.id}</b> (index: ${gp.index}, instance XML: js${instance})<br>`;
+        if (gp.buttons && gp.buttons.length) {
+            let btns = [];
+            for (let b = 0; b < gp.buttons.length; b++) {
+                btns.push(`js${instance}_button${b+1}`);
+            }
+            html += `<span>Boutons :</span> ${btns.join(', ')}<br>`;
+        }
+        if (gp.axes && gp.axes.length) {
+            let axes = [];
+            for (let a = 0; a < gp.axes.length; a++) {
+                axes.push(`js${instance}_axis${a+1}`);
+            }
+            html += `<span>Axes :</span> ${axes.join(', ')}<br>`;
+        }
+        html += '</div>';
+    }
+    if (!any) html += '<i>Aucun device détecté.</i>';
+    document.getElementById('gamepad-devices-list').innerHTML = html;
+}
+window.addEventListener('gamepadconnected', renderGamepadDevicesList);
+window.addEventListener('gamepaddisconnected', renderGamepadDevicesList);
+document.addEventListener('DOMContentLoaded', function() {
+    renderGamepadDevicesList();
+    // ...existing code...
+});
 </script>
 </body>
 </html>
