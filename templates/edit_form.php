@@ -48,10 +48,10 @@
     </div>
     <table border="1" cellpadding="4" id="bindings-table">
         <tr>
-            <th>category</th>
+            <th translate="no">category</th>
             <th>action</th>
             <th>name</th>
-            <th>input</th>
+            <th translate="no">input</th>
             <th>opts</th>
             <th>value</th>
         </tr>
@@ -74,10 +74,10 @@
                     }
         ?>
         <tr>
-            <td><?= htmlspecialchars($cat) ?></td>
+            <td translate="no"><?= htmlspecialchars($cat) ?></td>
             <td><?= htmlspecialchars($act) ?></td>
             <td><?= htmlspecialchars($name) ?></td>
-            <td><input name="input[<?= htmlspecialchars($cat) ?>][<?= htmlspecialchars($act) ?>][<?= $i ?>]" value="<?= htmlspecialchars($input) ?>" /></td>
+            <td translate="no"><input name="input[<?= htmlspecialchars($cat) ?>][<?= htmlspecialchars($act) ?>][<?= $i ?>]" value="<?= htmlspecialchars($input) ?>" /></td>
             <td><input name="opts[<?= htmlspecialchars($cat) ?>][<?= htmlspecialchars($act) ?>][<?= $i ?>]" value="<?= htmlspecialchars($opts) ?>" /></td>
             <td><input name="value[<?= htmlspecialchars($cat) ?>][<?= htmlspecialchars($act) ?>][<?= $i ?>]" value="<?= htmlspecialchars($value) ?>" /></td>
         </tr>
