@@ -92,7 +92,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var filterBox = document.getElementById('filter-nonempty');
     var table = document.getElementById('bindings-table');
     function isBindingEmpty(val) {
-        return val.trim() === '' || /^((js|kb)[0-9]+_)$/i.test(val.trim());
+        // On considère vide :
+        // - chaîne vide
+        // - jsX_, kbX_, moX_ (X = 1 ou 2 chiffres)
+        // - mo1_ (souris), mo2_ etc.
+        // - mo_ (cas rare)
+        return val.trim() === '' || /^((js|kb|mo)[0-9]+_)$/i.test(val.trim()) || /^mo_$/i.test(val.trim());
     }
     filterBox.addEventListener('change', function() {
         var showOnlyNonEmpty = filterBox.checked;
