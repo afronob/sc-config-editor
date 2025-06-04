@@ -31,7 +31,7 @@
 <form method="post">
     <input type="hidden" name="save" value="1">
     <input type="hidden" name="xmlname" value="<?= htmlspecialchars($xmlName) ?>">
-    <input type="hidden" name="xmldata" value="<?= htmlspecialchars($xml->asXML()) ?>">
+    <input type="hidden" name="xmldata" value="<?= htmlspecialchars($xml->asXML(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
     <?php
     $profileName = isset($xml['profileName']) ? (string)$xml['profileName'] : '';
     $customLabel = isset($xml->CustomisationUIHeader['label']) ? (string)$xml->CustomisationUIHeader['label'] : '';
@@ -185,7 +185,7 @@ let lastButtonStates = {};
 let lastAxesStates = {};
 let buttonNamesByInstance = {};
 <?php if (!empty($devicesData)): ?>
-    <?php foreach ($devicesData as $device): if (!empty($device['xml_instance'])): ?>
+    <?php foreach ($devicesData as $device): if (!empty($device['xml_instance']) && isset($device['buttons'])): ?>
         buttonNamesByInstance[<?= json_encode($device['xml_instance']) ?>] = <?= json_encode($device['buttons']) ?>;
     <?php endif; endforeach; ?>
 <?php endif; ?>
@@ -226,20 +226,46 @@ function findRowsForButton(jsIdx, btnIdx, mode) {
     return rows;
 }
 
+// --- Correction : matching instance XML par VendorID/ProductID ---
+function extractVendorProductIdFromIdString(idString) {
+    // Extrait VendorID/ProductID d'une chaîne comme "... (Vendor: 231d Product: 0201)"
+    let vendor = null, product = null;
+    let m = idString.match(/Vendor:\s*([0-9a-fA-F]{4})/);
+    if (m) vendor = m[1].toLowerCase();
+    m = idString.match(/Product:\s*([0-9a-fA-F]{4})/);
+    if (m) product = m[1].toLowerCase();
+    return { vendor, product };
+}
+
 function getInstanceFromGamepad(gamepad) {
-    // On cherche dans devicesData le device dont l'id correspond à gamepad.id
     let found = null;
     if (window.devicesDataJs) {
+        // 1. Matching par VendorID/ProductID
+        let ids = extractVendorProductIdFromIdString(gamepad.id);
         window.devicesDataJs.forEach(function(dev) {
-            // Correction : certains gamepad.id sont plus longs, on fait une recherche plus souple
-            if (gamepad.id && dev.id && (gamepad.id.indexOf(dev.id.trim()) !== -1 || dev.id.trim().indexOf(gamepad.id) !== -1) && dev.xml_instance) {
+            if (
+                dev.vendor_id && dev.product_id &&
+                ids.vendor && ids.product &&
+                dev.vendor_id.replace(/^0x/, '').toLowerCase() === ids.vendor &&
+                dev.product_id.replace(/^0x/, '').toLowerCase() === ids.product &&
+                dev.xml_instance
+            ) {
                 found = dev.xml_instance;
             }
         });
+        // 2. Fallback sur le nom (comme avant)
+        if (!found) {
+            let gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim();
+            window.devicesDataJs.forEach(function(dev) {
+                let devIdSimple = dev.id.replace(/\(Vendor:.*$/, '').trim();
+                if ((gamepadIdSimple && devIdSimple && (gamepadIdSimple.indexOf(devIdSimple) !== -1 || devIdSimple.indexOf(gamepadIdSimple) !== -1)) && dev.xml_instance) {
+                    found = dev.xml_instance;
+                }
+            });
+        }
     }
     // Fallback : si pas trouvé, on tente par index
     if (!found && gamepad.index !== undefined) {
-        // On cherche le device JSON qui a le même index
         if (window.devicesDataJs) {
             window.devicesDataJs.forEach(function(dev) {
                 if (dev.index == gamepad.index && dev.xml_instance) {
@@ -275,6 +301,10 @@ function showOverlay(text) {
     overlay._timeout = setTimeout(() => { overlay.style.display = 'none'; }, 1200);
 }
 
+function showInputOverlay(text) {
+    showOverlay(text);
+}
+
 function handleGamepadInput() {
     let gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
     for (let i = 0; i < gamepads.length; i++) {
@@ -286,6 +316,10 @@ function handleGamepadInput() {
             gp._debugged = true;
         }
         let instance = getInstanceFromGamepad(gp);
+        let deviceMap = null;
+        if (window.devicesDataJs && instance) {
+            deviceMap = window.devicesDataJs.find(dev => dev.xml_instance == instance);
+        }
         if (!instance) {
             // DEBUG : Affiche un warning si aucune instance trouvée
             console.warn('Aucune instance XML trouvée pour', gp.id, 'index:', gp.index);
@@ -295,9 +329,12 @@ function handleGamepadInput() {
             console.warn('Pas de mapping buttonNamesByInstance pour instance', instance);
             continue;
         }
+        // --- Robust initialization of lastButtonStates and lastAxesStates ---
+        if (!Array.isArray(lastButtonStates[instance])) lastButtonStates[instance] = [];
+        if (!Array.isArray(lastAxesStates[instance])) lastAxesStates[instance] = [];
         for (let b = 0; b < gp.buttons.length; b++) {
             let pressed = gp.buttons[b].pressed;
-            if (!lastButtonStates[instance]) lastButtonStates[instance] = [];
+            if (!Array.isArray(lastButtonStates[instance])) lastButtonStates[instance] = [];
             if (pressed && !lastButtonStates[instance][b]) {
                 // Correction : Star Citizen indexe les boutons à partir de 1 (js1_button1)
                 let btnName = `js${instance}_button${b+1}`;
@@ -313,6 +350,55 @@ function handleGamepadInput() {
             }
             lastButtonStates[instance][b] = pressed;
         }
+        for (let a = 0; a < gp.axes.length; a++) {
+            if (!lastAxesStates[instance]) lastAxesStates[instance] = [];
+            let val = gp.axes[a];
+            let hatDir = null;
+            let hatDetected = false;
+            // Gestion du mapping axes/hat via JSON
+            if (deviceMap && deviceMap.hats && deviceMap.hats[a]) {
+                // Axe traité comme hat
+                const hat = deviceMap.hats[a];
+                for (const dir in hat.directions) {
+                    const d = hat.directions[dir];
+                    if (parseInt(d.axis) === a && val >= d.value_min && val <= d.value_max) {
+                        hatDir = dir;
+                        hatDetected = true;
+                        const xmlName = `js${instance}_hat_${dir}`;
+                        showInputOverlay(xmlName);
+                        console.log(`Hat détecté (JSON) sur axis${a} (js${instance}_hat_${dir}) : valeur ${val}`);
+                        break;
+                    }
+                }
+                if (!hatDetected && hat.rest && val >= hat.rest.value_min && val <= hat.rest.value_max) {
+                    // Position de repos, on n'affiche rien
+                    hatDetected = true;
+                }
+                // Fallback heuristique si aucune direction détectée via JSON
+                if (!hatDetected) {
+                    let fallbackDir = getHatDirection(val);
+                    if (fallbackDir) {
+                        hatDir = fallbackDir;
+                        hatDetected = true;
+                        const xmlName = `js${instance}_hat_${hatDir}`;
+                        showInputOverlay(xmlName);
+                        console.log(`Hat détecté (heuristique) sur axis${a} (js${instance}_hat_${hatDir}) : valeur ${val}`);
+                    }
+                }
+            }
+            // Axes classiques (mapping axes_map)
+            if (!hatDetected && deviceMap && deviceMap.axes_map && deviceMap.axes_map.hasOwnProperty(a)) {
+                let axisName = `js${instance}_${deviceMap.axes_map[a]}`;
+                if (Math.abs(val) > 0.2 && (!lastAxesStates[instance][a] || Math.abs(lastAxesStates[instance][a]) <= 0.2)) {
+                    showInputOverlay(axisName);
+                    console.log('Axe actionné:', axisName, `(index API: a${a})`, 'valeur:', val.toFixed(2));
+                } else if (Math.abs(val) > 0.2) {
+                    // Affiche dans la console même si déjà actionné (pour debug continu)
+                    console.log('Axe utilisé (continu):', axisName, `(index API: a${a})`, 'valeur:', val.toFixed(2));
+                }
+            }
+            lastAxesStates[instance][a] = val;
+        }
     }
     requestAnimationFrame(handleGamepadInput);
 }
@@ -320,35 +406,9 @@ function handleGamepadInput() {
 window.addEventListener('DOMContentLoaded', function() {
     requestAnimationFrame(handleGamepadInput);
 });
-window.devicesDataJs = <?php echo json_encode($devicesData); ?>;
-
+window.devicesDataJs = <?php echo json_encode($devicesData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 // --- DEBUG ---
 console.log('devicesDataJs:', window.devicesDataJs);
-
-function getInstanceFromGamepad(gamepad) {
-    let found = null;
-    if (window.devicesDataJs) {
-        window.devicesDataJs.forEach(function(dev) {
-            // On simplifie aussi côté JS pour matcher comme côté PHP
-            let devIdSimple = dev.id.replace(/\(Vendor:.*$/, '').trim();
-            let gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim();
-            if ((gamepadIdSimple && devIdSimple && (gamepadIdSimple.indexOf(devIdSimple) !== -1 || devIdSimple.indexOf(gamepadIdSimple) !== -1)) && dev.xml_instance) {
-                found = dev.xml_instance;
-            }
-        });
-    }
-    // Fallback : si pas trouvé, on tente par index
-    if (!found && gamepad.index !== undefined) {
-        if (window.devicesDataJs) {
-            window.devicesDataJs.forEach(function(dev) {
-                if (dev.index == gamepad.index && dev.xml_instance) {
-                    found = dev.xml_instance;
-                }
-            });
-        }
-    }
-    return found;
-}
 
 function renderGamepadDevicesList() {
     let html = '<b>Devices connectés (API Gamepad):</b><br>';

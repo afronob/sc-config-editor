@@ -113,12 +113,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
     // Chargement des fichiers JSON de devices
     $deviceJsonFiles = glob(__DIR__ . '/files/*.json');
     $devicesData = [];
+    $debugDeviceLoad = [];
     foreach ($deviceJsonFiles as $jsonFile) {
         $json = file_get_contents($jsonFile);
         $data = json_decode($json, true);
+        $debugDeviceLoad[] = [
+            'file' => basename($jsonFile),
+            'json_valid' => $data !== null,
+            'has_id' => $data && isset($data['id']),
+            'id' => $data['id'] ?? null
+        ];
         if ($data && isset($data['id'])) {
             $devicesData[] = $data;
         }
+    }
+    if (empty($devicesData)) {
+        error_log('Aucun device JSON valide trouvé. Debug: ' . print_r($debugDeviceLoad, true));
     }
     // Création du mapping device id (ou product) => instance XML (jsX)
     $deviceInstanceMap = [];
@@ -184,6 +194,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
         }
     }
     unset($device);
+    // --- Ajout : fonction pour extraire VendorID/ProductID du champ Product du XML ---
+    function extractVendorProductId($productString) {
+        if (preg_match('/\{([0-9A-Fa-f]{4})([0-9A-Fa-f]{4})-/', $productString, $m)) {
+            // $m[1] = ProductID, $m[2] = VendorID (ordre Star Citizen)
+            // Correction : on retourne bien vendor_id = $m[2], product_id = $m[1]
+            return [
+                'vendor_id' => strtolower($m[2]),
+                'product_id' => strtolower($m[1])
+            ];
+        }
+        return [ 'product_id' => null, 'vendor_id' => null ];
+    }
+    // --- Matching unique par VendorID/ProductID, fallback nom, fallback libre ---
+    // Réinitialise matched pour tous les joysticks
+    foreach ($xmlJoysticks as &$joy) {
+        $joy['matched'] = false;
+    }
+    unset($joy);
+    foreach ($devicesData as &$device) {
+        $device['xml_instance'] = null;
+        $found = false;
+        // IDs JSON (mapping)
+        $dev_vendor = isset($device['vendor_id']) ? strtolower(preg_replace('/^0x/', '', $device['vendor_id'])) : null;
+        $dev_product = isset($device['product_id']) ? strtolower(preg_replace('/^0x/', '', $device['product_id'])) : null;
+        // Nettoyage strict : on ne garde que les caractères hexadécimaux
+        $dev_vendor_clean = preg_replace('/[^0-9a-f]/', '', $dev_vendor);
+        $dev_product_clean = preg_replace('/[^0-9a-f]/', '', $dev_product);
+        foreach ($xmlJoysticks as &$joy) {
+            $ids = extractVendorProductId($joy['product']);
+            $xml_vendor = strtolower($ids['vendor_id']);
+            $xml_product = strtolower($ids['product_id']);
+            $xml_vendor_clean = preg_replace('/[^0-9a-f]/', '', $xml_vendor);
+            $xml_product_clean = preg_replace('/[^0-9a-f]/', '', $xml_product);
+            error_log("[SC-MATCH-DEBUG] dev_vendor='" . $dev_vendor_clean . "' (len=" . strlen($dev_vendor_clean) . ", hex=" . bin2hex($dev_vendor_clean) . ") xml_vendor='" . $xml_vendor_clean . "' (len=" . strlen($xml_vendor_clean) . ", hex=" . bin2hex($xml_vendor_clean) . ") dev_product='" . $dev_product_clean . "' (len=" . strlen($dev_product_clean) . ", hex=" . bin2hex($dev_product_clean) . ") xml_product='" . $xml_product_clean . "' (len=" . strlen($xml_product_clean) . ", hex=" . bin2hex($xml_product_clean) . ")");
+            if ($xml_vendor_clean && $xml_product_clean && $dev_vendor_clean && $dev_product_clean) {
+                if ($xml_vendor_clean === $dev_vendor_clean && $xml_product_clean === $dev_product_clean && !$joy['matched']) {
+                    $device['xml_instance'] = $joy['instance'];
+                    $joy['matched'] = true;
+                    $found = true;
+                    error_log("[SC-MATCH] Match OK: device {$device['id']} (v:$dev_vendor_clean p:$dev_product_clean) <-> XML {$joy['product']} (v:$xml_vendor_clean p:$xml_product_clean) (js{$joy['instance']})");
+                    break;
+                } else {
+                    error_log("[SC-MATCH] No match: device {$device['id']} (v:$dev_vendor_clean p:$dev_product_clean) <-> XML {$joy['product']} (v:$xml_vendor_clean p:$xml_product_clean)");
+                }
+            }
+        }
+        unset($joy);
+        // Si aucun match par ID, fallback sur le nom
+        if (!$found) {
+            $dev_id_simple = preg_replace('/\(Vendor:.*$/', '', $device['id']);
+            $dev_id_simple = trim($dev_id_simple);
+            foreach ($xmlJoysticks as &$joy) {
+                $prod_simple = preg_replace('/\{.*\}/', '', $joy['product']);
+                $prod_simple = trim($prod_simple);
+                if (!$joy['matched'] && (stripos($dev_id_simple, $prod_simple) !== false || stripos($prod_simple, $dev_id_simple) !== false)) {
+                    $device['xml_instance'] = $joy['instance'];
+                    $joy['matched'] = true;
+                    error_log("[SC-MATCH] Fallback nom: device {$device['id']} <-> XML {$joy['product']} (js{$joy['instance']})");
+                    break;
+                }
+            }
+            unset($joy);
+        }
+        // Si toujours rien, on prend la première instance XML non utilisée
+        if (!$device['xml_instance']) {
+            foreach ($xmlJoysticks as &$joy) {
+                if (!$joy['matched']) {
+                    $device['xml_instance'] = $joy['instance'];
+                    $joy['matched'] = true;
+                    error_log("[SC-MATCH] Fallback libre: device {$device['id']} <-> XML {$joy['product']} (js{$joy['instance']})");
+                    break;
+                }
+            }
+            unset($joy);
+        }
+    }
+    unset($device);
     // Fonction utilitaire pour convertir un index de bouton JSON/Gamepad API en nom XML (jsX_buttonY)
     function getXmlButtonName($xmlInstance, $buttonIndex) {
         // Star Citizen indexe les boutons à partir de 1 (js1_button1), alors que la Gamepad API/JSON commence à 0
@@ -201,9 +288,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
     ];
     extract($templateVars);
     include __DIR__ . '/templates/edit_form.php';
+    // Stop toute sortie PHP après le template pour éviter d'injecter du HTML dans le JS
     exit;
 }
 // Formulaire d'upload
 include __DIR__ . '/templates/upload_form.php';
 exit;
-?>
+// --- Sécurité : stoppe toute sortie accidentelle après ce point ---
