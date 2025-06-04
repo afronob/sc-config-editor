@@ -120,9 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
             $devicesData[] = $data;
         }
     }
-    if (empty($devicesData)) {
-        error_log('Aucun device JSON valide trouvé.');
-    }
     // Création du mapping device id (ou product) => instance XML (jsX)
     $deviceInstanceMap = [];
     foreach ($xml->xpath('//options[@type="joystick"]') as $opt) {
