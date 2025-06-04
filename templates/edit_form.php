@@ -226,6 +226,36 @@ function findRowsForButton(jsIdx, btnIdx, mode) {
     return rows;
 }
 
+function findRowsForAxis(jsIdx, axisName) {
+    // Recherche les lignes du tableau dont l'input correspond à l'axe donné (ex: js1_x)
+    let selector = `input[name^='input[']`;
+    let rows = [];
+    document.querySelectorAll(selector).forEach(input => {
+        let val = input.value.trim();
+        let regex = new RegExp(`^js${jsIdx}_${axisName}$`, 'i');
+        if (regex.test(val)) {
+            let tr = input.closest('tr');
+            if (tr) rows.push(tr);
+        }
+    });
+    return rows;
+}
+
+function findRowsForHat(jsIdx, hatDir) {
+    // Recherche les lignes du tableau dont l'input correspond au hat donné (ex: js1_hat_up)
+    let selector = `input[name^='input[']`;
+    let rows = [];
+    document.querySelectorAll(selector).forEach(input => {
+        let val = input.value.trim();
+        let regex = new RegExp(`^js${jsIdx}_hat1_${hatDir}$`, 'i');
+        if (regex.test(val)) {
+            let tr = input.closest('tr');
+            if (tr) rows.push(tr);
+        }
+    });
+    return rows;
+}
+
 // --- Correction : matching instance XML par VendorID/ProductID ---
 function extractVendorProductIdFromIdString(idString) {
     // Extrait VendorID/ProductID d'une chaîne comme "... (Vendor: 231d Product: 0201)"
@@ -355,8 +385,14 @@ function handleGamepadInput() {
                     if (parseInt(d.axis) === a && val >= d.value_min && val <= d.value_max) {
                         hatDir = dir;
                         hatDetected = true;
-                        const xmlName = `js${instance}_hat_${dir}`;
+                        const xmlName = `js${instance}_hat1_${dir}`;
                         showInputOverlay(xmlName);
+                        if (getActiveInput()) {
+                            document.activeElement.value = xmlName;
+                        } else {
+                            let rows = findRowsForHat(instance, dir);
+                            if (rows.length) rows.forEach(highlightRow);
+                        }
                         break;
                     }
                 }
@@ -370,8 +406,12 @@ function handleGamepadInput() {
                 let axisName = `js${instance}_${deviceMap.axes_map[a]}`;
                 if (Math.abs(val) > 0.2 && (!lastAxesStates[instance][a] || Math.abs(lastAxesStates[instance][a]) <= 0.2)) {
                     showInputOverlay(axisName);
-                } else if (Math.abs(val) > 0.2) {
-                    // Affiche dans la console même si déjà actionné (pour debug continu)
+                    if (getActiveInput()) {
+                        document.activeElement.value = axisName;
+                    } else {
+                        let rows = findRowsForAxis(instance, deviceMap.axes_map[a]);
+                        if (rows.length) rows.forEach(highlightRow);
+                    }
                 }
             }
             lastAxesStates[instance][a] = val;
