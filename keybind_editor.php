@@ -113,22 +113,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
     // Chargement des fichiers JSON de devices
     $deviceJsonFiles = glob(__DIR__ . '/files/*.json');
     $devicesData = [];
-    $debugDeviceLoad = [];
     foreach ($deviceJsonFiles as $jsonFile) {
         $json = file_get_contents($jsonFile);
         $data = json_decode($json, true);
-        $debugDeviceLoad[] = [
-            'file' => basename($jsonFile),
-            'json_valid' => $data !== null,
-            'has_id' => $data && isset($data['id']),
-            'id' => $data['id'] ?? null
-        ];
         if ($data && isset($data['id'])) {
             $devicesData[] = $data;
         }
     }
     if (empty($devicesData)) {
-        error_log('Aucun device JSON valide trouvé. Debug: ' . print_r($debugDeviceLoad, true));
+        error_log('Aucun device JSON valide trouvé.');
     }
     // Création du mapping device id (ou product) => instance XML (jsX)
     $deviceInstanceMap = [];
@@ -227,16 +220,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
             $xml_product = strtolower($ids['product_id']);
             $xml_vendor_clean = preg_replace('/[^0-9a-f]/', '', $xml_vendor);
             $xml_product_clean = preg_replace('/[^0-9a-f]/', '', $xml_product);
-            error_log("[SC-MATCH-DEBUG] dev_vendor='" . $dev_vendor_clean . "' (len=" . strlen($dev_vendor_clean) . ", hex=" . bin2hex($dev_vendor_clean) . ") xml_vendor='" . $xml_vendor_clean . "' (len=" . strlen($xml_vendor_clean) . ", hex=" . bin2hex($xml_vendor_clean) . ") dev_product='" . $dev_product_clean . "' (len=" . strlen($dev_product_clean) . ", hex=" . bin2hex($dev_product_clean) . ") xml_product='" . $xml_product_clean . "' (len=" . strlen($xml_product_clean) . ", hex=" . bin2hex($xml_product_clean) . ")");
             if ($xml_vendor_clean && $xml_product_clean && $dev_vendor_clean && $dev_product_clean) {
                 if ($xml_vendor_clean === $dev_vendor_clean && $xml_product_clean === $dev_product_clean && !$joy['matched']) {
                     $device['xml_instance'] = $joy['instance'];
                     $joy['matched'] = true;
                     $found = true;
-                    error_log("[SC-MATCH] Match OK: device {$device['id']} (v:$dev_vendor_clean p:$dev_product_clean) <-> XML {$joy['product']} (v:$xml_vendor_clean p:$xml_product_clean) (js{$joy['instance']})");
                     break;
-                } else {
-                    error_log("[SC-MATCH] No match: device {$device['id']} (v:$dev_vendor_clean p:$dev_product_clean) <-> XML {$joy['product']} (v:$xml_vendor_clean p:$xml_product_clean)");
                 }
             }
         }
@@ -251,7 +240,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
                 if (!$joy['matched'] && (stripos($dev_id_simple, $prod_simple) !== false || stripos($prod_simple, $dev_id_simple) !== false)) {
                     $device['xml_instance'] = $joy['instance'];
                     $joy['matched'] = true;
-                    error_log("[SC-MATCH] Fallback nom: device {$device['id']} <-> XML {$joy['product']} (js{$joy['instance']})");
                     break;
                 }
             }
@@ -263,7 +251,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_FILES['xmlfile']) || isset
                 if (!$joy['matched']) {
                     $device['xml_instance'] = $joy['instance'];
                     $joy['matched'] = true;
-                    error_log("[SC-MATCH] Fallback libre: device {$device['id']} <-> XML {$joy['product']} (js{$joy['instance']})");
                     break;
                 }
             }

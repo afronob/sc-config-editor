@@ -310,23 +310,15 @@ function handleGamepadInput() {
     for (let i = 0; i < gamepads.length; i++) {
         let gp = gamepads[i];
         if (!gp) continue;
-        // DEBUG : Affiche l'id du gamepad détecté
-        if (!gp._debugged) {
-            console.log('Gamepad détecté:', gp.id, 'index:', gp.index);
-            gp._debugged = true;
-        }
         let instance = getInstanceFromGamepad(gp);
         let deviceMap = null;
         if (window.devicesDataJs && instance) {
             deviceMap = window.devicesDataJs.find(dev => dev.xml_instance == instance);
         }
         if (!instance) {
-            // DEBUG : Affiche un warning si aucune instance trouvée
-            console.warn('Aucune instance XML trouvée pour', gp.id, 'index:', gp.index);
             continue;
         }
         if (!buttonNamesByInstance[instance]) {
-            console.warn('Pas de mapping buttonNamesByInstance pour instance', instance);
             continue;
         }
         // --- Robust initialization of lastButtonStates and lastAxesStates ---
@@ -340,7 +332,6 @@ function handleGamepadInput() {
                 let btnName = `js${instance}_button${b+1}`;
                 let mode = '';
                 showOverlay(btnName);
-                console.log('Bouton pressé:', btnName, 'gamepad:', gp.id, 'instance:', instance);
                 if (getActiveInput()) {
                     document.activeElement.value = btnName;
                 } else {
@@ -366,7 +357,6 @@ function handleGamepadInput() {
                         hatDetected = true;
                         const xmlName = `js${instance}_hat_${dir}`;
                         showInputOverlay(xmlName);
-                        console.log(`Hat détecté (JSON) sur axis${a} (js${instance}_hat_${dir}) : valeur ${val}`);
                         break;
                     }
                 }
@@ -374,27 +364,14 @@ function handleGamepadInput() {
                     // Position de repos, on n'affiche rien
                     hatDetected = true;
                 }
-                // Fallback heuristique si aucune direction détectée via JSON
-                if (!hatDetected) {
-                    let fallbackDir = getHatDirection(val);
-                    if (fallbackDir) {
-                        hatDir = fallbackDir;
-                        hatDetected = true;
-                        const xmlName = `js${instance}_hat_${hatDir}`;
-                        showInputOverlay(xmlName);
-                        console.log(`Hat détecté (heuristique) sur axis${a} (js${instance}_hat_${hatDir}) : valeur ${val}`);
-                    }
-                }
             }
             // Axes classiques (mapping axes_map)
             if (!hatDetected && deviceMap && deviceMap.axes_map && deviceMap.axes_map.hasOwnProperty(a)) {
                 let axisName = `js${instance}_${deviceMap.axes_map[a]}`;
                 if (Math.abs(val) > 0.2 && (!lastAxesStates[instance][a] || Math.abs(lastAxesStates[instance][a]) <= 0.2)) {
                     showInputOverlay(axisName);
-                    console.log('Axe actionné:', axisName, `(index API: a${a})`, 'valeur:', val.toFixed(2));
                 } else if (Math.abs(val) > 0.2) {
                     // Affiche dans la console même si déjà actionné (pour debug continu)
-                    console.log('Axe utilisé (continu):', axisName, `(index API: a${a})`, 'valeur:', val.toFixed(2));
                 }
             }
             lastAxesStates[instance][a] = val;
@@ -407,9 +384,7 @@ window.addEventListener('DOMContentLoaded', function() {
     requestAnimationFrame(handleGamepadInput);
 });
 window.devicesDataJs = <?php echo json_encode($devicesData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
-// --- DEBUG ---
-console.log('devicesDataJs:', window.devicesDataJs);
-
+// (No debug code remains)
 function renderGamepadDevicesList() {
     let html = '<b>Devices connectés (API Gamepad):</b><br>';
     let gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -421,6 +396,7 @@ function renderGamepadDevicesList() {
         let instance = getInstanceFromGamepad(gp) || '?';
         html += `<div style="margin-bottom:0.5em; padding-left:1em;">
             <b>${gp.id}</b> (index: ${gp.index}, instance XML: js${instance})<br>`;
+        /*
         if (gp.buttons && gp.buttons.length) {
             let btns = [];
             for (let b = 0; b < gp.buttons.length; b++) {
@@ -437,6 +413,7 @@ function renderGamepadDevicesList() {
             }
             html += `<span>Axes :</span> ${axes.join(', ')}<br>`;
         }
+        */
         html += '</div>';
     }
     if (!any) html += '<i>Aucun device détecté.</i>';
@@ -446,7 +423,6 @@ window.addEventListener('gamepadconnected', renderGamepadDevicesList);
 window.addEventListener('gamepaddisconnected', renderGamepadDevicesList);
 document.addEventListener('DOMContentLoaded', function() {
     renderGamepadDevicesList();
-    // ...existing code...
 });
 </script>
 </body>
