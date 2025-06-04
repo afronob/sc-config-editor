@@ -436,13 +436,20 @@ function handleGamepadInput() {
             // Axes classiques (mapping axes_map)
             if (!hatDetected && deviceMap && deviceMap.axes_map && deviceMap.axes_map.hasOwnProperty(a)) {
                 let axisName = `js${instance}_${deviceMap.axes_map[a]}`;
-                if (Math.abs(val) > 0.2 && (!lastAxesStates[instance][a] || Math.abs(lastAxesStates[instance][a]) <= 0.2)) {
-                    showInputOverlay(axisName);
-                    if (getActiveInput()) {
-                        document.activeElement.value = axisName;
-                    } else {
-                        let rows = findRowsForAxis(instance, deviceMap.axes_map[a]);
-                        cycleRows(rows, axisName, currentAxisIndex);
+                let axisValue = val;
+                let lastValue = lastAxesStates[instance] ? lastAxesStates[instance][a] : 0;
+                
+                // Détection du mouvement des axes principaux (0,1,2,5)
+                if (Math.abs(axisValue) > 0.5) {  // Si l'axe est suffisamment poussé
+                    // Vérifie si c'est un nouveau mouvement
+                    if (Math.abs(lastValue) < 0.5) {
+                        showInputOverlay(axisName);
+                        if (getActiveInput()) {
+                            document.activeElement.value = axisName;
+                        } else {
+                            let rows = findRowsForAxis(instance, deviceMap.axes_map[a]);
+                            cycleRows(rows, axisName, currentAxisIndex);
+                        }
                     }
                 }
             }
@@ -453,6 +460,19 @@ function handleGamepadInput() {
 }
 
 window.addEventListener('DOMContentLoaded', function() {
+    // Initialisation immédiate des états
+    let gamepads = navigator.getGamepads();
+    for (let i = 0; i < gamepads.length; i++) {
+        let gp = gamepads[i];
+        if (!gp) continue;
+        let instance = getInstanceFromGamepad(gp);
+        if (instance) {
+            // Initialisation des états avec des valeurs neutres
+            lastAxesStates[instance] = new Array(gp.axes.length).fill(0);
+            lastButtonStates[instance] = new Array(gp.buttons.length).fill(false);
+        }
+    }
+    // Démarrage de la détection
     requestAnimationFrame(handleGamepadInput);
 });
 window.devicesDataJs = <?php echo json_encode($devicesData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
