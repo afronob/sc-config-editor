@@ -3,7 +3,14 @@
 // Variables attendues : $xmlName, $xml, $actionNames, $actionmaps_root, $joysticks, $actionsInfo
 ?>
 <!DOCTYPE html><html lang="fr">
-<head><meta charset="utf-8"><title>Éditeur de keybinds XML Star Citizen</title><style>body { font-family: monospace; }</style></head>
+<head>
+<meta charset="utf-8">
+<title>Éditeur de keybinds XML Star Citizen</title>
+<style>
+body { font-family: monospace; }
+.highlighted-row { background: #ffe066; }
+</style>
+</head>
 <body>
 <h2>Édition des actions</h2>
 <div id="gamepad-devices-list" style="margin-bottom:1em;"></div>
@@ -184,6 +191,11 @@ document.addEventListener('DOMContentLoaded', function() {
 let lastButtonStates = {};
 let lastAxesStates = {};
 let buttonNamesByInstance = {};
+// Ajout des variables pour suivre l'index courant pour chaque input
+let currentButtonIndex = {};  // format: "js1_button1" => indexCourant
+let currentAxisIndex = {};    // format: "js1_x" => indexCourant
+let currentHatIndex = {};     // format: "js1_hat1_up" => indexCourant
+
 <?php if (!empty($devicesData)): ?>
     <?php foreach ($devicesData as $device): if (!empty($device['xml_instance']) && isset($device['buttons'])): ?>
         buttonNamesByInstance[<?= json_encode($device['xml_instance']) ?>] = <?= json_encode($device['buttons']) ?>;
@@ -194,10 +206,31 @@ function getActiveInput() {
     return document.activeElement && document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'text';
 }
 
+function clearAllHighlights() {
+    document.querySelectorAll('tr').forEach(row => {
+        row.style.background = '';
+    });
+}
+
 function highlightRow(row) {
+    clearAllHighlights();
     row.style.background = '#ffe066';
-    setTimeout(() => { row.style.background = ''; }, 1500);
     row.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function cycleRows(rows, inputName, currentIndexMap) {
+    if (!rows.length) return;
+    
+    // Initialiser l'index si nécessaire
+    if (currentIndexMap[inputName] === undefined || currentIndexMap[inputName] >= rows.length) {
+        currentIndexMap[inputName] = 0;
+    }
+
+    // Surbriller la ligne courante
+    highlightRow(rows[currentIndexMap[inputName]]);
+    
+    // Incrémenter pour le prochain appui
+    currentIndexMap[inputName]++;
 }
 
 function findRowsForButton(jsIdx, btnIdx, mode) {
@@ -358,15 +391,14 @@ function handleGamepadInput() {
             let pressed = gp.buttons[b].pressed;
             if (!Array.isArray(lastButtonStates[instance])) lastButtonStates[instance] = [];
             if (pressed && !lastButtonStates[instance][b]) {
-                // Correction : Star Citizen indexe les boutons à partir de 1 (js1_button1)
                 let btnName = `js${instance}_button${b+1}`;
                 let mode = '';
                 showOverlay(btnName);
                 if (getActiveInput()) {
                     document.activeElement.value = btnName;
                 } else {
-                    let rows = findRowsForButton(instance, b+1, mode); // Correction ici aussi
-                    if (rows.length) rows.forEach(highlightRow);
+                    let rows = findRowsForButton(instance, b+1, mode);
+                    cycleRows(rows, btnName, currentButtonIndex);
                 }
             }
             lastButtonStates[instance][b] = pressed;
@@ -391,7 +423,7 @@ function handleGamepadInput() {
                             document.activeElement.value = xmlName;
                         } else {
                             let rows = findRowsForHat(instance, dir);
-                            if (rows.length) rows.forEach(highlightRow);
+                            cycleRows(rows, xmlName, currentHatIndex);
                         }
                         break;
                     }
@@ -410,7 +442,7 @@ function handleGamepadInput() {
                         document.activeElement.value = axisName;
                     } else {
                         let rows = findRowsForAxis(instance, deviceMap.axes_map[a]);
-                        if (rows.length) rows.forEach(highlightRow);
+                        cycleRows(rows, axisName, currentAxisIndex);
                     }
                 }
             }
