@@ -1,17 +1,13 @@
 <?php
 // Template pour afficher un message d'erreur
 // Variables attendues : $errorMsg
-?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <title>Erreur - Éditeur de keybinds XML Star Citizen</title>
-    <style>body { font-family: monospace; color: red; }</style>
-</head>
-<body>
+
+$title = 'Erreur - Éditeur de keybinds XML Star Citizen';
+$head = '<style>body { color: red; }</style>';
+$content = <<<HTML
 <h3>Erreur</h3>
-<p><?= htmlspecialchars($errorMsg) ?></p>
-<hr><a href="<?= htmlspecialchars($_SERVER['PHP_SELF']) ?>">Retour</a>
-</body>
-</html>
+<p>{$errorMsg}</p>
+<hr><a href="{$_SERVER['PHP_SELF']}">Retour</a>
+HTML;
+
+require __DIR__ . '/layout.php';

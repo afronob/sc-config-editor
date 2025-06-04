@@ -1,0 +1,141 @@
+/* Styles généraux */
+body {
+    font-family: monospace;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Tableau des bindings */
+.bindings-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+
+.bindings-table th,
+.bindings-table td {
+    padding: 8px;
+    border: 1px solid #ccc;
+}
+
+.bindings-table th {
+    background: #f5f5f5;
+    font-weight: bold;
+}
+
+.highlighted-row {
+    background: #ffe066;
+    transition: background-color 0.3s ease;
+}
+
+/* Overlay de notification */
+.input-overlay {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    font-size: 2.2em;
+    font-weight: bold;
+    padding: 0.4em 1.2em;
+    border-radius: 0.5em;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.67);
+    z-index: 9999;
+    display: none;
+}
+
+/* Modal des bindings */
+.bindings-modal {
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    border: 1px solid #888;
+    box-shadow: 2px 2px 10px #888;
+    padding: 1em;
+    z-index: 2000;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: auto;
+}
+
+/* Liste des devices */
+.devices-list {
+    margin-bottom: 1em;
+}
+
+.device-item {
+    margin-bottom: 0.5em;
+    padding-left: 1em;
+}
+
+/* Filtres */
+.filters-section {
+    margin-bottom: 1em;
+}
+
+/* Formulaire */
+.form-group {
+    margin-bottom: 1em;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn {
+    padding: 0.5em 1em;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #0056b3;
+}
+
+/* Upload Form */
+.upload-container {
+    max-width: 600px;
+    margin: 2em auto;
+    padding: 2em;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.upload-form {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-form input[type="file"] {
+    padding: 0.5em;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.btn-primary {
+    background: #007bff;
+    min-width: 120px;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
