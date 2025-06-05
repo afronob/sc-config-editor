@@ -4,6 +4,5 @@
   "vendor_id": "0x1234",
   "product_id": "0xbead",
   "axes_map": {},
-  "hats": {},
-  "buttons": 32
+  "hats": {}
 }

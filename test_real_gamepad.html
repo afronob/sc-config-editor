@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Real Gamepad Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        #overlay { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            display: none; 
+            z-index: 1000;
+        }
+        #log { 
+            border: 1px solid #ccc; 
+            height: 300px; 
+            overflow-y: scroll; 
+            padding: 10px; 
+            margin-top: 20px; 
+            background: #f9f9f9;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .gamepad-info { 
+            background: #e8f4f8; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 10px 0; 
+        }
+        .status { 
+            display: inline-block; 
+            padding: 3px 8px; 
+            border-radius: 3px; 
+            color: white; 
+            font-size: 12px; 
+            margin-left: 10px;
+        }
+        .status.connected { background: #4CAF50; }
+        .status.disconnected { background: #f44336; }
+        .instructions { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test de Détection Gamepad (Données Réelles)</h1>
+        
+        <div class="card">
+            <h2>État des Manettes</h2>
+            <div id="gamepad-status"></div>
+        </div>
+        
+        <div class="card instructions">
+            <h3>Instructions de Test:</h3>
+            <ul>
+                <li><strong>Connectez votre manette VKB</strong> et actualisez la page</li>
+                <li><strong>Testez les boutons</strong> pour vérifier la détection</li>
+                <li><strong>Testez le HAT/D-Pad</strong> (axe 9) avec les différents modes</li>
+                <li><strong>Modes supportés:</strong>
+                    <ul>
+                        <li><strong>Simple</strong> : Appui/relâchement normal</li>
+                        <li><strong>Double tap</strong> : 2 appuis rapides (≤300ms entre relâchements)</li>
+                        <li><strong>Hold</strong> : Maintenir ≥500ms</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h3>Log des Événements</h3>
+            <button onclick="clearLog()">Effacer Log</button>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <div id="overlay"></div>
+
+    <script type="module">
+        // Charger les vraies données de mapping
+        const realDevicesData = [
+            {
+                id: "VKB Gladiator EVO R (Vendor: 231d Product: 0200)",
+                product: "VKBSim Gladiator EVO R",
+                vendor_id: "0x231d",
+                product_id: "0x0200",
+                xml_instance: "1",
+                axes_map: {
+                    "0": "x",
+                    "1": "y", 
+                    "2": "z",
+                    "5": "rotz"
+                },
+                hats: {
+                    "9": {
+                        directions: {
+                            "up":    { "axis": 9, "value": -1,    "value_min": -1.05, "value_max": -0.95 },
+                            "down":  { "axis": 9, "value": 0.13,  "value_min": 0.08,  "value_max": 0.18 },
+                            "left":  { "axis": 9, "value": 0.71,  "value_min": 0.66,  "value_max": 0.76 },
+                            "right": { "axis": 9, "value": -0.43, "value_min": -0.48, "value_max": -0.38 }
+                        },
+                        "rest": { "axis": 9, "value": 1.28, "value_min": 1.23, "value_max": 1.33 }
+                    }
+                }
+            },
+            {
+                id: "VKB Gladiator EVO L (Vendor: 231d Product: 0201)",
+                product: "VKBSim Gladiator EVO L",
+                vendor_id: "0x231d",
+                product_id: "0x0201",
+                xml_instance: "2",
+                axes_map: {
+                    "0": "x",
+                    "1": "y",
+                    "2": "z", 
+                    "5": "rotz"
+                },
+                hats: {
+                    "9": {
+                        directions: {
+                            "up":    { "axis": 9, "value": -1,    "value_min": -1.05, "value_max": -0.95 },
+                            "down":  { "axis": 9, "value": 0.13,  "value_min": 0.08,  "value_max": 0.18 },
+                            "left":  { "axis": 9, "value": 0.71,  "value_min": 0.66,  "value_max": 0.76 },
+                            "right": { "axis": 9, "value": -0.43, "value_min": -0.48, "value_max": -0.38 }
+                        },
+                        "rest": { "axis": 9, "value": 1.28, "value_min": 1.23, "value_max": 1.33 }
+                    }
+                }
+            },
+            {
+                id: "vJoy Device",
+                vendor_id: "0x1234",
+                product_id: "0xbead",
+                xml_instance: "3"
+            }
+        ];
+        
+        // Fonction de logging
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            logDiv.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Fonction pour effacer le log
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+        
+        // Fonction pour afficher l'état des manettes
+        function updateGamepadStatus() {
+            const statusDiv = document.getElementById('gamepad-status');
+            const gamepads = navigator.getGamepads();
+            let html = '';
+            
+            let connectedCount = 0;
+            for (let i = 0; i < gamepads.length; i++) {
+                const gp = gamepads[i];
+                if (gp) {
+                    connectedCount++;
+                    const matchedDevice = realDevicesData.find(dev => {
+                        const ids = extractVendorProductIdFromIdString(gp.id);
+                        return ids.vendor && ids.product && 
+                               dev.vendor_id && dev.product_id &&
+                               dev.vendor_id.replace(/^0x/, '').toLowerCase() === ids.vendor &&
+                               dev.product_id.replace(/^0x/, '').toLowerCase() === ids.product;
+                    });
+                    
+                    html += `<div class="gamepad-info">
+                        <strong>Manette ${i}:</strong> ${gp.id}
+                        <span class="status connected">CONNECTÉE</span><br>
+                        <strong>Boutons:</strong> ${gp.buttons.length} | 
+                        <strong>Axes:</strong> ${gp.axes.length}<br>
+                        <strong>Mapping:</strong> ${matchedDevice ? `✅ ${matchedDevice.product}` : '❌ Aucun mapping trouvé'}
+                    </div>`;
+                }
+            }
+            
+            if (connectedCount === 0) {
+                html = '<div class="gamepad-info">❌ Aucune manette détectée<span class="status disconnected">DÉCONNECTÉE</span></div>';
+            }
+            
+            statusDiv.innerHTML = html;
+        }
+        
+        // Fonction utilitaire pour extraire vendor/product ID
+        function extractVendorProductIdFromIdString(idString) {
+            let vendor = null, product = null;
+            let m = idString.match(/Vendor:\s*([0-9a-fA-F]{4})/);
+            if (m) vendor = m[1].toLowerCase();
+            m = idString.match(/Product:\s*([0-9a-fA-F]{4})/);
+            if (m) product = m[1].toLowerCase();
+            return { vendor, product };
+        }
+        
+        // Écouter les événements de gamepad
+        window.addEventListener('buttonPressed', (event) => {
+            const { instance, buttonName, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            log(`🎮 Instance ${instance} - Bouton: ${buttonName}${modeText}`, 'success');
+        });
+        
+        window.addEventListener('axisMoved', (event) => {
+            const { instance, axisName, value } = event.detail;
+            log(`🎯 Instance ${instance} - Axe: ${axisName} = ${value.toFixed(3)}`, 'info');
+        });
+        
+        window.addEventListener('hatMoved', (event) => {
+            const { instance, hatName, direction, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            log(`🧭 Instance ${instance} - HAT: ${hatName} (${direction})${modeText}`, 'success');
+        });
+        
+        // Initialiser le système
+        document.addEventListener('DOMContentLoaded', async function() {
+            log('🚀 Initialisation du système de test...', 'info');
+            
+            // Exposer les données globalement
+            window.devicesDataJs = realDevicesData;
+            
+            // Importer et initialiser le gestionnaire de gamepad
+            try {
+                const { GamepadHandler } = await import('./assets/js/modules/gamepadHandler.js');
+                
+                // Créer une instance
+                const gamepadHandler = new GamepadHandler();
+                
+                // Initialiser
+                gamepadHandler.init();
+                
+                log('✅ Système initialisé avec les données réelles VKB', 'success');
+                log('🎮 Connectez votre manette VKB et testez les boutons/HAT', 'info');
+                
+                // Mettre à jour l'état des manettes régulièrement
+                setInterval(updateGamepadStatus, 1000);
+                updateGamepadStatus();
+                
+            } catch (error) {
+                log(`❌ Erreur lors de l'initialisation: ${error.message}`, 'error');
+                console.error('Erreur d\'initialisation:', error);
+            }
+        });
+        
+        // Gestionnaire de connexion/déconnexion des manettes
+        window.addEventListener('gamepadconnected', (event) => {
+            log(`🔌 Manette connectée: ${event.gamepad.id}`, 'success');
+            updateGamepadStatus();
+        });
+        
+        window.addEventListener('gamepaddisconnected', (event) => {
+            log(`🔌 Manette déconnectée: ${event.gamepad.id}`, 'error');
+            updateGamepadStatus();
+        });
+    </script>
+</body>
+</html>

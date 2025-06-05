@@ -19,6 +19,5 @@
       },
       "rest": { "axis": 9, "value": 1.28, "value_min": 1.23, "value_max": 1.33 }
     }
-  },
-  "buttons": 32
+  }
 }

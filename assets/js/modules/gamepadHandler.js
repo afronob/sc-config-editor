@@ -54,8 +54,11 @@ export class GamepadHandler {
 
     processGamepad(gp) {
         let instance = this.getInstanceFromGamepad(gp);
-        if (!instance || !this.buttonNamesByInstance[instance]) return;
-
+        
+        if (!instance) {
+            return;
+        }
+        
         this.processButtons(gp, instance);
         this.processAxes(gp, instance);
     }
@@ -66,6 +69,7 @@ export class GamepadHandler {
         if (window.devicesDataJs) {
             // 1. Matching par VendorID/ProductID
             let ids = this.extractVendorProductIdFromIdString(gamepad.id);
+            
             window.devicesDataJs.forEach(function(dev) {
                 if (
                     dev.vendor_id && dev.product_id &&
@@ -81,6 +85,7 @@ export class GamepadHandler {
             // 2. Fallback sur le nom
             if (!found) {
                 let gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim();
+                
                 window.devicesDataJs.forEach(function(dev) {
                     let devIdSimple = dev.id.replace(/\(Vendor:.*$/, '').trim();
                     if ((gamepadIdSimple && devIdSimple && 
@@ -92,6 +97,7 @@ export class GamepadHandler {
                 });
             }
         }
+        
         return found;
     }
 
@@ -181,9 +187,15 @@ export class GamepadHandler {
             let val = gp.axes[a];
             let hatDetected = false;
 
-            // Gestion des hats
-            if (deviceMap.hats && deviceMap.hats[a]) {
-                hatDetected = this.processHat(deviceMap.hats[a], val, instance, a);
+            // Gestion des hats - vérifier avec l'index comme chaîne ET comme nombre
+            let hatConfig = null;
+            if (deviceMap.hats) {
+                // Essayer d'abord avec l'index comme chaîne
+                hatConfig = deviceMap.hats[a.toString()] || deviceMap.hats[a];
+            }
+            
+            if (hatConfig) {
+                hatDetected = this.processHat(hatConfig, val, instance, a);
             }
 
             // Gestion des axes classiques
