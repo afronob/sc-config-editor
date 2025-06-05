@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Gamepad Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #overlay { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            background: rgba(0,0,0,0.8); 
+            color: white; 
+            padding: 10px; 
+            border-radius: 5px; 
+            display: none; 
+        }
+        #log { 
+            border: 1px solid #ccc; 
+            height: 200px; 
+            overflow-y: scroll; 
+            padding: 10px; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>Test de Détection Gamepad</h1>
+    <div id="gamepad-devices-list"></div>
+    <div id="overlay"></div>
+    
+    <h2>Instructions:</h2>
+    <ul>
+        <li>Connectez une manette de jeu</li>
+        <li>Appuyez sur des boutons pour tester la détection</li>
+        <li>Testez : Appui simple, Double tap (2 appuis rapides), Hold (maintenir 500ms+)</li>
+    </ul>
+    
+    <div id="log"></div>
+
+    <script type="module">
+        import { initialize } from './assets/js/bindingEditor.js';
+        
+        // Simuler des données de devices pour le test
+        const testDevicesData = [
+            {
+                id: "Test Gamepad",
+                vendor_id: "0x045e",
+                product_id: "0x028e",
+                xml_instance: "1",
+                buttons: {
+                    1: "js1_button1",
+                    2: "js1_button2"
+                }
+            }
+        ];
+        
+        // Fonction de logging
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${time}] ${message}<br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Écouter les événements de gamepad
+        window.addEventListener('buttonPressed', (event) => {
+            const { buttonName, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : '';
+            log(`Bouton pressé: ${buttonName}${modeText}`);
+        });
+        
+        window.addEventListener('axisMoved', (event) => {
+            const { axisName, value } = event.detail;
+            log(`Axe bougé: ${axisName} = ${value.toFixed(2)}`);
+        });
+        
+        // Initialiser le système
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Initialisation du système...');
+            initialize({
+                devicesData: testDevicesData,
+                buttonNamesByInstance: { "1": { 1: "js1_button1", 2: "js1_button2" } }
+            });
+            log('Système initialisé. Connectez une manette et testez !');
+        });
+    </script>
+</body>
+</html>

@@ -1,12 +1,19 @@
 // Gestion des manettes de jeu et de leurs événements
 export class GamepadHandler {
     constructor() {
+        // Constantes pour la détection des modes
+        this.DOUBLE_TAP_DELAY = 300; // 300ms entre deux appuis pour un double tap
+        this.HOLD_DELAY = 500;       // 500ms d'appui pour un hold
+
+        // États des périphériques
         this.lastButtonStates = {};
         this.lastAxesStates = {};
         this.buttonNamesByInstance = {};
         this.currentButtonIndex = {};
         this.currentAxisIndex = {};
         this.currentHatIndex = {};
+        this.lastPressTime = {};  // Pour le double tap
+        this.pressStartTime = {}; // Pour le hold
         
         // Binding des méthodes
         this.handleInput = this.handleInput.bind(this);
@@ -90,19 +97,68 @@ export class GamepadHandler {
     }
 
     processButtons(gp, instance) {
-        if (!Array.isArray(this.lastButtonStates[instance])) this.lastButtonStates[instance] = [];
+        if (!Array.isArray(this.lastButtonStates[instance])) {
+            this.lastButtonStates[instance] = [];
+            this.lastPressTime[instance] = {};
+            this.pressStartTime[instance] = {};
+        }
         
+        const now = Date.now();
+
         for (let b = 0; b < gp.buttons.length; b++) {
             let pressed = gp.buttons[b].pressed;
+            let btnName = `js${instance}_button${b+1}`;
+            
+            // Début d'appui
             if (pressed && !this.lastButtonStates[instance][b]) {
-                let btnName = `js${instance}_button${b+1}`;
-                let mode = '';
-                this.emit('buttonPressed', {
-                    instance,
-                    buttonName: btnName,
-                    mode
-                });
+                this.pressStartTime[instance][b] = now;
             }
+            // Fin d'appui - Traitement de TOUS les modes ici
+            else if (!pressed && this.lastButtonStates[instance][b]) {
+                const pressDuration = now - (this.pressStartTime[instance][b] || 0);
+                const lastReleaseTime = this.lastPressTime[instance][b] || 0;
+                const timeSinceLastRelease = now - lastReleaseTime;
+                
+                // Détecter le type d'appui
+                if (pressDuration >= this.HOLD_DELAY) {
+                    // HOLD détecté
+                    this.emit('buttonPressed', {
+                        instance,
+                        buttonName: btnName,
+                        mode: 'hold'
+                    });
+                    this.lastPressTime[instance][b] = 0; // Reset pour éviter confusion
+                } 
+                else if (lastReleaseTime > 0 && timeSinceLastRelease <= this.DOUBLE_TAP_DELAY) {
+                    // DOUBLE TAP détecté (deuxième relâchement dans le délai)
+                    this.emit('buttonPressed', {
+                        instance,
+                        buttonName: btnName,
+                        mode: 'double_tap'
+                    });
+                    this.lastPressTime[instance][b] = 0; // Reset
+                } 
+                else {
+                    // Premier relâchement - attendre pour voir si double tap
+                    this.lastPressTime[instance][b] = now;
+                    
+                    const checkForDoubleTap = () => {
+                        // Si aucun second appui n'a été détecté, émettre simple press
+                        if (this.lastPressTime[instance][b] === now) {
+                            this.emit('buttonPressed', {
+                                instance,
+                                buttonName: btnName,
+                                mode: ''
+                            });
+                            this.lastPressTime[instance][b] = 0;
+                        }
+                    };
+                    setTimeout(checkForDoubleTap, this.DOUBLE_TAP_DELAY + 50);
+                }
+                
+                this.pressStartTime[instance][b] = 0;
+            }
+
             this.lastButtonStates[instance][b] = pressed;
         }
     }
@@ -149,14 +205,28 @@ export class GamepadHandler {
 
     processAxis(deviceMap, val, instance, axisIndex) {
         let axisName = `js${instance}_${deviceMap.axes_map[axisIndex]}`;
-        let lastValue = this.lastAxesStates[instance] ? this.lastAxesStates[instance][axisIndex] : 0;
+        let lastValue = this.lastAxesStates[instance][axisIndex] || 0;
+        
+        // Définir des seuils pour éviter les oscillations
+        const THRESHOLD = 0.5;          // Seuil de détection d'activation
+        const DEADZONE = 0.1;           // Zone morte pour éviter les petites variations
+        const CHANGE_THRESHOLD = 0.2;   // Seuil de changement significatif
 
-        if (Math.abs(val) > 0.5 && Math.abs(lastValue) < 0.5) {
-            this.emit('axisMoved', {
-                instance,
-                axisName: axisName,
-                value: val
-            });
+        // Détecter les changements significatifs de l'axe
+        let wasActive = Math.abs(lastValue) > THRESHOLD;
+        let isActive = Math.abs(val) > THRESHOLD;
+        let hasChangedSignificantly = Math.abs(val - lastValue) > CHANGE_THRESHOLD;
+
+        // Changement d'état : inactif -> actif ou changement significatif quand actif
+        if ((!wasActive && isActive) || (isActive && hasChangedSignificantly)) {
+            // Ignorer les petites variations autour de zéro
+            if (Math.abs(val) > DEADZONE) {
+                this.emit('axisMoved', {
+                    instance,
+                    axisName,
+                    value: val
+                });
+            }
         }
     }
 

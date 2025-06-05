@@ -13,7 +13,8 @@ export class UIHandler {
     }
 
     handleButtonPress({ instance, buttonName, mode }) {
-        this.showOverlay(buttonName);
+        const displayText = `${buttonName} ${mode ? `[${mode.toUpperCase()}]` : ''}`;
+        this.showOverlay(displayText);
         if (this.getActiveInput()) {
             document.activeElement.value = buttonName;
         } else {
