@@ -14,6 +14,7 @@ export class GamepadHandler {
         this.currentHatIndex = {};
         this.lastPressTime = {};  // Pour le double tap
         this.pressStartTime = {}; // Pour le hold
+        this.doubleTapTimeouts = {}; // Pour annuler les timeouts en attente
         
         // États des hats pour la détection des modes
         this.lastHatStates = {};     // État des directions de hat (pressées/relâchées)
@@ -35,6 +36,7 @@ export class GamepadHandler {
             if (instance) {
                 this.lastAxesStates[instance] = new Array(gp.axes.length).fill(0);
                 this.lastButtonStates[instance] = new Array(gp.buttons.length).fill(false);
+                this.doubleTapTimeouts[instance] = {};
                 this.lastHatStates[instance] = {};
                 this.hatPressTime[instance] = {};
                 this.hatLastReleaseTime[instance] = {};
@@ -115,6 +117,7 @@ export class GamepadHandler {
             this.lastButtonStates[instance] = [];
             this.lastPressTime[instance] = {};
             this.pressStartTime[instance] = {};
+            this.doubleTapTimeouts[instance] = {};
         }
         
         const now = Date.now();
@@ -156,6 +159,11 @@ export class GamepadHandler {
                     // Premier relâchement - attendre pour voir si double tap
                     this.lastPressTime[instance][b] = now;
                     
+                    // Annuler tout timeout existant pour ce bouton
+                    if (this.doubleTapTimeouts[instance][b]) {
+                        clearTimeout(this.doubleTapTimeouts[instance][b]);
+                    }
+                    
                     const checkForDoubleTap = () => {
                         // Si aucun second appui n'a été détecté, émettre simple press
                         if (this.lastPressTime[instance][b] === now) {
@@ -166,8 +174,11 @@ export class GamepadHandler {
                             });
                             this.lastPressTime[instance][b] = 0;
                         }
+                        // Nettoyer la référence du timeout
+                        this.doubleTapTimeouts[instance][b] = null;
                     };
-                    setTimeout(checkForDoubleTap, this.DOUBLE_TAP_DELAY + 50);
+                    
+                    this.doubleTapTimeouts[instance][b] = setTimeout(checkForDoubleTap, this.DOUBLE_TAP_DELAY + 50);
                 }
                 
                 this.pressStartTime[instance][b] = 0;

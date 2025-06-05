@@ -3,24 +3,36 @@ export class UIHandler {
     constructor(bindingsHandler) {
         this.overlay = this.createOverlay();
         this.bindingsHandler = bindingsHandler;
+        this.scrollTimeout = null;
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        window.addEventListener('buttonPressed', (e) => this.handleButtonPress(e.detail));
-        window.addEventListener('axisMoved', (e) => this.handleAxisMove(e.detail));
-        window.addEventListener('hatMoved', (e) => this.handleHatMove(e.detail));
+        // Event listeners removed - events are now handled through SCConfigEditor delegation
+        // to avoid double processing of the same events
     }
 
     handleButtonPress({ instance, buttonName, mode }) {
-        const displayText = `${buttonName} ${mode ? `[${mode.toUpperCase()}]` : ''}`;
+        let displayText = buttonName;
+        if (mode === 'hold') {
+            displayText = '[H] ' + buttonName;
+        } else if (mode === 'double_tap') {
+            displayText = '[DT] ' + buttonName;
+        }
+        
         this.showOverlay(displayText);
         if (this.getActiveInput()) {
             document.activeElement.value = buttonName;
         } else {
-            const rows = this.bindingsHandler.findMappingRows('button', instance, buttonName, mode);
-            const row = this.bindingsHandler.cycleRows(rows, buttonName, this.bindingsHandler.currentButtonIndex);
-            if (row) this.highlightRow(row);
+            // Extraire le numéro de bouton de buttonName (ex: js1_button1 -> 1)
+            const buttonMatch = buttonName.match(/button(\d+)$/);
+            const buttonNumber = buttonMatch ? buttonMatch[1] : null;
+            
+            if (buttonNumber) {
+                const rows = this.bindingsHandler.findMappingRows('button', instance, buttonNumber, mode);
+                const row = this.bindingsHandler.cycleRows(rows, buttonName, this.bindingsHandler.currentButtonIndex);
+                if (row) this.highlightRow(row);
+            }
         }
     }
 
@@ -29,14 +41,24 @@ export class UIHandler {
         if (this.getActiveInput()) {
             document.activeElement.value = axisName;
         } else {
-            const rows = this.bindingsHandler.findMappingRows('axis', instance, axisName);
+            // Extraire le nom de l'axe sans le préfixe (ex: js1_axis9 -> axis9)
+            const axisMatch = axisName.match(/^js\d+_(.+)$/);
+            const cleanAxisName = axisMatch ? axisMatch[1] : axisName;
+            
+            const rows = this.bindingsHandler.findMappingRows('axis', instance, cleanAxisName);
             const row = this.bindingsHandler.cycleRows(rows, axisName, this.bindingsHandler.currentAxisIndex);
             if (row) this.highlightRow(row);
         }
     }
 
     handleHatMove({ instance, hatName, direction, mode }) {
-        const displayText = `${hatName} ${mode ? `[${mode.toUpperCase()}]` : ''}`;
+        let displayText = hatName;
+        if (mode === 'hold') {
+            displayText = '[H] ' + hatName;
+        } else if (mode === 'double_tap') {
+            displayText = '[DT] ' + hatName;
+        }
+        
         this.showOverlay(displayText);
         if (this.getActiveInput()) {
             document.activeElement.value = hatName;
@@ -90,6 +112,15 @@ export class UIHandler {
     highlightRow(row) {
         this.clearAllHighlights();
         row.style.background = '#ffe066';
-        row.scrollIntoView({behavior: 'smooth', block: 'center'});
+        
+        // Annuler tout scroll en cours avant de démarrer le nouveau
+        if (this.scrollTimeout) {
+            clearTimeout(this.scrollTimeout);
+        }
+        
+        // Défilement avec un petit délai pour éviter les conflits
+        this.scrollTimeout = setTimeout(() => {
+            row.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }, 50);
     }
 }

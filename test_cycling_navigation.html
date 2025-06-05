@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Cycling Navigation System</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f0f0f0; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        #overlay { 
+            position: fixed; 
+            top: 30px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            background: #222; 
+            color: white; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            display: none; 
+            z-index: 1000;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #005a8a;
+        }
+        .bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .bindings-table th, .bindings-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .bindings-table th {
+            background: #f5f5f5;
+        }
+        .highlighted-row {
+            background: #ffe066 !important;
+        }
+        #log { 
+            border: 1px solid #ccc; 
+            height: 200px; 
+            overflow-y: scroll; 
+            padding: 10px; 
+            background: #f9f9f9;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test du Système de Navigation Cyclique</h1>
+        
+        <div class="card">
+            <h2>Description du Test</h2>
+            <p>Ce test simule un fichier de profil avec plusieurs bindings pour les mêmes entrées gamepad. Quand vous appuyez plusieurs fois de suite sur le même bouton, le système devrait naviguer cycliquement entre les différents bindings.</p>
+            <p><strong>Instructions :</strong> Cliquez plusieurs fois de suite sur le même bouton pour tester le cycling. L'overlay affiche l'input détecté et les lignes du tableau sont surlignées en jaune.</p>
+        </div>
+
+        <div class="card">
+            <h3>Boutons de Test</h3>
+            <div class="test-grid">
+                <button class="test-button" onclick="simulateInput('button', 'js1_button1', '')">Button 1 Simple (x3 bindings)</button>
+                <button class="test-button" onclick="simulateInput('button', 'js1_button2', '')">Button 2 Simple (x2 bindings)</button>
+                <button class="test-button" onclick="simulateInput('button', 'js1_button1', 'hold')">Button 1 [HOLD] (x2 bindings)</button>
+                <button class="test-button" onclick="simulateInput('hat', 'js1_hat1_up', '')">HAT UP Simple (x2 bindings)</button>
+                <button class="test-button" onclick="simulateInput('axis', 'js1_x', '')">Axis X (x1 binding)</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Tableau des Bindings Simulé</h3>
+            <table class="bindings-table" id="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Sub Category</th>
+                        <th>Action</th>
+                        <th>Input</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- js1_button1 - 3 bindings simples -->
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>Acceleration</td>
+                        <td>Throttle Forward</td>
+                        <td><input name="input[0]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[0]" value="" type="text"></td>
+                        <td><input name="value[0]" value="" type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>Strafe</td>
+                        <td>Strafe Forward</td>
+                        <td><input name="input[1]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[1]" value="" type="text"></td>
+                        <td><input name="value[1]" value="" type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicles - Cockpit</td>
+                        <td>Power</td>
+                        <td>Flight Ready</td>
+                        <td><input name="input[2]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[2]" value="" type="text"></td>
+                        <td><input name="value[2]" value="" type="text"></td>
+                    </tr>
+                    
+                    <!-- js1_button2 - 2 bindings simples -->
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>Brake</td>
+                        <td>Space Brake</td>
+                        <td><input name="input[3]" value="js1_button2" type="text"></td>
+                        <td><input name="opts[3]" value="" type="text"></td>
+                        <td><input name="value[3]" value="" type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicles - Weapons</td>
+                        <td>Firing</td>
+                        <td>Fire Primary</td>
+                        <td><input name="input[4]" value="js1_button2" type="text"></td>
+                        <td><input name="opts[4]" value="" type="text"></td>
+                        <td><input name="value[4]" value="" type="text"></td>
+                    </tr>
+                    
+                    <!-- js1_button1 mode HOLD - 2 bindings -->
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>Quantum</td>
+                        <td>Quantum Drive (Hold)</td>
+                        <td><input name="input[5]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[5]" value="activationmode" type="text"></td>
+                        <td><input name="value[5]" value="hold" type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicles - Cockpit</td>
+                        <td>Lights</td>
+                        <td>Toggle Landing Lights (Hold)</td>
+                        <td><input name="input[6]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[6]" value="activationmode" type="text"></td>
+                        <td><input name="value[6]" value="hold" type="text"></td>
+                    </tr>
+                    
+                    <!-- js1_hat1_up - 2 bindings simples -->
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>View</td>
+                        <td>Look Up</td>
+                        <td><input name="input[7]" value="js1_hat1_up" type="text"></td>
+                        <td><input name="opts[7]" value="" type="text"></td>
+                        <td><input name="value[7]" value="" type="text"></td>
+                    </tr>
+                    <tr>
+                        <td>Vehicles - Targeting</td>
+                        <td>Selection</td>
+                        <td>Target Nearest Enemy</td>
+                        <td><input name="input[8]" value="js1_hat1_up" type="text"></td>
+                        <td><input name="opts[8]" value="" type="text"></td>
+                        <td><input name="value[8]" value="" type="text"></td>
+                    </tr>
+                    
+                    <!-- js1_x axis - 1 binding -->
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>Pitch/Yaw</td>
+                        <td>Pitch</td>
+                        <td><input name="input[9]" value="js1_x" type="text"></td>
+                        <td><input name="opts[9]" value="" type="text"></td>
+                        <td><input name="value[9]" value="" type="text"></td>
+                    </tr>
+                    
+                    <!-- Quelques bindings vides pour tester le filtre -->
+                    <tr>
+                        <td>Flight Movement</td>
+                        <td>Roll</td>
+                        <td>Roll Left/Right</td>
+                        <td><input name="input[10]" value="" type="text"></td>
+                        <td><input name="opts[10]" value="" type="text"></td>
+                        <td><input name="value[10]" value="" type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>Log des Tests</h3>
+            <button onclick="clearLog()">Effacer Log</button>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <div id="overlay"></div>
+
+    <script type="module">
+        import { UIHandler } from './assets/js/modules/uiHandler.js';
+        import { BindingsHandler } from './assets/js/modules/bindingsHandler.js';
+
+        // Initialiser les gestionnaires
+        const bindingsHandler = new BindingsHandler();
+        const uiHandler = new UIHandler(bindingsHandler);
+        
+        // Logger
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : type === 'warning' ? 'orange' : 'black';
+            logDiv.innerHTML += `<div style="color: ${color}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Fonction pour effacer le log
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+        
+        // Simulation d'input pour test
+        window.simulateInput = function(inputType, inputName, mode) {
+            log(`Test ${inputType.toUpperCase()}: ${inputName} ${mode ? `[${mode.toUpperCase()}]` : ''}`, 'info');
+            
+            // Extraire les paramètres selon le type d'input
+            let jsIdx, value, hatDir;
+            
+            switch(inputType) {
+                case 'button':
+                    const buttonMatch = inputName.match(/^js(\d+)_button(\d+)$/);
+                    if (buttonMatch) {
+                        jsIdx = buttonMatch[1];
+                        value = buttonMatch[2];
+                        
+                        const rows = bindingsHandler.findRowsForButton(jsIdx, value, mode);
+                        log(`Trouvé ${rows.length} binding(s) pour ${inputName} ${mode || 'simple'}`, rows.length > 0 ? 'success' : 'warning');
+                        
+                        if (rows.length > 0) {
+                            const selectedRow = bindingsHandler.cycleRows(rows, inputName, bindingsHandler.currentButtonIndex);
+                            if (selectedRow) {
+                                uiHandler.highlightRow(selectedRow);
+                                const action = selectedRow.cells[2].textContent;
+                                log(`Sélectionné: ${action}`, 'success');
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'hat':
+                    const hatMatch = inputName.match(/^js(\d+)_hat\d+_(.+)$/);
+                    if (hatMatch) {
+                        jsIdx = hatMatch[1];
+                        hatDir = hatMatch[2];
+                        
+                        const rows = bindingsHandler.findRowsForHat(jsIdx, hatDir, mode);
+                        log(`Trouvé ${rows.length} binding(s) pour ${inputName} ${mode || 'simple'}`, rows.length > 0 ? 'success' : 'warning');
+                        
+                        if (rows.length > 0) {
+                            const selectedRow = bindingsHandler.cycleRows(rows, inputName, bindingsHandler.currentHatIndex);
+                            if (selectedRow) {
+                                uiHandler.highlightRow(selectedRow);
+                                const action = selectedRow.cells[2].textContent;
+                                log(`Sélectionné: ${action}`, 'success');
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'axis':
+                    const axisMatch = inputName.match(/^js(\d+)_(.+)$/);
+                    if (axisMatch) {
+                        jsIdx = axisMatch[1];
+                        value = axisMatch[2];
+                        
+                        const rows = bindingsHandler.findRowsForAxis(jsIdx, value);
+                        log(`Trouvé ${rows.length} binding(s) pour ${inputName}`, rows.length > 0 ? 'success' : 'warning');
+                        
+                        if (rows.length > 0) {
+                            const selectedRow = bindingsHandler.cycleRows(rows, inputName, bindingsHandler.currentAxisIndex);
+                            if (selectedRow) {
+                                uiHandler.highlightRow(selectedRow);
+                                const action = selectedRow.cells[2].textContent;
+                                log(`Sélectionné: ${action}`, 'success');
+                            }
+                        }
+                    }
+                    break;
+            }
+            
+            // Afficher l'overlay
+            let displayText = inputName;
+            if (mode === 'hold') {
+                displayText = '[H] ' + inputName;
+            } else if (mode === 'double_tap') {
+                displayText = '[DT] ' + inputName;
+            }
+            uiHandler.showOverlay(displayText);
+        };
+        
+        // Initialisation
+        log('🎮 Système de test de navigation cyclique initialisé');
+        log('📋 Cliquez plusieurs fois de suite sur le même bouton pour tester le cycling');
+        log('🔍 Les indices de cycle sont stockés séparément pour boutons/axes/hats');
+        
+        // Afficher l'état initial des indices
+        setInterval(() => {
+            const buttonIndices = JSON.stringify(bindingsHandler.currentButtonIndex);
+            const axisIndices = JSON.stringify(bindingsHandler.currentAxisIndex);
+            const hatIndices = JSON.stringify(bindingsHandler.currentHatIndex);
+            
+            if (buttonIndices !== '{}' || axisIndices !== '{}' || hatIndices !== '{}') {
+                console.log('État des indices:', {
+                    buttons: bindingsHandler.currentButtonIndex,
+                    axes: bindingsHandler.currentAxisIndex,
+                    hats: bindingsHandler.currentHatIndex,
+                    lastInput: bindingsHandler.lastInput,
+                    lastTime: bindingsHandler.lastInputTime
+                });
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

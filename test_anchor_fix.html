@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction Ancrage</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .log { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 15px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; margin: 10px 0; }
+        .button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 4px; cursor: pointer; }
+        .button:hover { background: #0056b3; }
+        .bindings-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .bindings-table th, .bindings-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .bindings-table th { background-color: #f2f2f2; }
+        .bindings-table tr { transition: background-color 0.3s; }
+        .highlighted { background-color: #ffe066 !important; }
+        input[type="text"] { width: 100%; padding: 4px; border: 1px solid #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Correction Ancrage</h1>
+        
+        <div class="status success" id="status">
+            <strong>Objectif:</strong> Vérifier que l'ancrage fonctionne pour les boutons après correction
+        </div>
+
+        <div>
+            <h3>Tests de Correction</h3>
+            <button class="button" onclick="testButtonAnchor()">🎮 Test Ancrage Bouton (Corrigé)</button>
+            <button class="button" onclick="testAxisAnchor()">📊 Test Ancrage Axe (Corrigé)</button>
+            <button class="button" onclick="testHatAnchor()">🧭 Test Ancrage HAT</button>
+            <button class="button" onclick="clearLog()">🧹 Effacer Log</button>
+        </div>
+
+        <div id="log" class="log">Console de test...<br></div>
+
+        <div>
+            <h3>Bindings de Test</h3>
+            <table class="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Sub-Category</th>
+                        <th>Action</th>
+                        <th>Input</th>
+                        <th>Opts</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Boutons de test -->
+                    <tr id="binding-button-0">
+                        <td>Flight Movement</td>
+                        <td>Targeting</td>
+                        <td>Target Nearest Enemy</td>
+                        <td><input name="input[0]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[0]" value="" type="text"></td>
+                        <td><input name="value[0]" value="" type="text"></td>
+                    </tr>
+                    <tr id="binding-button-1">
+                        <td>Flight Movement</td>
+                        <td>Targeting</td>
+                        <td>Target Next Enemy</td>
+                        <td><input name="input[1]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[1]" value="activationmode" type="text"></td>
+                        <td><input name="value[1]" value="hold" type="text"></td>
+                    </tr>
+                    <tr id="binding-button-2">
+                        <td>Flight Movement</td>
+                        <td>Targeting</td>
+                        <td>Target Next Friendly</td>
+                        <td><input name="input[2]" value="js1_button1" type="text"></td>
+                        <td><input name="opts[2]" value="activationmode" type="text"></td>
+                        <td><input name="value[2]" value="double_tap" type="text"></td>
+                    </tr>
+                    
+                    <!-- Axes de test -->
+                    <tr id="binding-axis-0">
+                        <td>Flight Movement</td>
+                        <td>Yaw</td>
+                        <td>Yaw Left/Right</td>
+                        <td><input name="input[3]" value="js1_axis9" type="text"></td>
+                        <td><input name="opts[3]" value="" type="text"></td>
+                        <td><input name="value[3]" value="" type="text"></td>
+                    </tr>
+                    <tr id="binding-axis-1">
+                        <td>Flight Movement</td>
+                        <td>Roll</td>
+                        <td>Roll Left/Right</td>
+                        <td><input name="input[4]" value="js1_axis9" type="text"></td>
+                        <td><input name="opts[4]" value="" type="text"></td>
+                        <td><input name="value[4]" value="" type="text"></td>
+                    </tr>
+                    
+                    <!-- HATs de test -->
+                    <tr id="binding-hat-0">
+                        <td>Flight Movement</td>
+                        <td>Power</td>
+                        <td>Power Up</td>
+                        <td><input name="input[5]" value="js1_hat1_up" type="text"></td>
+                        <td><input name="opts[5]" value="" type="text"></td>
+                        <td><input name="value[5]" value="" type="text"></td>
+                    </tr>
+                    <tr id="binding-hat-1">
+                        <td>Flight Movement</td>
+                        <td>Power</td>
+                        <td>Power Down</td>
+                        <td><input name="input[6]" value="js1_hat1_up" type="text"></td>
+                        <td><input name="opts[6]" value="activationmode" type="text"></td>
+                        <td><input name="value[6]" value="hold" type="text"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { UIHandler } from './assets/js/modules/uiHandler.js';
+        import { BindingsHandler } from './assets/js/modules/bindingsHandler.js';
+
+        // Initialiser les gestionnaires
+        const bindingsHandler = new BindingsHandler();
+        const uiHandler = new UIHandler(bindingsHandler);
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const colors = {
+                'info': '#333',
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107'
+            };
+            logDiv.innerHTML += `<div style="color: ${colors[type] || colors.info}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Test d'ancrage pour boutons (CORRIGÉ)
+        window.testButtonAnchor = function() {
+            log('=== Test Ancrage Bouton (Correction appliquée) ===', 'info');
+            
+            // Simuler un appui de bouton avec le format attendu
+            const mockData = {
+                instance: 1,
+                buttonName: 'js1_button1',  // Format complet comme émis par GamepadHandler
+                mode: ''
+            };
+            
+            log(`Paramètres envoyés: instance=${mockData.instance}, buttonName="${mockData.buttonName}", mode="${mockData.mode}"`, 'info');
+            
+            try {
+                uiHandler.handleButtonPress(mockData);
+                log('✅ handleButtonPress exécuté sans erreur', 'success');
+                
+                // Vérifier si une ligne est surlignée
+                const highlighted = document.querySelector('.highlighted, tr[style*="ffe066"]');
+                if (highlighted) {
+                    log(`✅ Ligne surlignée trouvée: ${highlighted.id}`, 'success');
+                    log(`📍 Action: ${highlighted.cells[2]?.textContent}`, 'info');
+                } else {
+                    log('❌ Aucune ligne surlignée trouvée', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        };
+
+        // Test d'ancrage pour axes (CORRIGÉ)
+        window.testAxisAnchor = function() {
+            log('=== Test Ancrage Axe (Correction appliquée) ===', 'info');
+            
+            // Simuler un mouvement d'axe
+            const mockData = {
+                instance: 1,
+                axisName: 'js1_axis9',  // Format complet comme émis par GamepadHandler
+                value: 0.5
+            };
+            
+            log(`Paramètres envoyés: instance=${mockData.instance}, axisName="${mockData.axisName}", value=${mockData.value}`, 'info');
+            
+            try {
+                uiHandler.handleAxisMove(mockData);
+                log('✅ handleAxisMove exécuté sans erreur', 'success');
+                
+                // Vérifier si une ligne est surlignée
+                const highlighted = document.querySelector('.highlighted, tr[style*="ffe066"]');
+                if (highlighted) {
+                    log(`✅ Ligne surlignée trouvée: ${highlighted.id}`, 'success');
+                    log(`📍 Action: ${highlighted.cells[2]?.textContent}`, 'info');
+                } else {
+                    log('❌ Aucune ligne surlignée trouvée', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        };
+
+        // Test d'ancrage pour HAT
+        window.testHatAnchor = function() {
+            log('=== Test Ancrage HAT ===', 'info');
+            
+            // Simuler un mouvement de HAT
+            const mockData = {
+                instance: 1,
+                hatName: 'js1_hat1_up',
+                direction: 'up',
+                mode: ''
+            };
+            
+            log(`Paramètres envoyés: instance=${mockData.instance}, hatName="${mockData.hatName}", direction="${mockData.direction}", mode="${mockData.mode}"`, 'info');
+            
+            try {
+                uiHandler.handleHatMove(mockData);
+                log('✅ handleHatMove exécuté sans erreur', 'success');
+                
+                // Vérifier si une ligne est surlignée
+                const highlighted = document.querySelector('.highlighted, tr[style*="ffe066"]');
+                if (highlighted) {
+                    log(`✅ Ligne surlignée trouvée: ${highlighted.id}`, 'success');
+                    log(`📍 Action: ${highlighted.cells[2]?.textContent}`, 'info');
+                } else {
+                    log('❌ Aucune ligne surlignée trouvée', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                console.error('Erreur détaillée:', error);
+            }
+        };
+
+        // Effacer le log
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = 'Console effacée...<br>';
+        };
+
+        // Initialisation
+        log('🔧 Test de correction d\'ancrage initialisé');
+        log('🎯 Ces tests vérifient que les corrections de format de paramètres fonctionnent');
+    </script>
+</body>
+</html>

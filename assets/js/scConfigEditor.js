@@ -75,58 +75,21 @@ export class SCConfigEditor {
     handleButtonPressed(data) {
         const { instance, buttonName, mode } = data;
         
-        // Afficher dans l'overlay avec le mode
-        let displayText = buttonName;
-        if (mode === 'hold') {
-            displayText += ' [HOLD]';
-        } else if (mode === 'double_tap') {
-            displayText += ' [DOUBLE_TAP]';
-        }
-        
-        this.ui.showOverlay(displayText);
-        
-        // Trouver et surligner les lignes correspondantes
-        const rows = this.bindings.findRowsForButton(buttonName);
-        if (rows.length > 0) {
-            this.bindings.cycleRows(rows);
-        }
+        // Déléguer à UIHandler qui gère déjà la logique complète
+        this.ui.handleButtonPress({ instance, buttonName, mode });
     }
     
     handleAxisMoved(data) {
         const { instance, axisName, value } = data;
         
-        // Afficher dans l'overlay
-        this.ui.showOverlay(`${axisName}: ${value.toFixed(2)}`);
-        
-        // Trouver et surligner les lignes correspondantes
-        const rows = this.bindings.findRowsForAxis(axisName);
-        if (rows.length > 0) {
-            this.bindings.cycleRows(rows);
-        }
+        // Déléguer à UIHandler qui gère déjà la logique complète  
+        this.ui.handleAxisMove({ instance, axisName, value });
     }
     
     handleHatMoved(data) {
         const { instance, hatName, direction, mode } = data;
         
-        // Afficher dans l'overlay avec le mode
-        let displayText = hatName;
-        if (mode === 'hold') {
-            displayText += ' [HOLD]';
-        } else if (mode === 'double_tap') {
-            displayText += ' [DOUBLE_TAP]';
-        }
-        
-        this.ui.showOverlay(displayText);
-        
-        // Trouver et surligner les lignes correspondantes
-        // hatName format: "js1_hat1_up" -> extract instance and direction
-        const hatMatch = hatName.match(/^js(\d+)_hat\d+_(.+)$/);
-        if (hatMatch) {
-            const [, jsIdx, hatDir] = hatMatch;
-            const rows = this.bindings.findRowsForHat(jsIdx, hatDir);
-            if (rows.length > 0) {
-                this.bindings.cycleRows(rows);
-            }
-        }
+        // Déléguer à UIHandler qui gère déjà la logique complète
+        this.ui.handleHatMove({ instance, hatName, direction, mode });
     }
 }

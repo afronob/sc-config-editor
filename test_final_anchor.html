@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Final Ancrage - Minimaliste</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .highlighted { background-color: #ffe066 !important; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Test Final - Système d'Ancrage Corrigé</h1>
+    
+    <div id="status">Chargement...</div>
+    
+    <button onclick="testButtonAnchor()">Test Bouton</button>
+    <button onclick="testAxisAnchor()">Test Axe</button>
+    
+    <table>
+        <tr><td>Input</td><td><input name="input[0]" value="js1_button1"></td><td>Fire</td></tr>
+        <tr><td>Input</td><td><input name="input[1]" value="js1_button1"></td><td>Secondary Fire</td></tr>
+        <tr><td>Input</td><td><input name="input[2]" value="js1_axis9"></td><td>Pitch</td></tr>
+        <tr><td>Input</td><td><input name="input[3]" value="js1_axis9"></td><td>Yaw</td></tr>
+    </table>
+
+    <script type="module">
+        import { SCConfigEditor } from './assets/js/scConfigEditor.js';
+        
+        let editor;
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                editor = new SCConfigEditor();
+                document.getElementById('status').innerHTML = '<div class="result success">✅ Système chargé avec succès</div>';
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<div class="result error">❌ Erreur: ${error.message}</div>`;
+            }
+        });
+        
+        window.testButtonAnchor = function() {
+            try {
+                // Test du parsing et de l'ancrage pour bouton
+                const buttonName = 'js1_button1';
+                const buttonMatch = buttonName.match(/button(\d+)$/);
+                const buttonNumber = buttonMatch ? buttonMatch[1] : null;
+                
+                if (buttonNumber) {
+                    const rows = editor.bindingsHandler.findMappingRows('button', 1, buttonNumber, '');
+                    console.log(`Bouton ${buttonName} -> Numéro ${buttonNumber} -> ${rows.length} lignes trouvées`);
+                    
+                    if (rows.length > 0) {
+                        const row = editor.bindingsHandler.cycleRows(rows, buttonName, editor.bindingsHandler.currentButtonIndex);
+                        if (row) {
+                            editor.uiHandler.highlightRow(row);
+                            document.getElementById('status').innerHTML = '<div class="result success">✅ Test bouton réussi - Ligne mise en surbrillance</div>';
+                        } else {
+                            throw new Error('cycleRows a retourné null');
+                        }
+                    } else {
+                        throw new Error('Aucune ligne trouvée');
+                    }
+                } else {
+                    throw new Error('Parsing du bouton échoué');
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<div class="result error">❌ Test bouton échoué: ${error.message}</div>`;
+            }
+        };
+        
+        window.testAxisAnchor = function() {
+            try {
+                // Test du parsing et de l'ancrage pour axe
+                const axisName = 'js1_axis9';
+                const axisMatch = axisName.match(/^js\d+_(.+)$/);
+                const cleanAxisName = axisMatch ? axisMatch[1] : axisName;
+                
+                const rows = editor.bindingsHandler.findMappingRows('axis', 1, cleanAxisName);
+                console.log(`Axe ${axisName} -> ${cleanAxisName} -> ${rows.length} lignes trouvées`);
+                
+                if (rows.length > 0) {
+                    const row = editor.bindingsHandler.cycleRows(rows, axisName, editor.bindingsHandler.currentAxisIndex);
+                    if (row) {
+                        editor.uiHandler.highlightRow(row);
+                        document.getElementById('status').innerHTML = '<div class="result success">✅ Test axe réussi - Ligne mise en surbrillance</div>';
+                    } else {
+                        throw new Error('cycleRows a retourné null');
+                    }
+                } else {
+                    throw new Error('Aucune ligne trouvée');
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = `<div class="result error">❌ Test axe échoué: ${error.message}</div>`;
+            }
+        };
+    </script>
+</body>
+</html>
