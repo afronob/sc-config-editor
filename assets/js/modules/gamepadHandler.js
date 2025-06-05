@@ -187,11 +187,6 @@ export class GamepadHandler {
             let val = gp.axes[a];
             let hatDetected = false;
 
-            // Debug temporaire pour l'axe 2
-            if (a === 2 && Math.abs(val) > 0.05) {
-                console.log(`Axe 2 détecté: valeur=${val.toFixed(3)}, dernière valeur=${this.lastAxesStates[instance][a]?.toFixed(3) || 'undefined'}`);
-            }
-
             // Gestion des hats - vérifier avec l'index comme chaîne ET comme nombre
             let hatConfig = null;
             if (deviceMap.hats) {
@@ -231,11 +226,6 @@ export class GamepadHandler {
             let isActive = (parseInt(d.axis) === axisIndex && val >= d.value_min && val <= d.value_max);
             let wasActive = this.lastHatStates[instance][hatName] || false;
             
-            // Debug: Afficher les changements d'état des hats
-            if (isActive !== wasActive) {
-                console.log(`Hat ${hatName}: ${wasActive ? 'RELEASED' : 'PRESSED'} (axe ${axisIndex}, val: ${val.toFixed(2)})`);
-            }
-            
             // Début d'activation de direction
             if (isActive && !wasActive) {
                 this.hatPressTime[instance][hatName] = now;
@@ -246,8 +236,6 @@ export class GamepadHandler {
                 const pressDuration = now - (this.hatPressTime[instance][hatName] || 0);
                 const lastReleaseTime = this.hatLastReleaseTime[instance][hatName] || 0;
                 const timeSinceLastRelease = now - lastReleaseTime;
-                
-                console.log(`Hat ${hatName} released after ${pressDuration}ms, time since last release: ${timeSinceLastRelease}ms`);
                 
                 // Détecter le type d'activation
                 if (pressDuration >= this.HOLD_DELAY) {
