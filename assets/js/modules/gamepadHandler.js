@@ -15,6 +15,11 @@ export class GamepadHandler {
         this.lastPressTime = {};  // Pour le double tap
         this.pressStartTime = {}; // Pour le hold
         
+        // États des hats pour la détection des modes
+        this.lastHatStates = {};     // État des directions de hat (pressées/relâchées)
+        this.hatPressTime = {};      // Temps de début d'appui pour chaque direction
+        this.hatLastReleaseTime = {}; // Temps du dernier relâchement pour double tap
+        
         // Binding des méthodes
         this.handleInput = this.handleInput.bind(this);
         this.init = this.init.bind(this);
@@ -30,6 +35,9 @@ export class GamepadHandler {
             if (instance) {
                 this.lastAxesStates[instance] = new Array(gp.axes.length).fill(0);
                 this.lastButtonStates[instance] = new Array(gp.buttons.length).fill(false);
+                this.lastHatStates[instance] = {};
+                this.hatPressTime[instance] = {};
+                this.hatLastReleaseTime[instance] = {};
             }
         }
         requestAnimationFrame(this.handleInput);
@@ -188,19 +196,91 @@ export class GamepadHandler {
     }
 
     processHat(hat, val, instance, axisIndex) {
+        if (!this.lastHatStates[instance]) {
+            this.lastHatStates[instance] = {};
+            this.hatPressTime[instance] = {};
+            this.hatLastReleaseTime[instance] = {};
+        }
+
+        const now = Date.now();
+        let hatDetected = false;
+
+        // Vérifier chaque direction du hat
         for (const dir in hat.directions) {
             const d = hat.directions[dir];
-            if (parseInt(d.axis) === axisIndex && val >= d.value_min && val <= d.value_max) {
-                const xmlName = `js${instance}_hat1_${dir}`;
-                this.emit('hatMoved', {
-                    instance,
-                    hatName: xmlName,
-                    direction: dir
-                });
-                return true;
+            const hatName = `js${instance}_hat1_${dir}`;
+            
+            // Vérifier si cette direction est actuellement active
+            let isActive = (parseInt(d.axis) === axisIndex && val >= d.value_min && val <= d.value_max);
+            let wasActive = this.lastHatStates[instance][hatName] || false;
+            
+            // Debug: Afficher les changements d'état des hats
+            if (isActive !== wasActive) {
+                console.log(`Hat ${hatName}: ${wasActive ? 'RELEASED' : 'PRESSED'} (axe ${axisIndex}, val: ${val.toFixed(2)})`);
             }
+            
+            // Début d'activation de direction
+            if (isActive && !wasActive) {
+                this.hatPressTime[instance][hatName] = now;
+                hatDetected = true;
+            }
+            // Fin d'activation de direction - Traitement de TOUS les modes ici
+            else if (!isActive && wasActive) {
+                const pressDuration = now - (this.hatPressTime[instance][hatName] || 0);
+                const lastReleaseTime = this.hatLastReleaseTime[instance][hatName] || 0;
+                const timeSinceLastRelease = now - lastReleaseTime;
+                
+                console.log(`Hat ${hatName} released after ${pressDuration}ms, time since last release: ${timeSinceLastRelease}ms`);
+                
+                // Détecter le type d'activation
+                if (pressDuration >= this.HOLD_DELAY) {
+                    // HOLD détecté
+                    this.emit('hatMoved', {
+                        instance,
+                        hatName,
+                        direction: dir,
+                        mode: 'hold'
+                    });
+                    this.hatLastReleaseTime[instance][hatName] = 0; // Reset
+                } 
+                else if (lastReleaseTime > 0 && timeSinceLastRelease <= this.DOUBLE_TAP_DELAY) {
+                    // DOUBLE TAP détecté (deuxième relâchement dans le délai)
+                    this.emit('hatMoved', {
+                        instance,
+                        hatName,
+                        direction: dir,
+                        mode: 'double_tap'
+                    });
+                    this.hatLastReleaseTime[instance][hatName] = 0; // Reset
+                } 
+                else {
+                    // Premier relâchement - attendre pour voir si double tap
+                    this.hatLastReleaseTime[instance][hatName] = now;
+                    
+                    const checkForDoubleTap = () => {
+                        // Si aucun second appui n'a été détecté, émettre activation simple
+                        if (this.hatLastReleaseTime[instance][hatName] === now) {
+                            this.emit('hatMoved', {
+                                instance,
+                                hatName,
+                                direction: dir,
+                                mode: ''
+                            });
+                            this.hatLastReleaseTime[instance][hatName] = 0;
+                        }
+                    };
+                    setTimeout(checkForDoubleTap, this.DOUBLE_TAP_DELAY + 50);
+                }
+                
+                this.hatPressTime[instance][hatName] = 0;
+                hatDetected = true;
+            }
+            
+            // Mettre à jour l'état
+            this.lastHatStates[instance][hatName] = isActive;
         }
-        return false;
+
+        return hatDetected;
     }
 
     processAxis(deviceMap, val, instance, axisIndex) {

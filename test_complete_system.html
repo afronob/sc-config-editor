@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Complet - SC Config Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .test-button:hover { background: #005a8a; }
+        .test-button.button-test { background: #28a745; }
+        .test-button.hat-test { background: #fd7e14; }
+        .test-button.axis-test { background: #6f42c1; }
+        
+        .status-display {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .log-display {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        
+        .gamepad-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .real-gamepad, .simulated-tests {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        h1 { color: #333; }
+        h2 { color: #495057; border-bottom: 2px solid #007cba; padding-bottom: 5px; }
+        h3 { color: #6c757d; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Test Complet - SC Config Editor</h1>
+    
+    <div class="test-section">
+        <h2>Statut du Système</h2>
+        <div class="gamepad-info">
+            <div class="real-gamepad">
+                <h3>Gamepads Détectés</h3>
+                <div id="gamepadStatus" class="status-display">Aucun gamepad détecté</div>
+            </div>
+            <div class="simulated-tests">
+                <h3>Tests de Simulation</h3>
+                <div id="testStatus" class="status-display">Système initialisé</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Tests des Boutons</h2>
+        <div class="test-grid">
+            <button class="test-button button-test" onclick="simulateInput('button', 'js0_button0', '')">Button 0 Simple</button>
+            <button class="test-button button-test" onclick="simulateInput('button', 'js0_button0', 'hold')">Button 0 [HOLD]</button>
+            <button class="test-button button-test" onclick="simulateInput('button', 'js0_button0', 'double_tap')">Button 0 [DOUBLE_TAP]</button>
+            <button class="test-button button-test" onclick="simulateInput('button', 'js0_button1', '')">Button 1 Simple</button>
+            <button class="test-button button-test" onclick="simulateInput('button', 'js0_button1', 'hold')">Button 1 [HOLD]</button>
+            <button class="test-button button-test" onclick="simulateInput('button', 'js0_button1', 'double_tap')">Button 1 [DOUBLE_TAP]</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Tests des HATs/D-Pad</h2>
+        <div class="test-grid">
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_up', '', 'up')">HAT UP Simple</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_up', 'hold', 'up')">HAT UP [HOLD]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_up', 'double_tap', 'up')">HAT UP [DOUBLE_TAP]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_down', '', 'down')">HAT DOWN Simple</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_down', 'hold', 'down')">HAT DOWN [HOLD]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_down', 'double_tap', 'down')">HAT DOWN [DOUBLE_TAP]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_left', '', 'left')">HAT LEFT Simple</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_left', 'hold', 'left')">HAT LEFT [HOLD]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_left', 'double_tap', 'left')">HAT LEFT [DOUBLE_TAP]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_right', '', 'right')">HAT RIGHT Simple</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_right', 'hold', 'right')">HAT RIGHT [HOLD]</button>
+            <button class="test-button hat-test" onclick="simulateInput('hat', 'js0_hat1_right', 'double_tap', 'right')">HAT RIGHT [DOUBLE_TAP]</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Tests des Axes</h2>
+        <div class="test-grid">
+            <button class="test-button axis-test" onclick="simulateInput('axis', 'js0_x', '')">Axe X (Positif)</button>
+            <button class="test-button axis-test" onclick="simulateInput('axis', 'js0_x', '', '', -0.8)">Axe X (Négatif)</button>
+            <button class="test-button axis-test" onclick="simulateInput('axis', 'js0_y', '')">Axe Y (Positif)</button>
+            <button class="test-button axis-test" onclick="simulateInput('axis', 'js0_y', '', '', -0.8)">Axe Y (Négatif)</button>
+            <button class="test-button axis-test" onclick="simulateInput('axis', 'js0_z', '')">Axe Z (Positif)</button>
+            <button class="test-button axis-test" onclick="simulateInput('axis', 'js0_rz', '')">Axe RZ (Positif)</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Journal des Événements</h2>
+        <div id="eventLog" class="log-display"></div>
+        <button class="test-button" onclick="clearLog()" style="margin-top: 10px;">Effacer le Journal</button>
+    </div>
+
+    <script type="module">
+        import { UIHandler } from './assets/js/modules/uiHandler.js';
+        import { BindingsHandler } from './assets/js/modules/bindingsHandler.js';
+        import { GamepadHandler } from './assets/js/modules/gamepadHandler.js';
+
+        // Initialiser les gestionnaires
+        const bindingsHandler = new BindingsHandler();
+        const uiHandler = new UIHandler(bindingsHandler);
+        const gamepadHandler = new GamepadHandler();
+        
+        let eventCounter = 0;
+        
+        // Logger amélioré
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('eventLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                'info': '#0f0',
+                'button': '#28a745',
+                'hat': '#fd7e14', 
+                'axis': '#6f42c1',
+                'error': '#dc3545'
+            };
+            
+            eventCounter++;
+            const color = colors[type] || colors.info;
+            logDiv.innerHTML += `<span style="color: ${color}">[${eventCounter.toString().padStart(3, '0')}] ${timestamp}: ${message}</span><br>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Fonction de simulation unifiée
+        window.simulateInput = function(inputType, inputName, mode, direction = '', value = 0.8) {
+            const instance = 0;
+            
+            log(`Simulation ${inputType.toUpperCase()}: ${inputName} ${mode ? `[${mode.toUpperCase()}]` : ''}`, inputType);
+            
+            switch(inputType) {
+                case 'button':
+                    const buttonEvent = new CustomEvent('buttonPressed', { 
+                        detail: { 
+                            instance, 
+                            buttonName: inputName, 
+                            mode 
+                        } 
+                    });
+                    window.dispatchEvent(buttonEvent);
+                    break;
+                    
+                case 'hat':
+                    const hatEvent = new CustomEvent('hatMoved', { 
+                        detail: { 
+                            instance, 
+                            hatName: inputName, 
+                            direction,
+                            mode 
+                        } 
+                    });
+                    window.dispatchEvent(hatEvent);
+                    break;
+                    
+                case 'axis':
+                    const axisEvent = new CustomEvent('axisMoved', { 
+                        detail: { 
+                            instance, 
+                            axisName: inputName, 
+                            value 
+                        } 
+                    });
+                    window.dispatchEvent(axisEvent);
+                    break;
+            }
+            
+            // Mettre à jour le statut
+            document.getElementById('testStatus').textContent = 
+                `Dernier test: ${inputType.toUpperCase()} ${inputName} ${mode ? `[${mode.toUpperCase()}]` : ''}`;
+        };
+        
+        // Effacer le journal
+        window.clearLog = function() {
+            document.getElementById('eventLog').innerHTML = '';
+            eventCounter = 0;
+            log('Journal effacé', 'info');
+        };
+        
+        // Surveillance des gamepads réels
+        function checkGamepads() {
+            const gamepads = navigator.getGamepads();
+            const statusDiv = document.getElementById('gamepadStatus');
+            
+            let connectedGamepads = [];
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    const gp = gamepads[i];
+                    connectedGamepads.push(`[${i}] ${gp.id}<br>Boutons: ${gp.buttons.length}, Axes: ${gp.axes.length}`);
+                }
+            }
+            
+            if (connectedGamepads.length > 0) {
+                statusDiv.innerHTML = connectedGamepads.join('<br><br>');
+            } else {
+                statusDiv.innerHTML = 'Aucun gamepad détecté<br><small>Connectez un gamepad et appuyez sur un bouton</small>';
+            }
+        }
+        
+        // Écouter les événements de test
+        window.addEventListener('buttonPressed', (e) => {
+            log(`✅ Événement bouton reçu: ${e.detail.buttonName} ${e.detail.mode ? `[${e.detail.mode.toUpperCase()}]` : ''}`, 'button');
+        });
+        
+        window.addEventListener('hatMoved', (e) => {
+            log(`✅ Événement HAT reçu: ${e.detail.hatName} direction=${e.detail.direction} ${e.detail.mode ? `[${e.detail.mode.toUpperCase()}]` : ''}`, 'hat');
+        });
+        
+        window.addEventListener('axisMoved', (e) => {
+            log(`✅ Événement axe reçu: ${e.detail.axisName} value=${e.detail.value.toFixed(2)}`, 'axis');
+        });
+        
+        // Démarrer la surveillance
+        setInterval(checkGamepads, 1000);
+        checkGamepads();
+        
+        // Messages d'initialisation
+        log('🎮 Système de test complet initialisé');
+        log('📋 Utilisez les boutons ci-dessus pour tester les différents types d\'entrées');
+        log('👀 L\'overlay devrait apparaître en haut de la page pour chaque test');
+        log('🔍 Surveillez ce journal pour voir les événements générés');
+        
+        // Test automatique au démarrage
+        setTimeout(() => {
+            log('🧪 Lancement du test automatique...', 'info');
+            simulateInput('button', 'js0_button0', 'hold');
+            setTimeout(() => simulateInput('hat', 'js0_hat1_up', 'double_tap', 'up'), 500);
+            setTimeout(() => simulateInput('axis', 'js0_x', '', '', 0.7), 1000);
+        }, 2000);
+    </script>
+</body>
+</html>

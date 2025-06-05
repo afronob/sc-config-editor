@@ -32,7 +32,14 @@
     <ul>
         <li>Connectez une manette de jeu</li>
         <li>Appuyez sur des boutons pour tester la détection</li>
-        <li>Testez : Appui simple, Double tap (2 appuis rapides), Hold (maintenir 500ms+)</li>
+        <li>Testez le HAT/D-Pad (axe 9 généralement) avec les mêmes modes</li>
+        <li>Modes supportés : 
+            <ul>
+                <li><strong>Appui simple</strong> : Appui normal</li>
+                <li><strong>Double tap</strong> : 2 appuis rapides (≤300ms entre relâchements)</li>
+                <li><strong>Hold</strong> : Maintenir ≥500ms</li>
+            </ul>
+        </li>
     </ul>
     
     <div id="log"></div>
@@ -50,6 +57,16 @@
                 buttons: {
                     1: "js1_button1",
                     2: "js1_button2"
+                },
+                hats: {
+                    9: {
+                        directions: {
+                            "up": { axis: 9, value_min: -1.05, value_max: -0.95 },
+                            "down": { axis: 9, value_min: 0.08, value_max: 0.18 },
+                            "left": { axis: 9, value_min: 0.66, value_max: 0.76 },
+                            "right": { axis: 9, value_min: -0.48, value_max: -0.38 }
+                        }
+                    }
                 }
             }
         ];
@@ -72,6 +89,12 @@
         window.addEventListener('axisMoved', (event) => {
             const { axisName, value } = event.detail;
             log(`Axe bougé: ${axisName} = ${value.toFixed(2)}`);
+        });
+        
+        window.addEventListener('hatMoved', (event) => {
+            const { hatName, direction, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : '';
+            log(`Hat activé: ${hatName} (${direction})${modeText}`);
         });
         
         // Initialiser le système

@@ -106,15 +106,27 @@ export class SCConfigEditor {
     }
     
     handleHatMoved(data) {
-        const { instance, hatName } = data;
+        const { instance, hatName, direction, mode } = data;
         
-        // Afficher dans l'overlay
-        this.ui.showInputOverlay(hatName);
+        // Afficher dans l'overlay avec le mode
+        let displayText = hatName;
+        if (mode === 'hold') {
+            displayText += ' [HOLD]';
+        } else if (mode === 'double_tap') {
+            displayText += ' [DOUBLE_TAP]';
+        }
+        
+        this.ui.showInputOverlay(displayText);
         
         // Trouver et surligner les lignes correspondantes
-        const rows = this.bindings.findRowsForHat(hatName);
-        if (rows.length > 0) {
-            this.bindings.cycleRows(rows);
+        // hatName format: "js1_hat1_up" -> extract instance and direction
+        const hatMatch = hatName.match(/^js(\d+)_hat\d+_(.+)$/);
+        if (hatMatch) {
+            const [, jsIdx, hatDir] = hatMatch;
+            const rows = this.bindings.findRowsForHat(jsIdx, hatDir);
+            if (rows.length > 0) {
+                this.bindings.cycleRows(rows);
+            }
         }
     }
 }

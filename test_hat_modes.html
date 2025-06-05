@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test HAT Modes - SC Config Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .status {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007cba;
+        }
+        
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .controls {
+            background: #fff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #005a8a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test HAT Modes - SC Config Editor</h1>
+    
+    <div class="status">
+        <h3>Statut de connexion Gamepad</h3>
+        <div id="gamepadStatus">Aucun gamepad détecté</div>
+    </div>
+    
+    <div class="controls">
+        <h3>Tests de simulation HAT</h3>
+        <button onclick="simulateHat('up', '')">HAT UP Simple</button>
+        <button onclick="simulateHat('up', 'hold')">HAT UP [HOLD]</button>
+        <button onclick="simulateHat('up', 'double_tap')">HAT UP [DOUBLE_TAP]</button>
+        <br>
+        <button onclick="simulateHat('down', '')">HAT DOWN Simple</button>
+        <button onclick="simulateHat('down', 'hold')">HAT DOWN [HOLD]</button>
+        <button onclick="simulateHat('down', 'double_tap')">HAT DOWN [DOUBLE_TAP]</button>
+        <br>
+        <button onclick="simulateHat('left', '')">HAT LEFT Simple</button>
+        <button onclick="simulateHat('left', 'hold')">HAT LEFT [HOLD]</button>
+        <button onclick="simulateHat('left', 'double_tap')">HAT LEFT [DOUBLE_TAP]</button>
+        <br>
+        <button onclick="simulateHat('right', '')">HAT RIGHT Simple</button>
+        <button onclick="simulateHat('right', 'hold')">HAT RIGHT [HOLD]</button>
+        <button onclick="simulateHat('right', 'double_tap')">HAT RIGHT [DOUBLE_TAP]</button>
+    </div>
+    
+    <div class="log">
+        <div id="log"></div>
+    </div>
+
+    <script type="module">
+        import { UIHandler } from './assets/js/modules/uiHandler.js';
+        import { BindingsHandler } from './assets/js/modules/bindingsHandler.js';
+
+        // Initialiser les gestionnaires
+        const bindingsHandler = new BindingsHandler();
+        const uiHandler = new UIHandler(bindingsHandler);
+        
+        // Logger
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Simulation de HAT pour test
+        window.simulateHat = function(direction, mode) {
+            log(`Simulating HAT ${direction} with mode: ${mode || 'simple'}`);
+            
+            const event = new CustomEvent('hatMoved', { 
+                detail: { 
+                    instance: 0, 
+                    hatName: `js0_hat1_${direction}`, 
+                    direction: direction,
+                    mode: mode
+                } 
+            });
+            
+            window.dispatchEvent(event);
+        };
+        
+        // Surveillance des gamepads
+        function checkGamepads() {
+            const gamepads = navigator.getGamepads();
+            const statusDiv = document.getElementById('gamepadStatus');
+            
+            let connectedGamepads = [];
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    connectedGamepads.push(`${i}: ${gamepads[i].id}`);
+                }
+            }
+            
+            if (connectedGamepads.length > 0) {
+                statusDiv.innerHTML = connectedGamepads.join('<br>');
+            } else {
+                statusDiv.textContent = 'Aucun gamepad détecté';
+            }
+        }
+        
+        // Vérifier les gamepads toutes les secondes
+        setInterval(checkGamepads, 1000);
+        checkGamepads();
+        
+        log('Test HAT Modes initialisé');
+        log('Utilisez les boutons ci-dessus pour tester l\'affichage des modes HAT');
+        log('L\'overlay devrait apparaître en haut de la page avec le texte formaté');
+    </script>
+</body>
+</html>

@@ -35,12 +35,13 @@ export class UIHandler {
         }
     }
 
-    handleHatMove({ instance, hatName, direction }) {
-        this.showOverlay(hatName);
+    handleHatMove({ instance, hatName, direction, mode }) {
+        const displayText = `${hatName} ${mode ? `[${mode.toUpperCase()}]` : ''}`;
+        this.showOverlay(displayText);
         if (this.getActiveInput()) {
             document.activeElement.value = hatName;
         } else {
-            const rows = this.bindingsHandler.findMappingRows('hat', instance, direction);
+            const rows = this.bindingsHandler.findMappingRows('hat', instance, direction, mode);
             const row = this.bindingsHandler.cycleRows(rows, hatName, this.bindingsHandler.currentHatIndex);
             if (row) this.highlightRow(row);
         }

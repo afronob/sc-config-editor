@@ -20,10 +20,5 @@
       "rest": { "axis": 9, "value": 1.28, "value_min": 1.23, "value_max": 1.33 }
     }
   },
-  "buttons": [
-    "Button 1", "Button 2", "Button 3", "Button 4", "Button 5", "Button 6", "Button 7", "Button 8",
-    "Button 9", "Button 10", "Button 11", "Button 12", "Button 13", "Button 14", "Button 15", "Button 16",
-    "Button 17", "Button 18", "Button 19", "Button 20", "Button 21", "Button 22", "Button 23", "Button 24",
-    "Button 25", "Button 26", "Button 27", "Button 28", "Button 29", "Button 30", "Button 31", "Button 32"
-  ]
+  "buttons": 32
 }
