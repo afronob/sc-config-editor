@@ -83,7 +83,7 @@ export class SCConfigEditor {
             displayText += ' [DOUBLE_TAP]';
         }
         
-        this.ui.showInputOverlay(displayText);
+        this.ui.showOverlay(displayText);
         
         // Trouver et surligner les lignes correspondantes
         const rows = this.bindings.findRowsForButton(buttonName);
@@ -96,7 +96,7 @@ export class SCConfigEditor {
         const { instance, axisName, value } = data;
         
         // Afficher dans l'overlay
-        this.ui.showInputOverlay(`${axisName}: ${value.toFixed(2)}`);
+        this.ui.showOverlay(`${axisName}: ${value.toFixed(2)}`);
         
         // Trouver et surligner les lignes correspondantes
         const rows = this.bindings.findRowsForAxis(axisName);
@@ -116,7 +116,7 @@ export class SCConfigEditor {
             displayText += ' [DOUBLE_TAP]';
         }
         
-        this.ui.showInputOverlay(displayText);
+        this.ui.showOverlay(displayText);
         
         // Trouver et surligner les lignes correspondantes
         // hatName format: "js1_hat1_up" -> extract instance and direction

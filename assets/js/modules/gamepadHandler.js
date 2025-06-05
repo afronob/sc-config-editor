@@ -187,6 +187,11 @@ export class GamepadHandler {
             let val = gp.axes[a];
             let hatDetected = false;
 
+            // Debug temporaire pour l'axe 2
+            if (a === 2 && Math.abs(val) > 0.05) {
+                console.log(`Axe 2 détecté: valeur=${val.toFixed(3)}, dernière valeur=${this.lastAxesStates[instance][a]?.toFixed(3) || 'undefined'}`);
+            }
+
             // Gestion des hats - vérifier avec l'index comme chaîne ET comme nombre
             let hatConfig = null;
             if (deviceMap.hats) {
@@ -297,12 +302,18 @@ export class GamepadHandler {
 
     processAxis(deviceMap, val, instance, axisIndex) {
         let axisName = `js${instance}_${deviceMap.axes_map[axisIndex]}`;
-        let lastValue = this.lastAxesStates[instance][axisIndex] || 0;
+        let lastValue = this.lastAxesStates[instance][axisIndex];
+        
+        // Si c'est la première lecture, initialiser sans émettre d'événement
+        if (lastValue === undefined) {
+            this.lastAxesStates[instance][axisIndex] = val;
+            return;
+        }
         
         // Définir des seuils pour éviter les oscillations
         const THRESHOLD = 0.5;          // Seuil de détection d'activation
-        const DEADZONE = 0.1;           // Zone morte pour éviter les petites variations
-        const CHANGE_THRESHOLD = 0.2;   // Seuil de changement significatif
+        const DEADZONE = 0.15;          // Zone morte pour éviter les petites variations
+        const CHANGE_THRESHOLD = 0.25;  // Seuil de changement significatif
 
         // Détecter les changements significatifs de l'axe
         let wasActive = Math.abs(lastValue) > THRESHOLD;
