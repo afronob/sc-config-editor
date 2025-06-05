@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SC Config Editor - Accueil</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            width: 100%;
+            padding: 0 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            margin-right: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+            
+            .card {
+                padding: 2rem;
+            }
+            
+            .status-bar {
+                bottom: 1rem;
+                right: 1rem;
+                left: 1rem;
+                text-align: center;
+            }
+        }
+
+        /* Icônes personnalisées avec CSS */
+        .icon-edit::before { content: "⚙️"; }
+        .icon-test::before { content: "🎮"; }
+        .icon-debug::before { content: "🔧"; }
+        .icon-docs::before { content: "📖"; }
+        .icon-upload::before { content: "📁"; }
+        .icon-hat::before { content: "🕹️"; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SC Config Editor</h1>
+        <p class="subtitle">Éditeur de configuration Star Citizen</p>
+    </div>
+
+    <div class="grid">
+        <!-- Éditeur principal -->
+        <a href="keybind_editor.php" class="card">
+            <div class="card-icon icon-edit"></div>
+            <div class="card-title">Éditeur de Bindings</div>
+            <div class="card-description">
+                Éditer et configurer vos contrôles et mappings de touches Star Citizen avec détection gamepad en temps réel
+            </div>
+        </a>
+
+        <!-- Upload de fichiers -->
+        <a href="keybind_editor.php?action=upload" class="card">
+            <div class="card-icon icon-upload"></div>
+            <div class="card-title">Importer Profil</div>
+            <div class="card-description">
+                Importer un fichier de profil Star Citizen (.xml) pour l'éditer dans l'interface
+            </div>
+        </a>
+
+        <!-- Test Gamepad Principal -->
+        <a href="test_gamepad.html" class="card">
+            <div class="card-icon icon-test"></div>
+            <div class="card-title">Test Gamepad</div>
+            <div class="card-description">
+                Tester la détection des boutons, axes et HATs de votre gamepad avec affichage en temps réel
+            </div>
+        </a>
+
+        <!-- Test HAT Modes -->
+        <a href="test_hat_modes.html" class="card">
+            <div class="card-icon icon-hat"></div>
+            <div class="card-title">Test HAT Modes</div>
+            <div class="card-description">
+                Tester spécifiquement les modes HAT/D-Pad (Simple, Hold, Double Tap) avec simulation
+            </div>
+        </a>
+
+        <!-- Test Système Complet -->
+        <a href="test_complete_system.html" class="card">
+            <div class="card-icon icon-debug"></div>
+            <div class="card-title">Test Système</div>
+            <div class="card-description">
+                Test complet du système de détection gamepad et de l'intégration avec l'éditeur
+            </div>
+        </a>
+
+        <!-- Documentation -->
+        <a href="#" onclick="openDocumentation()" class="card">
+            <div class="card-icon icon-docs"></div>
+            <div class="card-title">Documentation</div>
+            <div class="card-description">
+                Guide d'utilisation du système de détection gamepad et des fonctionnalités avancées
+            </div>
+        </a>
+    </div>
+
+    <div class="status-bar">
+        <span class="status-indicator"></span>
+        <span id="statusText">Système initialisé</span>
+    </div>
+
+    <script>
+        // Vérification du statut du serveur
+        function checkServerStatus() {
+            fetch('keybind_editor.php', { method: 'HEAD' })
+                .then(response => {
+                    const statusText = document.getElementById('statusText');
+                    if (response.ok) {
+                        statusText.textContent = 'Serveur PHP actif - Prêt';
+                        document.querySelector('.status-indicator').style.background = '#4CAF50';
+                    } else {
+                        statusText.textContent = 'Serveur PHP accessible';
+                        document.querySelector('.status-indicator').style.background = '#FF9800';
+                    }
+                })
+                .catch(() => {
+                    const statusText = document.getElementById('statusText');
+                    statusText.textContent = 'Serveur non accessible';
+                    document.querySelector('.status-indicator').style.background = '#F44336';
+                });
+        }
+
+        // Ouvrir la documentation
+        function openDocumentation() {
+            // Essayer d'ouvrir le fichier markdown
+            fetch('GAMEPAD_DETECTION_SYSTEM.md')
+                .then(response => {
+                    if (response.ok) {
+                        window.open('GAMEPAD_DETECTION_SYSTEM.md', '_blank');
+                    } else {
+                        alert('Documentation non disponible. Veuillez consulter le fichier GAMEPAD_DETECTION_SYSTEM.md');
+                    }
+                })
+                .catch(() => {
+                    alert('Documentation non disponible. Veuillez consulter le fichier GAMEPAD_DETECTION_SYSTEM.md');
+                });
+        }
+
+        // Détecter les gamepads connectés
+        function checkGamepads() {
+            const gamepads = navigator.getGamepads();
+            let connectedCount = 0;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    connectedCount++;
+                }
+            }
+            
+            if (connectedCount > 0) {
+                const statusText = document.getElementById('statusText');
+                statusText.textContent = `${connectedCount} gamepad(s) détecté(s)`;
+            }
+        }
+
+        // Animation au survol des cartes
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(255, 255, 255, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.background = 'rgba(255, 255, 255, 0.1)';
+            });
+        });
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServerStatus();
+            checkGamepads();
+            
+            // Vérifier les gamepads toutes les 3 secondes
+            setInterval(checkGamepads, 3000);
+        });
+
+        // Support des événements gamepad
+        window.addEventListener('gamepadconnected', function(e) {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = `Gamepad connecté: ${e.gamepad.id}`;
+            document.querySelector('.status-indicator').style.background = '#4CAF50';
+        });
+
+        window.addEventListener('gamepaddisconnected', function(e) {
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = 'Gamepad déconnecté';
+            document.querySelector('.status-indicator').style.background = '#FF9800';
+        });
+    </script>
+</body>
+</html>
