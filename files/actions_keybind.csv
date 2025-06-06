@@ -262,3 +262,43 @@ headtrack_camera_enabled,Enable Head Tracking (Toggle)
 tractor_beam_decrease_distance,Tractor Beam Vehicle Decrease Distance
 tractor_beam_increase_distance,Tractor Beam Vehicle Increase Distance
 v_speed_range_rel,Speed Limiter (rel)
+emote_agree,Agree
+emote_angry,Angry
+emote_atease,At ease
+emote_attention,Attention
+emote_blah,Blah
+emote_bored,Bored
+emote_bow,Bow
+emote_burp,Burp
+emote_cheer,Cheer
+emote_chicken,Chicken
+emote_clap,Clap
+emote_come,Come
+emote_cry,Cry
+emote_cs_forward,CS Forward
+emote_cs_left,CS Left
+emote_cs_no,CS No
+emote_cs_right,CS Right
+emote_cs_stop,CS Stop
+emote_cs_yes,CS Yes
+emote_dance,Dance
+emote_disagree,Disagree
+emote_failure,Failure
+emote_flex,Flex
+emote_flirt,Flirt
+emote_gasp,Gasp
+emote_gloat,Gloat
+emote_greet,Greet
+emote_laugh,Laugh
+emote_launch,Launch
+emote_point,Point
+emote_rude,Rude
+emote_salute,Salute
+emote_sit,Sit
+emote_sleep,Sleep
+emote_smell,Smell
+emote_taunt,Taunt
+emote_threaten,Threaten
+emote_wait,Wait
+emote_wave,Wave
+emote_whistle,Whistle
