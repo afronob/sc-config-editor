@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Test Overlay Fix - Système Simplifié</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007cba; padding-bottom: 10px; }
+        .bindings-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .bindings-table th, .bindings-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .bindings-table th { background-color: #f8f9fa; font-weight: bold; }
+        .log { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 13px; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; background: #007cba; color: white; }
+        .test-section { background: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Overlay Fix - Système Simplifié</h1>
+        
+        <div class="card">
+            <h3>🎯 Problème Résolu</h3>
+            <ul>
+                <li>✅ <strong>Protection anti-spam</strong> : Réduite de 100ms → 50ms</li>
+                <li>✅ <strong>Overlay manquant</strong> : Ajout d'un overlay direct intégré</li>
+                <li>✅ <strong>Affichage amélioré</strong> : Animation et style cohérents</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Tests Manuels</h3>
+            <p>Cliquez sur les boutons ci-dessous pour tester l'ancrage et l'overlay :</p>
+            <button onclick="testButton1Normal()">Test js3_button3 Normal</button>
+            <button onclick="testButton1Hold()">Test js3_button3 Hold</button>
+            <button onclick="testButton1DoubleTap()">Test js3_button3 DoubleTap</button>
+            <button onclick="testSpamProtection()">Test Protection Anti-Spam</button>
+        </div>
+        
+        <div class="card">
+            <h3>🎮 Test avec Gamepad Réel</h3>
+            <p>Connectez votre gamepad et appuyez sur les boutons. L'overlay devrait maintenant s'afficher correctement.</p>
+            <div id="gamepad-status">🎮 En attente de gamepad...</div>
+        </div>
+        
+        <!-- Tableau de test -->
+        <div class="card">
+            <h3>📋 Tableau de Bindings de Test</h3>
+            <table id="bindings-table" class="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Instance</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- js3_button3 - Trois modes pour test -->
+                    <tr id="test-normal">
+                        <td>Joystick 3</td>
+                        <td><input type="text" name="input[0]" value="js3_button3"></td>
+                        <td>Fire Primary</td>
+                        <td><input type="text" name="opts[0]" value=""></td>
+                        <td><input type="text" name="value[0]" value=""></td>
+                    </tr>
+                    <tr id="test-hold">
+                        <td>Joystick 3</td>
+                        <td><input type="text" name="input[1]" value="js3_button3"></td>
+                        <td>E.S.P. Hold</td>
+                        <td><input type="text" name="opts[1]" value="activationmode"></td>
+                        <td><input type="text" name="value[1]" value="hold"></td>
+                    </tr>
+                    <tr id="test-doubletap">
+                        <td>Joystick 3</td>
+                        <td><input type="text" name="input[2]" value="js3_button3"></td>
+                        <td>Weapon Cycle</td>
+                        <td><input type="text" name="opts[2]" value="activationmode"></td>
+                        <td><input type="text" name="value[2]" value="double_tap"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h3>📜 Log des Événements</h3>
+            <button onclick="clearLog()">🗑️ Effacer Log</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SCConfigEditor } from '../../assets/js/scConfigEditor.js';
+        
+        let editor;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const colors = {
+                'info': '#333',
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107'
+            };
+            
+            logDiv.innerHTML += `<div style="color: ${colors[type] || colors.info}">
+                [${timestamp}] ${message}
+            </div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Tests manuels
+        window.testButton1Normal = function() {
+            log('🧪 Test manuel: js3_button3 mode normal', 'info');
+            if (editor && editor.simplifiedBindings) {
+                const result = editor.simplifiedBindings.anchorToInput('button', 3, 'button3', '');
+                log(`Résultat: ${result ? 'Ancrage réussi' : 'Aucune ligne trouvée'}`, result ? 'success' : 'warning');
+            }
+        };
+        
+        window.testButton1Hold = function() {
+            log('🧪 Test manuel: js3_button3 mode hold', 'info');
+            if (editor && editor.simplifiedBindings) {
+                const result = editor.simplifiedBindings.anchorToInput('button', 3, 'button3', 'hold');
+                log(`Résultat: ${result ? 'Ancrage Hold réussi' : 'Aucune ligne Hold trouvée'}`, result ? 'success' : 'warning');
+            }
+        };
+        
+        window.testButton1DoubleTap = function() {
+            log('🧪 Test manuel: js3_button3 mode double_tap', 'info');
+            if (editor && editor.simplifiedBindings) {
+                const result = editor.simplifiedBindings.anchorToInput('button', 3, 'button3', 'double_tap');
+                log(`Résultat: ${result ? 'Ancrage DoubleTap réussi' : 'Aucune ligne DoubleTap trouvée'}`, result ? 'success' : 'warning');
+            }
+        };
+        
+        window.testSpamProtection = function() {
+            log('🧪 Test protection anti-spam: appels multiples rapides', 'warning');
+            if (editor && editor.simplifiedBindings) {
+                // Faire 5 appels rapides
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        const result = editor.simplifiedBindings.anchorToInput('button', 3, 'button3', '');
+                        log(`Appel ${i+1}: ${result ? 'Traité' : 'Bloqué par anti-spam'}`, result ? 'success' : 'warning');
+                    }, i * 10); // 10ms entre chaque appel
+                }
+            }
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+        
+        // Vérifier les gamepads
+        function checkGamepadStatus() {
+            const gamepads = navigator.getGamepads();
+            let connectedCount = 0;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) connectedCount++;
+            }
+            
+            const statusDiv = document.getElementById('gamepad-status');
+            if (connectedCount > 0) {
+                statusDiv.innerHTML = `🎮 ${connectedCount} gamepad(s) connecté(s) - Testez vos boutons !`;
+                statusDiv.style.color = '#28a745';
+            } else {
+                statusDiv.innerHTML = '🎮 Aucun gamepad détecté';
+                statusDiv.style.color = '#ffc107';
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                log('🚀 Initialisation du test overlay fix...', 'info');
+                
+                // Données de test
+                const testDevicesData = [
+                    {
+                        id: "Test Gamepad",
+                        vendor_id: "0x045e",
+                        product_id: "0x028e",
+                        xml_instance: "3", // Instance 3 pour correspondre à js3_button3
+                        axes_map: { "0": "x", "1": "y", "2": "z", "5": "rotz" },
+                        hats: {
+                            "9": {
+                                directions: {
+                                    "up": { "axis": 9, "value": -1, "value_min": -1.05, "value_max": -0.95 },
+                                    "down": { "axis": 9, "value": 0.13, "value_min": 0.08, "value_max": 0.18 },
+                                    "left": { "axis": 9, "value": 0.71, "value_min": 0.66, "value_max": 0.76 },
+                                    "right": { "axis": 9, "value": -0.43, "value_min": -0.48, "value_max": -0.38 }
+                                }
+                            }
+                        }
+                    }
+                ];
+                
+                window.devicesDataJs = testDevicesData;
+                
+                // Initialiser avec le système simplifié
+                editor = new SCConfigEditor({
+                    useSimplifiedAnchoring: true,
+                    devicesDataJs: testDevicesData,
+                    buttonNamesByInstance: { "3": { 3: "js3_button3" } }
+                });
+                
+                log('✅ Système simplifié initialisé avec overlay fix', 'success');
+                
+                // Vérifier périodiquement les gamepads
+                setInterval(checkGamepadStatus, 1000);
+                checkGamepadStatus();
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+            }
+        });
+        
+        // Écouter les événements gamepad
+        window.addEventListener('buttonPressed', (event) => {
+            const { instance, buttonName, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            log(`🎮 Gamepad: ${buttonName}${modeText}`, 'success');
+        });
+        
+        window.addEventListener('hatMoved', (event) => {
+            const { instance, hatName, direction, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            log(`🧭 HAT: ${hatName} (${direction})${modeText}`, 'success');
+        });
+        
+        // Exposer editor globalement pour les tests
+        window.editor = editor;
+    </script>
+</body>
+</html>

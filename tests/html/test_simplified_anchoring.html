@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Système d'Ancrage Simplifié</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        body { padding: 20px; font-family: monospace; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .test-controls button { margin: 5px; padding: 8px 15px; }
+        .log-section { background: #f9f9f9; padding: 10px; margin: 10px 0; }
+        .log-entry { margin: 2px 0; font-size: 12px; }
+        .status { font-weight: bold; }
+        .status.success { color: green; }
+        .status.error { color: red; }
+        .status.info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Test du Système d'Ancrage Simplifié</h1>
+    
+    <div class="test-section">
+        <h2>📋 Tableau de Test</h2>
+        <p>Ce tableau simule les bindings SC avec différents modes :</p>
+        
+        <table id="bindings-table" class="bindings-table">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Action</th>
+                    <th>Nom</th>
+                    <th>Input</th>
+                    <th>Opts</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Mode Normal -->
+                <tr>
+                    <td>Flight</td>
+                    <td>v_pitch</td>
+                    <td>Pitch</td>
+                    <td><input name="input[0]" value="js1_button1"></td>
+                    <td><input name="opts[0]" value=""></td>
+                    <td><input name="value[0]" value=""></td>
+                </tr>
+                
+                <!-- Mode Hold -->
+                <tr>
+                    <td>Flight</td>
+                    <td>v_ifcs_esp_hold</td>
+                    <td>E.S.P. - Enable Temporarily (Hold)</td>
+                    <td><input name="input[1]" value="js1_button1"></td>
+                    <td><input name="opts[1]" value="ActivationMode"></td>
+                    <td><input name="value[1]" value="hold"></td>
+                </tr>
+                
+                <!-- Mode DoubleTap -->
+                <tr>
+                    <td>Flight</td>
+                    <td>v_weapon_cycle_fwd</td>
+                    <td>Cycle Weapons Forward (Double Tap)</td>
+                    <td><input name="input[2]" value="js1_button1"></td>
+                    <td><input name="opts[2]" value="ActivationMode"></td>
+                    <td><input name="value[2]" value="double_tap"></td>
+                </tr>
+                
+                <!-- Bouton 2 Normal -->
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_primary</td>
+                    <td>Fire Primary</td>
+                    <td><input name="input[3]" value="js1_button2"></td>
+                    <td><input name="opts[3]" value=""></td>
+                    <td><input name="value[3]" value=""></td>
+                </tr>
+                
+                <!-- Bouton 2 Hold -->
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_primary_hold</td>
+                    <td>Fire Primary (Hold)</td>
+                    <td><input name="input[4]" value="js1_button2"></td>
+                    <td><input name="opts[4]" value="ActivationMode"></td>
+                    <td><input name="value[4]" value="hold"></td>
+                </tr>
+                
+                <!-- HAT Up Normal -->
+                <tr>
+                    <td>UI</td>
+                    <td>v_ui_up</td>
+                    <td>UI Up</td>
+                    <td><input name="input[5]" value="js1_hat1_up"></td>
+                    <td><input name="opts[5]" value=""></td>
+                    <td><input name="value[5]" value=""></td>
+                </tr>
+                
+                <!-- HAT Up DoubleTap -->
+                <tr>
+                    <td>UI</td>
+                    <td>v_ui_focus</td>
+                    <td>UI Focus (Double Tap)</td>
+                    <td><input name="input[6]" value="js1_hat1_up"></td>
+                    <td><input name="opts[6]" value="multitap"></td>
+                    <td><input name="value[6]" value="2"></td>
+                </tr>
+                
+                <!-- Axe (pas de modes) -->
+                <tr>
+                    <td>Flight</td>
+                    <td>v_pitch</td>
+                    <td>Pitch Axis</td>
+                    <td><input name="input[7]" value="js1_axis1"></td>
+                    <td><input name="opts[7]" value=""></td>
+                    <td><input name="value[7]" value=""></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 Contrôles de Test</h2>
+        <div class="test-controls">
+            <h3>Bouton 1 (js1_button1)</h3>
+            <button onclick="testAnchor('button', 1, 'button1', '')">Normal</button>
+            <button onclick="testAnchor('button', 1, 'button1', 'hold')">[H] Hold</button>
+            <button onclick="testAnchor('button', 1, 'button1', 'double_tap')">[DT] DoubleTap</button>
+            
+            <h3>Bouton 2 (js1_button2)</h3>
+            <button onclick="testAnchor('button', 1, 'button2', '')">Normal</button>
+            <button onclick="testAnchor('button', 1, 'button2', 'hold')">[H] Hold</button>
+            
+            <h3>HAT 1 Up (js1_hat1_up)</h3>
+            <button onclick="testAnchor('hat', 1, 'hat1_up', '')">Normal</button>
+            <button onclick="testAnchor('hat', 1, 'hat1_up', 'double_tap')">[DT] DoubleTap</button>
+            
+            <h3>Axe 1 (js1_axis1)</h3>
+            <button onclick="testAnchor('axis', 1, 'axis1', '')">Normal</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Log des Tests</h2>
+        <button onclick="clearLog()">Effacer Log</button>
+        <div id="log" class="log-section"></div>
+    </div>
+
+    <!-- Import du système simplifié -->
+    <script type="module">
+        import { SimplifiedBindingsHandler } from '../../assets/js/modules/simplifiedBindingsHandler.js';
+        
+        // Initialiser le système
+        window.simplifiedBindings = new SimplifiedBindingsHandler();
+        
+        // Fonction de test globale
+        window.testAnchor = function(type, instance, elementName, mode) {
+            const modeDisplay = mode ? `[${mode.toUpperCase()}]` : 'Normal';
+            log(`🎯 Test: ${type} js${instance}_${elementName} ${modeDisplay}`, 'info');
+            
+            try {
+                const result = window.simplifiedBindings.anchorToInput(type, instance, elementName, mode);
+                if (result) {
+                    const action = result.cells[2]?.textContent || 'Unknown';
+                    log(`✅ Succès: Ancré sur "${action}"`, 'success');
+                } else {
+                    log(`❌ Échec: Aucune ligne trouvée`, 'error');
+                }
+            } catch (error) {
+                log(`💥 Erreur: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+        
+        // Fonction de log
+        window.log = function(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry status ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+        
+        // Fonction de nettoyage du log
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+        
+        // Log initial
+        log('🚀 Système d\'ancrage simplifié initialisé', 'success');
+        log('Utilisez les boutons ci-dessus pour tester l\'ancrage direct', 'info');
+    </script>
+</body>
+</html>

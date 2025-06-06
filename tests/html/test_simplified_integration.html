@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Intégration Système Simplifié</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        body { padding: 20px; font-family: monospace; }
+        .info-panel { background: #f0f8ff; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .toggle-section { background: #fff5ee; padding: 15px; margin: 15px 0; border-radius: 8px; }
+        .toggle-button { padding: 10px 20px; font-size: 16px; margin: 5px; }
+        .toggle-button.active { background: #4CAF50; color: white; }
+        .toggle-button.inactive { background: #f44336; color: white; }
+        .status-display { font-weight: bold; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>🔄 Test - Intégration Système Simplifié vs Ancien</h1>
+    
+    <div class="info-panel">
+        <h2>📋 À propos de ce test</h2>
+        <p>Ce test permet de basculer entre :</p>
+        <ul>
+            <li><strong>Système Simplifié</strong> : Ancrage direct sans cycling (nouveau)</li>
+            <li><strong>Système Ancien</strong> : Cycling navigation (existant)</li>
+        </ul>
+        <p>Connectez une manette et testez les différences de comportement.</p>
+    </div>
+    
+    <div class="toggle-section">
+        <h2>⚙️ Configuration du Système</h2>
+        <button id="toggle-system" class="toggle-button">Basculer le Système</button>
+        <div id="system-status" class="status-display"></div>
+        <div id="system-description"></div>
+    </div>
+    
+    <div class="info-panel">
+        <h2>🎮 Instructions de Test</h2>
+        <ol>
+            <li>Connectez votre manette gamepad</li>
+            <li>Choisissez le système à tester avec le bouton ci-dessus</li>
+            <li>Appuyez sur les boutons de votre manette :</li>
+            <ul>
+                <li><strong>Appui normal</strong> → Ancrage normal</li>
+                <li><strong>Appui long (≥500ms)</strong> → Mode Hold [H]</li>
+                <li><strong>Double appui rapide (≤300ms)</strong> → Mode DoubleTap [DT]</li>
+            </ul>
+            <li>Observez la différence de comportement entre les deux systèmes</li>
+        </ol>
+    </div>
+    
+    <!-- Tableau de test avec des données réalistes -->
+    <table id="bindings-table" class="bindings-table">
+        <thead>
+            <tr>
+                <th>Catégorie</th>
+                <th>Action</th>
+                <th>Nom</th>
+                <th>Input</th>
+                <th>Opts</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Exemples avec js1_button1 pour test -->
+            <tr>
+                <td>Flight</td>
+                <td>v_pitch_up</td>
+                <td>Pitch Up</td>
+                <td><input name="input[0]" value="js1_button1"></td>
+                <td><input name="opts[0]" value=""></td>
+                <td><input name="value[0]" value=""></td>
+            </tr>
+            <tr>
+                <td>Flight</td>
+                <td>v_ifcs_esp_hold</td>
+                <td>E.S.P. - Enable Temporarily (Hold)</td>
+                <td><input name="input[1]" value="js1_button1"></td>
+                <td><input name="opts[1]" value="ActivationMode"></td>
+                <td><input name="value[1]" value="hold"></td>
+            </tr>
+            <tr>
+                <td>Weapons</td>
+                <td>v_weapon_cycle_fwd</td>
+                <td>Cycle Weapons Forward (Double Tap)</td>
+                <td><input name="input[2]" value="js1_button1"></td>
+                <td><input name="opts[2]" value="ActivationMode"></td>
+                <td><input name="value[2]" value="double_tap"></td>
+            </tr>
+            
+            <!-- Autres boutons pour test complet -->
+            <tr>
+                <td>Weapons</td>
+                <td>v_weapon_primary</td>
+                <td>Fire Primary</td>
+                <td><input name="input[3]" value="js1_button2"></td>
+                <td><input name="opts[3]" value=""></td>
+                <td><input name="value[3]" value=""></td>
+            </tr>
+            <tr>
+                <td>Flight</td>
+                <td>v_boost</td>
+                <td>Boost (Hold)</td>
+                <td><input name="input[4]" value="js1_button2"></td>
+                <td><input name="opts[4]" value="ActivationMode"></td>
+                <td><input name="value[4]" value="hold"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- Overlay pour affichage des événements -->
+    <div id="input-overlay" class="input-overlay"></div>
+    
+    <!-- Liste des devices gamepad -->
+    <div id="gamepad-devices-list" style="margin-top: 20px;"></div>
+
+    <script type="module">
+        import { SCConfigEditor } from '../../assets/js/scConfigEditor.js';
+        
+        let editor = null;
+        let useSimplifiedSystem = true;
+        
+        // Configuration des devices simulée
+        window.devicesDataJs = [
+            { xml_instance: "1", vendor: "231d", product: "0120" }
+        ];
+        
+        function initializeEditor() {
+            if (editor) {
+                // Nettoyer l'ancien editor si nécessaire
+                editor = null;
+            }
+            
+            editor = new SCConfigEditor({
+                useSimplifiedAnchoring: useSimplifiedSystem,
+                devicesDataJs: window.devicesDataJs
+            });
+            
+            // Rendre globalement accessible pour debug
+            window.editor = editor;
+            
+            updateSystemStatus();
+        }
+        
+        function updateSystemStatus() {
+            const statusEl = document.getElementById('system-status');
+            const descEl = document.getElementById('system-description');
+            const toggleBtn = document.getElementById('toggle-system');
+            
+            if (useSimplifiedSystem) {
+                statusEl.textContent = '🎯 Système Simplifié ACTIF';
+                statusEl.className = 'status-display';
+                statusEl.style.color = 'green';
+                descEl.innerHTML = `
+                    <p><strong>Mode :</strong> Ancrage direct sans cycling</p>
+                    <ul>
+                        <li>js1_button1 → Ligne avec input exactement "js1_button1" et mode normal</li>
+                        <li>[H] js1_button1 → Ligne avec input "js1_button1" et ActivationMode=hold</li>
+                        <li>[DT] js1_button1 → Ligne avec input "js1_button1" et ActivationMode=double_tap</li>
+                    </ul>
+                `;
+                toggleBtn.textContent = 'Passer au Système Ancien';
+                toggleBtn.className = 'toggle-button active';
+            } else {
+                statusEl.textContent = '🔄 Système Ancien ACTIF';
+                statusEl.style.color = 'orange';
+                descEl.innerHTML = `
+                    <p><strong>Mode :</strong> Navigation cyclique avec cycling</p>
+                    <ul>
+                        <li>Cycling entre toutes les lignes correspondantes</li>
+                        <li>Système avec timeouts et indices de cycle</li>
+                        <li>Plus complexe mais avec navigation séquentielle</li>
+                    </ul>
+                `;
+                toggleBtn.textContent = 'Passer au Système Simplifié';
+                toggleBtn.className = 'toggle-button inactive';
+            }
+        }
+        
+        function toggleSystem() {
+            useSimplifiedSystem = !useSimplifiedSystem;
+            console.log(`🔄 Basculement vers: ${useSimplifiedSystem ? 'Système Simplifié' : 'Système Ancien'}`);
+            initializeEditor();
+        }
+        
+        // Event listeners
+        document.getElementById('toggle-system').addEventListener('click', toggleSystem);
+        
+        // Initialisation
+        initializeEditor();
+        
+        // UI Helper pour l'overlay
+        window.uiHandler = {
+            showOverlay: function(inputText, actionText) {
+                const overlay = document.getElementById('input-overlay');
+                overlay.textContent = `${inputText} → ${actionText}`;
+                overlay.style.display = 'block';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 2000);
+            }
+        };
+        
+        console.log('🎮 Test d\'intégration prêt !');
+        console.log('📝 Utilisez le bouton pour basculer entre les systèmes');
+    </script>
+</body>
+</html>

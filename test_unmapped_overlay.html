@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Overlay Inputs Non Mappés</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #005a9e;
+        }
+        
+        button.danger {
+            background: #dc3545;
+        }
+        
+        button.danger:hover {
+            background: #c82333;
+        }
+        
+        button.success {
+            background: #28a745;
+        }
+        
+        button.success:hover {
+            background: #218838;
+        }
+        
+        #console-output {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+        }
+        
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .status.info {
+            background: rgba(23, 162, 184, 0.2);
+            border: 1px solid #17a2b8;
+        }
+        
+        .test-input {
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            padding: 8px;
+            border-radius: 3px;
+            margin: 5px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Overlay Inputs Non Mappés</h1>
+    
+    <div class="status info">
+        <strong>Test des overlays :</strong><br>
+        • <span style="color: #28a745;">VERT</span> : Input mappé trouvé<br>
+        • <span style="color: #dc3545;">ROUGE</span> : Input non mappé<br>
+        • Pas d'overlay si focus dans un champ de saisie
+    </div>
+    
+    <div class="test-section">
+        <h3>Tests manuels - Inputs mappés (overlay vert)</h3>
+        <button class="success" onclick="testMappedInput('js3_button28', '')">Test js3_button28 (Press)</button>
+        <button class="success" onclick="testMappedInput('js3_button29', 'double_tap')">Test js3_button29 (DoubleTap)</button>
+        <button class="success" onclick="testMappedInput('js2_button3', '')">Test js2_button3 (Press)</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Tests manuels - Inputs NON mappés (overlay rouge)</h3>
+        <button class="danger" onclick="testUnmappedInput('js3_button4', '')">Test js3_button4 (Press)</button>
+        <button class="danger" onclick="testUnmappedInput('js3_button4', 'hold')">Test js3_button4 (Hold)</button>
+        <button class="danger" onclick="testUnmappedInput('js1_button1', '')">Test js1_button1 (Press)</button>
+        <button class="danger" onclick="testUnmappedInput('js2_button99', 'double_tap')">Test js2_button99 (DoubleTap)</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test focus dans champ (aucun overlay)</h3>
+        <input type="text" class="test-input" placeholder="Cliquez ici puis testez les boutons">
+        <button onclick="testUnmappedInputWhileFocused()">Test avec focus</button>
+        <p><em>Cliquez dans le champ ci-dessus, puis cliquez sur ce bouton. Aucun overlay ne devrait apparaître.</em></p>
+    </div>
+    
+    <div class="test-section">
+        <h3>Test gamepad réel</h3>
+        <p>Connectez votre gamepad et appuyez sur des boutons :</p>
+        <div id="gamepad-status">Aucun gamepad détecté</div>
+    </div>
+    
+    <div class="test-section">
+        <h3>Console de debug</h3>
+        <button onclick="clearConsole()">Clear Console</button>
+        <div id="console-output"></div>
+    </div>
+    
+    <!-- Table factice pour simuler la structure -->
+    <table id="keybind-table" style="display: none;">
+        <tbody>
+            <tr>
+                <td><input type="text" name="input[1]" value="js3_button28"></td>
+                <td><input type="text" name="action[1]" value="v_yaw"></td>
+                <td>Yaw</td>
+            </tr>
+            <tr>
+                <td><input type="text" name="input[2]" value="js3_button29"></td>
+                <td><input type="text" name="opts[2]" value="ActivationMode"></td>
+                <td><input type="text" name="value[2]" value="double_tap"></td>
+                <td><input type="text" name="action[2]" value="v_weapon_group_1"></td>
+                <td>Weapon Group 1</td>
+            </tr>
+            <tr>
+                <td><input type="text" name="input[3]" value="js2_button3"></td>
+                <td><input type="text" name="action[3]" value="v_roll"></td>
+                <td>Roll</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script src="assets/js/modules/simplifiedBindingsHandler.js"></script>
+    <script>
+        let consoleOutput = document.getElementById('console-output');
+        let simplifiedHandler = new SimplifiedBindingsHandler();
+        
+        // Intercepter console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.textContent += args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        function testMappedInput(inputName, mode) {
+            console.log(`[Test] Simulation input mappé: ${inputName} mode: ${mode}`);
+            const parts = inputName.split('_');
+            const instance = parts[0].replace('js', '');
+            const elementName = parts[1];
+            simplifiedHandler.anchorGamepadEvent(instance, elementName, mode);
+        }
+        
+        function testUnmappedInput(inputName, mode) {
+            console.log(`[Test] Simulation input NON mappé: ${inputName} mode: ${mode}`);
+            const parts = inputName.split('_');
+            const instance = parts[0].replace('js', '');
+            const elementName = parts[1];
+            simplifiedHandler.anchorGamepadEvent(instance, elementName, mode);
+        }
+        
+        function testUnmappedInputWhileFocused() {
+            const input = document.querySelector('.test-input');
+            input.focus();
+            setTimeout(() => {
+                testUnmappedInput('js3_button4', '');
+            }, 100);
+        }
+        
+        function clearConsole() {
+            consoleOutput.textContent = '';
+        }
+        
+        // Détection gamepad
+        function updateGamepadStatus() {
+            const gamepads = navigator.getGamepads();
+            const status = document.getElementById('gamepad-status');
+            const connected = Array.from(gamepads).filter(gp => gp);
+            
+            if (connected.length > 0) {
+                status.textContent = `${connected.length} gamepad(s) connecté(s): ${connected.map(gp => gp.id).join(', ')}`;
+                status.style.color = '#28a745';
+            } else {
+                status.textContent = 'Aucun gamepad détecté';
+                status.style.color = '#ffc107';
+            }
+        }
+        
+        // Polling gamepad
+        function pollGamepads() {
+            const gamepads = navigator.getGamepads();
+            for (let i = 0; i < gamepads.length; i++) {
+                const gamepad = gamepads[i];
+                if (gamepad) {
+                    gamepad.buttons.forEach((button, index) => {
+                        if (button.pressed) {
+                            const inputName = `js${i + 1}_button${index + 1}`;
+                            console.log(`[Gamepad Réel] ${inputName} pressé`);
+                            
+                            // Tester avec le vrai système
+                            const instance = (i + 1).toString();
+                            const elementName = `button${index + 1}`;
+                            simplifiedHandler.anchorGamepadEvent(instance, elementName, '');
+                        }
+                    });
+                }
+            }
+            requestAnimationFrame(pollGamepads);
+        }
+        
+        // Events gamepad
+        window.addEventListener('gamepadconnected', (e) => {
+            console.log(`[Gamepad] Connecté: ${e.gamepad.id}`);
+            updateGamepadStatus();
+        });
+        
+        window.addEventListener('gamepaddisconnected', (e) => {
+            console.log(`[Gamepad] Déconnecté: ${e.gamepad.id}`);
+            updateGamepadStatus();
+        });
+        
+        // Initialisation
+        updateGamepadStatus();
+        pollGamepads();
+        
+        console.log('[Test] Page de test des overlays unmapped initialisée');
+    </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Overlay Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #005a9e;
+        }
+        
+        #console-output {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            white-space: pre-wrap;
+        }
+        
+        .gamepad-overlay {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 122, 204, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Debug Test Overlay</h1>
+    
+    <div class="test-section">
+        <h3>Tests manuels overlay</h3>
+        <button onclick="testOverlay('js1_button1', 'v_yaw')">Test js1_button1 (Press)</button>
+        <button onclick="testOverlay('js1_button2 [H]', 'v_roll')">Test js1_button2 (Hold)</button>
+        <button onclick="testOverlay('js1_button3 [DT]', 'v_weapon_group_1')">Test js1_button3 (DoubleTap)</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>Console Output</h3>
+        <div id="console-output"></div>
+    </div>
+    
+    <script>
+        let consoleOutput = document.getElementById('console-output');
+        let overlayTimeout = null;
+        
+        // Intercepter console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            consoleOutput.textContent += args.join(' ') + '\n';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        function testOverlay(inputText, action) {
+            console.log(`[Test] Création overlay: "${inputText}" -> "${action}"`);
+            showOverlay(inputText, action);
+        }
+        
+        function showOverlay(inputText, action) {
+            // Supprimer l'overlay existant
+            const existingOverlay = document.querySelector('.gamepad-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // Annuler le timeout précédent
+            if (overlayTimeout) {
+                clearTimeout(overlayTimeout);
+            }
+            
+            // Créer le nouvel overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'gamepad-overlay';
+            overlay.innerHTML = `
+                <div style="font-size: 14px; margin-bottom: 5px;">${inputText}</div>
+                <div style="font-size: 12px; opacity: 0.8;">→ ${action}</div>
+            `;
+            
+            document.body.appendChild(overlay);
+            console.log(`[Overlay] Affiché: "${inputText}" -> "${action}"`);
+            
+            // Auto-masquer après 2 secondes
+            overlayTimeout = setTimeout(() => {
+                if (overlay && overlay.parentNode) {
+                    overlay.remove();
+                    console.log(`[Overlay] Masqué automatiquement`);
+                }
+            }, 2000);
+        }
+        
+        function clearConsole() {
+            consoleOutput.textContent = '';
+        }
+        
+        // Détecter les gamepads
+        window.addEventListener('gamepadconnected', (e) => {
+            console.log(`[Gamepad] Connecté: ${e.gamepad.id}`);
+        });
+        
+        window.addEventListener('gamepaddisconnected', (e) => {
+            console.log(`[Gamepad] Déconnecté: ${e.gamepad.id}`);
+        });
+        
+        // Polling gamepad
+        function pollGamepads() {
+            const gamepads = navigator.getGamepads();
+            for (let i = 0; i < gamepads.length; i++) {
+                const gamepad = gamepads[i];
+                if (gamepad) {
+                    // Vérifier les boutons
+                    gamepad.buttons.forEach((button, index) => {
+                        if (button.pressed) {
+                            const inputName = `js${i + 1}_button${index + 1}`;
+                            console.log(`[Gamepad] Bouton pressé: ${inputName}`);
+                            testOverlay(inputName, `Action pour ${inputName}`);
+                        }
+                    });
+                }
+            }
+            requestAnimationFrame(pollGamepads);
+        }
+        
+        // Commencer le polling
+        pollGamepads();
+        
+        console.log('[Debug] Page de test overlay initialisée');
+        console.log('[Debug] Connectez votre gamepad et appuyez sur des boutons');
+    </script>
+</body>
+</html>

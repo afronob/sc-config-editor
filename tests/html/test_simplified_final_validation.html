@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Validation Finale - Système d'Ancrage Simplifié</title>
+    <link rel="stylesheet" href="../../assets/css/styles.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .validation-container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007cba; padding-bottom: 10px; }
+        .status-good { color: #28a745; font-weight: bold; }
+        .status-warn { color: #ffc107; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .test-pass { background: #d4edda; border-left: 4px solid #28a745; }
+        .test-fail { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .bindings-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .bindings-table th, .bindings-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .bindings-table th { background-color: #f8f9fa; font-weight: bold; }
+        .log { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 13px; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007cba; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <div class="validation-container">
+        <h1>🎯 Validation Finale - Système d'Ancrage Simplifié</h1>
+        
+        <div class="card">
+            <h3>📊 État du Système</h3>
+            <div id="system-status">
+                <div>🔄 Initialisation en cours...</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>🧪 Tests de Validation</h3>
+            <button onclick="runAllTests()" class="btn-primary">▶️ Exécuter Tous les Tests</button>
+            <button onclick="clearResults()" class="btn-warning">🗑️ Effacer les Résultats</button>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="card">
+            <h3>🎮 Test Gamepad en Temps Réel</h3>
+            <p>Connectez votre manette et testez l'ancrage :</p>
+            <ul>
+                <li><strong>Simple</strong> : Appui normal → Ancre sur lignes sans mode</li>
+                <li><strong>Hold</strong> : Maintenir ≥500ms → Ancre sur lignes avec mode Hold</li>
+                <li><strong>Double Tap</strong> : 2 appuis rapides → Ancre sur lignes avec mode DoubleTap</li>
+            </ul>
+            <div id="gamepad-status" class="status-good">🎮 En attente de gamepad...</div>
+        </div>
+        
+        <!-- Tableau de test avec des cas réalistes -->
+        <div class="card">
+            <h3>📋 Tableau de Bindings de Test</h3>
+            <table id="bindings-table" class="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Instance</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                        <th>Mode Détecté</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- js1_button1 - Trois modes -->
+                    <tr id="test-simple-1">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[0]" value="js1_button1"></td>
+                        <td>Fire Primary</td>
+                        <td><input type="text" name="opts[0]" value=""></td>
+                        <td><input type="text" name="value[0]" value=""></td>
+                        <td><span class="status-good">Normal</span></td>
+                    </tr>
+                    <tr id="test-hold-1">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[1]" value="js1_button1"></td>
+                        <td>E.S.P. Hold</td>
+                        <td><input type="text" name="opts[1]" value="activationmode"></td>
+                        <td><input type="text" name="value[1]" value="hold"></td>
+                        <td><span class="status-warn">Hold</span></td>
+                    </tr>
+                    <tr id="test-doubletap-1">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[2]" value="js1_button1"></td>
+                        <td>Weapon Cycle</td>
+                        <td><input type="text" name="opts[2]" value="activationmode"></td>
+                        <td><input type="text" name="value[2]" value="double_tap"></td>
+                        <td><span class="status-error">DoubleTap</span></td>
+                    </tr>
+                    
+                    <!-- js1_button2 - Deux modes -->
+                    <tr id="test-simple-2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[3]" value="js1_button2"></td>
+                        <td>Fire Secondary</td>
+                        <td><input type="text" name="opts[3]" value=""></td>
+                        <td><input type="text" name="value[3]" value=""></td>
+                        <td><span class="status-good">Normal</span></td>
+                    </tr>
+                    <tr id="test-hold-2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[4]" value="js1_button2"></td>
+                        <td>Lock Target Hold</td>
+                        <td><input type="text" name="opts[4]" value="activationmode"></td>
+                        <td><input type="text" name="value[4]" value="hold"></td>
+                        <td><span class="status-warn">Hold</span></td>
+                    </tr>
+                    
+                    <!-- HAT test -->
+                    <tr id="test-hat-simple">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[5]" value="js1_hat1_up"></td>
+                        <td>Look Up</td>
+                        <td><input type="text" name="opts[5]" value=""></td>
+                        <td><input type="text" name="value[5]" value=""></td>
+                        <td><span class="status-good">Normal</span></td>
+                    </tr>
+                    <tr id="test-hat-hold">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[6]" value="js1_hat1_up"></td>
+                        <td>Target Next Enemy Hold</td>
+                        <td><input type="text" name="opts[6]" value="activationmode"></td>
+                        <td><input type="text" name="value[6]" value="hold"></td>
+                        <td><span class="status-warn">Hold</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="card">
+            <h3>📜 Log des Événements</h3>
+            <button onclick="clearLog()" class="btn-warning">🗑️ Effacer Log</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SCConfigEditor } from '../../assets/js/scConfigEditor.js';
+        
+        let editor;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const colors = {
+                'info': '#333',
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107',
+                'anchor': '#007cba'
+            };
+            
+            logDiv.innerHTML += `<div style="color: ${colors[type] || colors.info}">
+                [${timestamp}] ${message}
+            </div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateStatus(message, className = 'status-good') {
+            const statusDiv = document.getElementById('system-status');
+            statusDiv.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+        
+        function addTestResult(testName, passed, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultClass = passed ? 'test-pass' : 'test-fail';
+            const icon = passed ? '✅' : '❌';
+            
+            resultsDiv.innerHTML += `
+                <div class="test-result ${resultClass}">
+                    ${icon} <strong>${testName}</strong>: ${message}
+                </div>
+            `;
+        }
+        
+        window.runAllTests = function() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<h4>🧪 Résultats des Tests</h4>';
+            
+            // Test 1 : Vérifier que SimplifiedBindingsHandler existe
+            try {
+                const hasSimplified = editor && editor.simplifiedBindings;
+                addTestResult('SimplifiedBindingsHandler', hasSimplified, hasSimplified ? 'Instance trouvée' : 'Instance manquante');
+            } catch (e) {
+                addTestResult('SimplifiedBindingsHandler', false, `Erreur: ${e.message}`);
+            }
+            
+            // Test 2 : Vérifier la configuration par défaut
+            try {
+                const useSimplified = editor && editor.useSimplifiedAnchoring;
+                addTestResult('Configuration Simplifié', useSimplified, useSimplified ? 'Activé par défaut' : 'Désactivé');
+            } catch (e) {
+                addTestResult('Configuration Simplifié', false, `Erreur: ${e.message}`);
+            }
+            
+            // Test 3 : Test d'ancrage manuel
+            try {
+                if (editor && editor.simplifiedBindings) {
+                    const result = editor.simplifiedBindings.anchorToInput('button', 1, 'button1', '');
+                    addTestResult('Ancrage Manuel Normal', result !== null, result ? 'Ancrage réussi' : 'Aucune ligne trouvée');
+                } else {
+                    addTestResult('Ancrage Manuel Normal', false, 'SimplifiedBindings non disponible');
+                }
+            } catch (e) {
+                addTestResult('Ancrage Manuel Normal', false, `Erreur: ${e.message}`);
+            }
+            
+            // Test 4 : Test d'ancrage Hold
+            try {
+                if (editor && editor.simplifiedBindings) {
+                    const result = editor.simplifiedBindings.anchorToInput('button', 1, 'button1', 'hold');
+                    addTestResult('Ancrage Manuel Hold', result !== null, result ? 'Ancrage Hold réussi' : 'Aucune ligne Hold trouvée');
+                } else {
+                    addTestResult('Ancrage Manuel Hold', false, 'SimplifiedBindings non disponible');
+                }
+            } catch (e) {
+                addTestResult('Ancrage Manuel Hold', false, `Erreur: ${e.message}`);
+            }
+            
+            // Test 5 : Test d'ancrage DoubleTap
+            try {
+                if (editor && editor.simplifiedBindings) {
+                    const result = editor.simplifiedBindings.anchorToInput('button', 1, 'button1', 'double_tap');
+                    addTestResult('Ancrage Manuel DoubleTap', result !== null, result ? 'Ancrage DoubleTap réussi' : 'Aucune ligne DoubleTap trouvée');
+                } else {
+                    addTestResult('Ancrage Manuel DoubleTap', false, 'SimplifiedBindings non disponible');
+                }
+            } catch (e) {
+                addTestResult('Ancrage Manuel DoubleTap', false, `Erreur: ${e.message}`);
+            }
+            
+            // Test 6 : Vérifier les styles CSS
+            try {
+                const stylesheet = Array.from(document.styleSheets).find(sheet => 
+                    sheet.href && sheet.href.includes('styles.css'));
+                const hasHighlightStyle = stylesheet ? true : false;
+                addTestResult('Styles CSS', hasHighlightStyle, hasHighlightStyle ? 'styles.css chargé' : 'styles.css manquant');
+            } catch (e) {
+                addTestResult('Styles CSS', false, `Erreur: ${e.message}`);
+            }
+            
+            log('Tests de validation terminés', 'info');
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                log('🚀 Initialisation du système...', 'info');
+                
+                // Données de test pour gamepads
+                const testDevicesData = [
+                    {
+                        id: "Test Gamepad",
+                        vendor_id: "0x045e",
+                        product_id: "0x028e",
+                        xml_instance: "1",
+                        axes_map: { "0": "x", "1": "y", "2": "z", "5": "rotz" },
+                        hats: {
+                            "9": {
+                                directions: {
+                                    "up": { "axis": 9, "value": -1, "value_min": -1.05, "value_max": -0.95 },
+                                    "down": { "axis": 9, "value": 0.13, "value_min": 0.08, "value_max": 0.18 },
+                                    "left": { "axis": 9, "value": 0.71, "value_min": 0.66, "value_max": 0.76 },
+                                    "right": { "axis": 9, "value": -0.43, "value_min": -0.48, "value_max": -0.38 }
+                                }
+                            }
+                        }
+                    }
+                ];
+                
+                window.devicesDataJs = testDevicesData;
+                
+                // Initialiser avec le système simplifié activé
+                editor = new SCConfigEditor({
+                    useSimplifiedAnchoring: true,
+                    devicesDataJs: testDevicesData,
+                    buttonNamesByInstance: { "1": { 1: "js1_button1", 2: "js1_button2" } }
+                });
+                
+                updateStatus('✅ Système d\'ancrage simplifié initialisé', 'status-good');
+                log('✅ SCConfigEditor initialisé avec système simplifié', 'success');
+                
+                // Vérifier périodiquement les gamepads
+                setInterval(checkGamepadStatus, 1000);
+                checkGamepadStatus();
+                
+            } catch (error) {
+                updateStatus(`❌ Erreur: ${error.message}`, 'status-error');
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+            }
+        });
+        
+        function checkGamepadStatus() {
+            const gamepads = navigator.getGamepads();
+            let connectedCount = 0;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) connectedCount++;
+            }
+            
+            const statusDiv = document.getElementById('gamepad-status');
+            if (connectedCount > 0) {
+                statusDiv.innerHTML = `🎮 ${connectedCount} gamepad(s) connecté(s)`;
+                statusDiv.className = 'status-good';
+            } else {
+                statusDiv.innerHTML = '🎮 Aucun gamepad détecté';
+                statusDiv.className = 'status-warn';
+            }
+        }
+        
+        // Écouter les événements gamepad
+        window.addEventListener('buttonPressed', (event) => {
+            const { instance, buttonName, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            log(`🎮 Bouton: ${buttonName}${modeText}`, 'success');
+        });
+        
+        window.addEventListener('hatMoved', (event) => {
+            const { instance, hatName, direction, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            log(`🧭 HAT: ${hatName} (${direction})${modeText}`, 'success');
+        });
+        
+        window.addEventListener('axisMoved', (event) => {
+            const { instance, axisName, value } = event.detail;
+            log(`🎯 Axe: ${axisName} = ${value.toFixed(3)}`, 'info');
+        });
+        
+        // Exposer editor globalement pour les tests
+        window.editor = editor;
+    </script>
+</body>
+</html>
