@@ -4,6 +4,11 @@ export class BindingsHandler {
         this.currentButtonIndex = {};
         this.currentAxisIndex = {};
         this.currentHatIndex = {};
+        
+        // Indices séparés par mode pour hold mode anchor enhancement
+        this.currentButtonIndexByMode = {}; // Structure: { 'js1_button1_hold': 0, 'js1_button1_': 0, etc. }
+        this.currentHatIndexByMode = {};    // Structure: { 'js1_hat1_up_hold': 0, 'js1_hat1_up_': 0, etc. }
+        
         this.lastInput = null; // Tracker le dernier input utilisé
         this.lastInputTime = 0; // Temps du dernier input
         this.lastCallTime = {}; // Temps des derniers appels par input pour éviter le spam
@@ -20,7 +25,7 @@ export class BindingsHandler {
         }
     }
 
-    cycleRows(rows, inputName, currentIndexMap) {
+    cycleRows(rows, inputName, currentIndexMap, mode = '') {
         if (!rows.length) {
             console.log(`[CycleRows] Aucune ligne trouvée pour ${inputName}`);
             return null;
@@ -30,38 +35,52 @@ export class BindingsHandler {
         const CYCLE_TIMEOUT = 1500; // 1.5 secondes pour considérer que c'est un nouvel input
         const MIN_CALL_INTERVAL = 50; // Minimum 50ms entre les appels pour le même input
         
+        // Créer une clé unique pour l'input avec son mode
+        const inputModeKey = `${inputName}_${mode}`;
+        
         // Protection anti-spam : éviter les appels trop rapprochés
-        const lastCallTime = this.lastCallTime[inputName] || 0;
+        const lastCallTime = this.lastCallTime[inputModeKey] || 0;
         if (now - lastCallTime < MIN_CALL_INTERVAL) {
-            console.log(`[CycleRows] Appel ignoré pour ${inputName} (spam protection: ${now - lastCallTime}ms < ${MIN_CALL_INTERVAL}ms)`);
+            console.log(`[CycleRows] Appel ignoré pour ${inputModeKey} (spam protection: ${now - lastCallTime}ms < ${MIN_CALL_INTERVAL}ms)`);
             return null;
         }
-        this.lastCallTime[inputName] = now;
+        this.lastCallTime[inputModeKey] = now;
         
-        // Vérifier si c'est le même input répété rapidement
-        const isSameInputRepeated = (this.lastInput === inputName && (now - this.lastInputTime) < CYCLE_TIMEOUT);
+        // Hold Mode Anchor Enhancement: utiliser des indices séparés par mode
+        let targetIndexMap;
+        if (currentIndexMap === this.currentButtonIndex) {
+            targetIndexMap = this.currentButtonIndexByMode;
+        } else if (currentIndexMap === this.currentHatIndex) {
+            targetIndexMap = this.currentHatIndexByMode;
+        } else {
+            // Fallback pour les axes qui n'ont pas de modes
+            targetIndexMap = currentIndexMap;
+        }
         
-        console.log(`[CycleRows] Input: ${inputName}, Rows: ${rows.length}, LastInput: ${this.lastInput}, TimeDiff: ${now - this.lastInputTime}ms, SameRepeated: ${isSameInputRepeated}`);
+        // Vérifier si c'est le même input+mode répété rapidement
+        const isSameInputRepeated = (this.lastInput === inputModeKey && (now - this.lastInputTime) < CYCLE_TIMEOUT);
+        
+        console.log(`[CycleRows] Input: ${inputModeKey}, Rows: ${rows.length}, LastInput: ${this.lastInput}, TimeDiff: ${now - this.lastInputTime}ms, SameRepeated: ${isSameInputRepeated}`);
         
         if (isSameInputRepeated) {
             // C'est un appui répété, on avance dans le cycle
-            const currentIndex = currentIndexMap[inputName] || 0;
+            const currentIndex = targetIndexMap[inputModeKey] || 0;
             const newIndex = (currentIndex + 1) % rows.length;
-            currentIndexMap[inputName] = newIndex;
-            console.log(`[CycleRows] Cycling: ${currentIndex} -> ${newIndex}`);
+            targetIndexMap[inputModeKey] = newIndex;
+            console.log(`[CycleRows] Cycling: ${currentIndex} -> ${newIndex} (mode: ${mode})`);
         } else {
-            // Nouveau input, on commence au début
-            currentIndexMap[inputName] = 0;
-            console.log(`[CycleRows] Nouveau input, index reset à 0`);
+            // Nouveau input+mode, on commence au début
+            targetIndexMap[inputModeKey] = 0;
+            console.log(`[CycleRows] Nouveau input+mode, index reset à 0 (mode: ${mode})`);
         }
         
         // Mettre à jour le tracker
-        this.lastInput = inputName;
+        this.lastInput = inputModeKey;
         this.lastInputTime = now;
         
-        const selectedRow = rows[currentIndexMap[inputName]];
+        const selectedRow = rows[targetIndexMap[inputModeKey]];
         const action = selectedRow?.cells[2]?.textContent || 'Unknown';
-        console.log(`[CycleRows] Sélection index ${currentIndexMap[inputName]}: ${action}`);
+        console.log(`[CycleRows] Sélection index ${targetIndexMap[inputModeKey]}: ${action} (mode: ${mode})`);
         
         return selectedRow;
     }

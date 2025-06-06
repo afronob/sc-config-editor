@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Hold Mode Anchor Analysis - SC Config Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 5px; padding: 20px; margin: 10px 0; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 20px 0; }
+        .test-button { background: #007cba; color: white; border: none; padding: 10px; border-radius: 3px; cursor: pointer; }
+        .test-button:hover { background: #005a8a; }
+        .bindings-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .bindings-table th, .bindings-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .bindings-table th { background-color: #f2f2f2; }
+        .highlighted { background-color: #ffeb3b !important; animation: pulse 0.5s; }
+        .log { background: #f8f9fa; border: 1px solid #ddd; padding: 10px; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+        .overlay { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 10px 20px; border-radius: 5px; z-index: 1000; display: none; }
+        input[type="text"] { width: 100%; box-sizing: border-box; }
+        .analysis { background: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 10px 0; }
+        .analysis h4 { margin-top: 0; color: #1976D2; }
+        .result-item { padding: 5px; margin: 2px 0; border-radius: 3px; }
+        .result-success { background: #d4edda; color: #155724; }
+        .result-error { background: #f8d7da; color: #721c24; }
+        .result-warning { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Hold Mode Anchor Analysis</h1>
+        
+        <div class="analysis">
+            <h4>🎯 Objectif du Test</h4>
+            <p>Analyser le comportement actuel du système d'ancrage avec les modes hold et identifier où implémenter l'amélioration pour rediriger vers les mappings hold spécifiques.</p>
+        </div>
+
+        <div class="card">
+            <h3>Scénario de Test</h3>
+            <p>Nous avons 3 bindings pour <code>js1_button1</code>:</p>
+            <ul>
+                <li><strong>Simple</strong>: Fire Primary (ligne 1)</li>
+                <li><strong>Hold</strong>: Fire Secondary (ligne 2) - avec <code>opts="activationmode"</code> et <code>value="hold"</code></li>
+                <li><strong>Double Tap</strong>: Fire Tertiary (ligne 3) - avec <code>opts="activationmode"</code> et <code>value="double_tap"</code></li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>Tests d'Analyse</h3>
+            <div class="test-grid">
+                <button class="test-button" onclick="testCurrentBehavior()">Test Comportement Actuel</button>
+                <button class="test-button" onclick="testSimpleMode()">Test Mode Simple</button>
+                <button class="test-button" onclick="testHoldMode()">Test Mode Hold</button>
+                <button class="test-button" onclick="testDoubleTapMode()">Test Mode Double Tap</button>
+                <button class="test-button" onclick="analyzeSearchLogic()">Analyser Logique de Recherche</button>
+                <button class="test-button" onclick="clearResults()">Effacer Résultats</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Résultats d'Analyse</h3>
+            <div id="results" class="log"></div>
+        </div>
+
+        <div class="card">
+            <h3>Tableau des Bindings Test</h3>
+            <table class="bindings-table" id="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Instance</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- js1_button1 - Simple -->
+                    <tr id="binding-simple">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[0]" value="js1_button1"></td>
+                        <td>Fire Primary</td>
+                        <td><input type="text" name="opts[0]" value=""></td>
+                        <td><input type="text" name="value[0]" value=""></td>
+                    </tr>
+                    <!-- js1_button1 - Hold -->
+                    <tr id="binding-hold">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[1]" value="js1_button1"></td>
+                        <td>Fire Secondary (Hold)</td>
+                        <td><input type="text" name="opts[1]" value="activationmode"></td>
+                        <td><input type="text" name="value[1]" value="hold"></td>
+                    </tr>
+                    <!-- js1_button1 - Double Tap -->
+                    <tr id="binding-doubletap">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[2]" value="js1_button1"></td>
+                        <td>Fire Tertiary (Double Tap)</td>
+                        <td><input type="text" name="opts[2]" value="activationmode"></td>
+                        <td><input type="text" name="value[2]" value="double_tap"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
+    <script type="module">
+        import { SCConfigEditor } from './assets/js/scConfigEditor.js';
+        
+        let editor;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const results = document.getElementById('results');
+            const entry = document.createElement('div');
+            entry.className = `result-item result-${type}`;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            results.appendChild(entry);
+            results.scrollTop = results.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function highlightRow(row) {
+            // Effacer toutes les surbrillances
+            document.querySelectorAll('.highlighted').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+            
+            // Surbrillancer la nouvelle ligne
+            if (row) {
+                row.classList.add('highlighted');
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                editor = new SCConfigEditor();
+                log('✅ Système initialisé', 'success');
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+            }
+        });
+        
+        window.testCurrentBehavior = function() {
+            log('=== ANALYSE DU COMPORTEMENT ACTUEL ===', 'info');
+            
+            // Test 1: Mode simple
+            log('🔍 Test 1: Recherche en mode simple');
+            const simpleRows = editor.bindingsHandler.findMappingRows('button', 1, 1, '');
+            log(`Résultat mode simple: ${simpleRows.length} lignes trouvées`);
+            simpleRows.forEach((row, i) => {
+                const action = row.cells[2].textContent;
+                log(`  - Ligne ${i+1}: ${action}`);
+            });
+            
+            // Test 2: Mode hold  
+            log('🔍 Test 2: Recherche en mode hold');
+            const holdRows = editor.bindingsHandler.findMappingRows('button', 1, 1, 'hold');
+            log(`Résultat mode hold: ${holdRows.length} lignes trouvées`);
+            holdRows.forEach((row, i) => {
+                const action = row.cells[2].textContent;
+                log(`  - Ligne ${i+1}: ${action}`);
+            });
+            
+            // Test 3: Mode double_tap
+            log('🔍 Test 3: Recherche en mode double_tap');
+            const dtRows = editor.bindingsHandler.findMappingRows('button', 1, 1, 'double_tap');
+            log(`Résultat mode double_tap: ${dtRows.length} lignes trouvées`);
+            dtRows.forEach((row, i) => {
+                const action = row.cells[2].textContent;
+                log(`  - Ligne ${i+1}: ${action}`);
+            });
+        };
+        
+        window.testSimpleMode = function() {
+            log('=== TEST MODE SIMPLE ===', 'info');
+            
+            editor.uiHandler.handleButtonPress({
+                instance: 1,
+                buttonName: 'js1_button1',
+                mode: ''
+            });
+            
+            log('✅ Simulation mode simple effectuée', 'success');
+        };
+        
+        window.testHoldMode = function() {
+            log('=== TEST MODE HOLD ===', 'info');
+            
+            editor.uiHandler.handleButtonPress({
+                instance: 1,
+                buttonName: 'js1_button1',
+                mode: 'hold'
+            });
+            
+            log('✅ Simulation mode hold effectuée', 'success');
+        };
+        
+        window.testDoubleTapMode = function() {
+            log('=== TEST MODE DOUBLE TAP ===', 'info');
+            
+            editor.uiHandler.handleButtonPress({
+                instance: 1,
+                buttonName: 'js1_button1',
+                mode: 'double_tap'
+            });
+            
+            log('✅ Simulation mode double_tap effectuée', 'success');
+        };
+        
+        window.analyzeSearchLogic = function() {
+            log('=== ANALYSE DE LA LOGIQUE DE RECHERCHE ===', 'info');
+            
+            // Analyser la fonction findRowsForButton
+            log('🔍 Analyse de findRowsForButton...');
+            
+            // Test direct avec les différents modes
+            const jsIdx = 1;
+            const btnIdx = 1;
+            
+            log('📊 Tests directs sur findRowsForButton:');
+            
+            // Mode vide (simple)
+            const simpleRows = editor.bindingsHandler.findRowsForButton(jsIdx, btnIdx, '');
+            log(`Mode '' (simple): ${simpleRows.length} lignes`);
+            
+            // Mode hold
+            const holdRows = editor.bindingsHandler.findRowsForButton(jsIdx, btnIdx, 'hold');
+            log(`Mode 'hold': ${holdRows.length} lignes`);
+            
+            // Mode double_tap
+            const dtRows = editor.bindingsHandler.findRowsForButton(jsIdx, btnIdx, 'double_tap');
+            log(`Mode 'double_tap': ${dtRows.length} lignes`);
+            
+            // Analyser le contenu de chaque ligne
+            log('📋 Détail des mappings trouvés:');
+            
+            document.querySelectorAll('#bindings-table tbody tr').forEach((row, index) => {
+                const input = row.querySelector('input[name^="input["]').value;
+                const action = row.cells[2].textContent;
+                const opts = row.querySelector('input[name^="opts["]').value;
+                const value = row.querySelector('input[name^="value["]').value;
+                
+                log(`Ligne ${index + 1}: ${input} -> ${action} (opts:'${opts}', value:'${value}')`);
+            });
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+            document.querySelectorAll('.highlighted').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+        };
+    </script>
+</body>
+</html>

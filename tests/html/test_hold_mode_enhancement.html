@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Hold Mode Anchor Enhancement - SC Config Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007cba; padding-bottom: 10px; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+        .test-button { background: #007cba; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .test-button:hover { background: #005a8a; transform: translateY(-1px); }
+        .test-button.hold { background: #28a745; }
+        .test-button.hold:hover { background: #1e7e34; }
+        .test-button.double-tap { background: #ffc107; color: #333; }
+        .test-button.double-tap:hover { background: #e0a800; }
+        .bindings-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .bindings-table th, .bindings-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .bindings-table th { background-color: #f8f9fa; font-weight: bold; }
+        .highlighted { background-color: #ffeb3b !important; animation: pulse 1s ease-in-out; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .log { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 5px; }
+        .overlay { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 12px 20px; border-radius: 5px; z-index: 1000; display: none; font-weight: bold; }
+        input[type="text"] { width: 100%; box-sizing: border-box; padding: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .scenario { background: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 15px 0; }
+        .scenario h4 { margin-top: 0; color: #1976D2; }
+        .step-counter { background: #007cba; color: white; border-radius: 50%; width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test Hold Mode Anchor Enhancement</h1>
+        
+        <div class="success">
+            <strong>✅ FONCTIONNALITÉ IMPLÉMENTÉE</strong><br>
+            Le système d'ancrage hold mode a été amélioré pour utiliser des indices de cycle séparés par mode.
+            Chaque mode (simple, hold, double_tap) maintient maintenant ses propres indices de navigation.
+        </div>
+
+        <div class="scenario">
+            <h4>🎮 Scénario de Test</h4>
+            <p><strong>js1_button1</strong> a 3 bindings différents :</p>
+            <ol>
+                <li><span class="step-counter">1</span><strong>Simple</strong>: Fire Primary</li>
+                <li><span class="step-counter">2</span><strong>Hold</strong>: Fire Secondary (Hold) - <code>activationmode="hold"</code></li>
+                <li><span class="step-counter">3</span><strong>Double Tap</strong>: Fire Tertiary (Double Tap) - <code>activationmode="double_tap"</code></li>
+            </ol>
+            
+            <p><strong>🧪 Test attendu :</strong> Chaque mode doit naviguer indépendamment. 
+            Si vous cyclés plusieurs fois en mode simple, puis passez en mode hold, 
+            le système doit pointer vers le premier binding hold, pas suivre l'index du mode simple.</p>
+        </div>
+
+        <div class="card">
+            <h3>🚀 Tests de Validation</h3>
+            <div class="test-grid">
+                <button class="test-button" onclick="testSimpleMode()">Mode Simple</button>
+                <button class="test-button hold" onclick="testHoldMode()">Mode Hold</button>
+                <button class="test-button double-tap" onclick="testDoubleTapMode()">Mode Double Tap</button>
+                <button class="test-button" onclick="testMixedScenario()">Scénario Mixte</button>
+                <button class="test-button" onclick="demonstrateImprovement()">Démonstration Amélioration</button>
+                <button class="test-button" onclick="clearResults()">Effacer</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📊 Résultats des Tests</h3>
+            <div id="results" class="log"></div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Tableau des Bindings</h3>
+            <table class="bindings-table" id="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Instance</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                        <th>Mode Détecté</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- js1_button1 - Simple -->
+                    <tr id="binding-simple">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[0]" value="js1_button1"></td>
+                        <td>Fire Primary</td>
+                        <td><input type="text" name="opts[0]" value=""></td>
+                        <td><input type="text" name="value[0]" value=""></td>
+                        <td><span style="color: #666;">Simple</span></td>
+                    </tr>
+                    <!-- js1_button1 - Hold -->
+                    <tr id="binding-hold">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[1]" value="js1_button1"></td>
+                        <td>Fire Secondary (Hold)</td>
+                        <td><input type="text" name="opts[1]" value="activationmode"></td>
+                        <td><input type="text" name="value[1]" value="hold"></td>
+                        <td><span style="color: #28a745; font-weight: bold;">Hold</span></td>
+                    </tr>
+                    <!-- js1_button1 - Double Tap -->
+                    <tr id="binding-doubletap">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[2]" value="js1_button1"></td>
+                        <td>Fire Tertiary (Double Tap)</td>
+                        <td><input type="text" name="opts[2]" value="activationmode"></td>
+                        <td><input type="text" name="value[2]" value="double_tap"></td>
+                        <td><span style="color: #ffc107; font-weight: bold;">Double Tap</span></td>
+                    </tr>
+                    
+                    <!-- Bindings supplémentaires pour test cycling -->
+                    <tr id="binding-simple-2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[3]" value="js1_button1"></td>
+                        <td>Target Ahead</td>
+                        <td><input type="text" name="opts[3]" value=""></td>
+                        <td><input type="text" name="value[3]" value=""></td>
+                        <td><span style="color: #666;">Simple</span></td>
+                    </tr>
+                    
+                    <tr id="binding-hold-2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[4]" value="js1_button1"></td>
+                        <td>Landing Lights (Hold)</td>
+                        <td><input type="text" name="opts[4]" value="activationmode"></td>
+                        <td><input type="text" name="value[4]" value="hold"></td>
+                        <td><span style="color: #28a745; font-weight: bold;">Hold</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
+    <script type="module">
+        import { SCConfigEditor } from './assets/js/scConfigEditor.js';
+        
+        let editor;
+        let testStep = 0;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const results = document.getElementById('results');
+            const entry = document.createElement('div');
+            
+            let style = '';
+            switch(type) {
+                case 'success': style = 'color: #28a745; font-weight: bold;'; break;
+                case 'error': style = 'color: #dc3545; font-weight: bold;'; break;
+                case 'warning': style = 'color: #ffc107; font-weight: bold;'; break;
+                case 'info': style = 'color: #17a2b8;'; break;
+                default: style = 'color: #333;';
+            }
+            
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            entry.style.cssText = style;
+            results.appendChild(entry);
+            results.scrollTop = results.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function highlightRow(row) {
+            // Effacer toutes les surbrillances
+            document.querySelectorAll('.highlighted').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+            
+            // Surbrillancer la nouvelle ligne
+            if (row) {
+                row.classList.add('highlighted');
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Analyser la ligne sélectionnée
+                const action = row.cells[2].textContent;
+                const opts = row.querySelector('input[name^="opts["]').value;
+                const value = row.querySelector('input[name^="value["]').value;
+                const mode = opts === 'activationmode' ? value : 'simple';
+                
+                log(`🎯 Ligne sélectionnée: ${action} (mode: ${mode})`, 'success');
+                return { action, mode, opts, value };
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                editor = new SCConfigEditor();
+                log('✅ Système initialisé - Hold Mode Anchor Enhancement activé', 'success');
+                log('📋 Test des indices séparés par mode prêt', 'info');
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+            }
+        });
+        
+        window.testSimpleMode = function() {
+            log('=== TEST MODE SIMPLE ===', 'info');
+            
+            editor.uiHandler.handleButtonPress({
+                instance: 1,
+                buttonName: 'js1_button1',
+                mode: ''
+            });
+            
+            log('✅ Simulation mode simple effectuée', 'success');
+        };
+        
+        window.testHoldMode = function() {
+            log('=== TEST MODE HOLD ===', 'info');
+            
+            editor.uiHandler.handleButtonPress({
+                instance: 1,
+                buttonName: 'js1_button1',
+                mode: 'hold'
+            });
+            
+            log('✅ Simulation mode hold effectuée', 'success');
+        };
+        
+        window.testDoubleTapMode = function() {
+            log('=== TEST MODE DOUBLE TAP ===', 'info');
+            
+            editor.uiHandler.handleButtonPress({
+                instance: 1,
+                buttonName: 'js1_button1',
+                mode: 'double_tap'
+            });
+            
+            log('✅ Simulation mode double_tap effectuée', 'success');
+        };
+        
+        window.testMixedScenario = function() {
+            log('=== TEST SCÉNARIO MIXTE ===', 'info');
+            log('🎮 Simulation d\'un utilisateur qui alterne entre modes...');
+            
+            setTimeout(() => {
+                log('👆 Appui 1: Mode simple', 'info');
+                testSimpleMode();
+            }, 100);
+            
+            setTimeout(() => {
+                log('👆 Appui 2: Mode simple (cycling)', 'info');
+                testSimpleMode();
+            }, 800);
+            
+            setTimeout(() => {
+                log('🔒 Appui 3: Mode hold (doit pointer vers premier hold)', 'warning');
+                testHoldMode();
+            }, 1500);
+            
+            setTimeout(() => {
+                log('🔒 Appui 4: Mode hold (cycling dans hold)', 'warning');
+                testHoldMode();
+            }, 2200);
+            
+            setTimeout(() => {
+                log('👆 Appui 5: Retour mode simple (doit continuer cycle simple)', 'info');
+                testSimpleMode();
+            }, 2900);
+        };
+        
+        window.demonstrateImprovement = function() {
+            log('=== DÉMONSTRATION DE L\'AMÉLIORATION ===', 'info');
+            log('🔧 Avant: Les modes partageaient le même index de cycle', 'warning');
+            log('✨ Maintenant: Chaque mode a ses propres indices séparés', 'success');
+            
+            // Afficher les structures d'indices
+            setTimeout(() => {
+                log('📊 Structures d\'indices actuelles:', 'info');
+                log(`currentButtonIndexByMode: ${JSON.stringify(editor.bindingsHandler.currentButtonIndexByMode)}`, 'info');
+                log(`currentHatIndexByMode: ${JSON.stringify(editor.bindingsHandler.currentHatIndexByMode)}`, 'info');
+                
+                // Test pratique
+                log('🧪 Test pratique: Mode simple → Hold → Simple', 'info');
+                
+                setTimeout(() => { 
+                    log('1️⃣ Premier appui simple', 'info');
+                    testSimpleMode(); 
+                }, 500);
+                
+                setTimeout(() => { 
+                    log('2️⃣ Deuxième appui simple (cycle)', 'info');
+                    testSimpleMode(); 
+                }, 1200);
+                
+                setTimeout(() => { 
+                    log('3️⃣ Appui hold (index séparé)', 'warning');
+                    testHoldMode(); 
+                }, 1900);
+                
+                setTimeout(() => { 
+                    log('4️⃣ Retour simple (continue où on était)', 'info');
+                    testSimpleMode(); 
+                }, 2600);
+                
+                setTimeout(() => {
+                    log('📊 Indices finaux:', 'success');
+                    log(`currentButtonIndexByMode: ${JSON.stringify(editor.bindingsHandler.currentButtonIndexByMode)}`, 'success');
+                }, 3300);
+            }, 500);
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '';
+            document.querySelectorAll('.highlighted').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+            
+            // Reset des indices pour test propre
+            if (editor && editor.bindingsHandler) {
+                editor.bindingsHandler.currentButtonIndexByMode = {};
+                editor.bindingsHandler.currentHatIndexByMode = {};
+                editor.bindingsHandler.currentButtonIndex = {};
+                editor.bindingsHandler.currentHatIndex = {};
+                editor.bindingsHandler.lastInput = null;
+                editor.bindingsHandler.lastInputTime = 0;
+            }
+            
+            log('🔄 Résultats effacés - Indices réinitialisés', 'info');
+        };
+    </script>
+</body>
+</html>

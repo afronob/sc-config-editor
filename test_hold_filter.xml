@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="test_profile">
+    <CustomisationUIHeader label="Test Hold Filter" description="Fichier de test pour le filtre hold mode" />
+    <actionmap name="spaceship_movement">
+        <action name="v_pitch">
+            <rebind input="" />
+        </action>
+        <action name="v_yaw">
+            <rebind input="js1_button1" activationmode="press" />
+        </action>
+        <action name="v_roll">
+            <rebind input="js1_button2" activationmode="hold" />
+        </action>
+        <action name="v_strafe_forward">
+            <rebind input="js1_" />
+        </action>
+        <action name="v_strafe_up">
+            <rebind input="kb1_space" activationmode="HOLD" />
+        </action>
+    </actionmap>
+    <actionmap name="spaceship_weapons">
+        <action name="v_weapon_group_1">
+            <rebind input="js1_button3" activationmode="double_tap" />
+        </action>
+        <action name="v_weapon_group_2">
+            <rebind input="mo_" />
+        </action>
+        <action name="v_weapon_group_3">
+            <rebind input="kb1_g" activationmode="hold" />
+        </action>
+    </actionmap>
+</ActionMaps>

@@ -48,7 +48,8 @@ ob_start();
 <?= isset($actionsInfo) ? $actionsInfo : '' ?>
 <!-- Filtres -->
 <div style="margin-bottom:1em;"><b>Filtres</b><br>
-<label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label>
+<label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+<label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
 </div>
 <form method="post">
     <input type="hidden" name="save" value="1">

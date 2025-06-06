@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Hold Mode Anchor avec Gamepad Réel - SC Config Editor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card h3 { margin-top: 0; color: #333; border-bottom: 2px solid #007cba; padding-bottom: 10px; }
+        .gamepad-status { padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .gamepad-connected { background: #d4edda; color: #155724; }
+        .gamepad-disconnected { background: #f8d7da; color: #721c24; }
+        .bindings-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .bindings-table th, .bindings-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .bindings-table th { background-color: #f8f9fa; font-weight: bold; }
+        .highlighted { background-color: #ffeb3b !important; animation: pulse 1s ease-in-out; box-shadow: 0 0 10px rgba(255, 235, 59, 0.6); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .log { background: #f8f9fa; border: 1px solid #ddd; padding: 15px; max-height: 500px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 13px; border-radius: 5px; }
+        .overlay { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); color: white; padding: 12px 20px; border-radius: 5px; z-index: 1000; display: none; font-weight: bold; font-size: 16px; }
+        input[type="text"] { width: 100%; box-sizing: border-box; padding: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        .instructions { background: #e7f3ff; border-left: 4px solid #2196F3; padding: 15px; margin: 15px 0; }
+        .instructions h4 { margin-top: 0; color: #1976D2; }
+        .event-log { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .mode-simple { color: #666; }
+        .mode-hold { color: #28a745; font-weight: bold; }
+        .mode-double-tap { color: #ffc107; font-weight: bold; }
+        .clear-btn { background: #6c757d; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; margin: 5px; }
+        .clear-btn:hover { background: #545b62; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Test Hold Mode Anchor avec Gamepad Réel</h1>
+        
+        <div class="instructions">
+            <h4>🎯 Instructions de Test</h4>
+            <ol>
+                <li><strong>Connectez un gamepad</strong> et vérifiez qu'il est détecté</li>
+                <li><strong>Testez les différents modes</strong> sur le même bouton :
+                    <ul>
+                        <li><span class="mode-simple">Simple</span> : Appui rapide</li>
+                        <li><span class="mode-hold">Hold</span> : Maintenez ≥ 500ms</li>
+                        <li><span class="mode-double-tap">Double Tap</span> : 2 appuis rapides ≤ 300ms</li>
+                    </ul>
+                </li>
+                <li><strong>Observez l'ancrage</strong> : Chaque mode doit naviguer indépendamment</li>
+                <li><strong>Vérifiez les indices</strong> : Les cycles doivent être séparés par mode</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h3>🎮 Statut Gamepad</h3>
+            <div id="gamepad-status" class="gamepad-status gamepad-disconnected">
+                Aucun gamepad détecté - Connectez un gamepad pour commencer
+            </div>
+            <div id="gamepad-details"></div>
+        </div>
+
+        <div class="card event-log">
+            <div>
+                <h3>📥 Événements Gamepad</h3>
+                <button class="clear-btn" onclick="clearGamepadLog()">Effacer</button>
+                <div id="gamepad-log" class="log"></div>
+            </div>
+            <div>
+                <h3>🎯 Événements d'Ancrage</h3>
+                <button class="clear-btn" onclick="clearAnchorLog()">Effacer</button>
+                <div id="anchor-log" class="log"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>📊 État des Indices de Cycle</h3>
+            <div id="cycle-indices" class="log" style="max-height: 200px;"></div>
+        </div>
+
+        <div class="card">
+            <h3>📋 Tableau des Bindings de Test</h3>
+            <table class="bindings-table" id="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Instance</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                        <th>Mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- js1_button1 - Modes multiples -->
+                    <tr id="binding-simple-1">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[0]" value="js1_button1"></td>
+                        <td>Fire Primary</td>
+                        <td><input type="text" name="opts[0]" value=""></td>
+                        <td><input type="text" name="value[0]" value=""></td>
+                        <td><span class="mode-simple">Simple</span></td>
+                    </tr>
+                    <tr id="binding-simple-2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[1]" value="js1_button1"></td>
+                        <td>Target Ahead</td>
+                        <td><input type="text" name="opts[1]" value=""></td>
+                        <td><input type="text" name="value[1]" value=""></td>
+                        <td><span class="mode-simple">Simple</span></td>
+                    </tr>
+                    <tr id="binding-hold-1">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[2]" value="js1_button1"></td>
+                        <td>Fire Secondary (Hold)</td>
+                        <td><input type="text" name="opts[2]" value="activationmode"></td>
+                        <td><input type="text" name="value[2]" value="hold"></td>
+                        <td><span class="mode-hold">Hold</span></td>
+                    </tr>
+                    <tr id="binding-hold-2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[3]" value="js1_button1"></td>
+                        <td>Landing Lights (Hold)</td>
+                        <td><input type="text" name="opts[3]" value="activationmode"></td>
+                        <td><input type="text" name="value[3]" value="hold"></td>
+                        <td><span class="mode-hold">Hold</span></td>
+                    </tr>
+                    <tr id="binding-doubletap-1">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[4]" value="js1_button1"></td>
+                        <td>Fire Tertiary (Double Tap)</td>
+                        <td><input type="text" name="opts[4]" value="activationmode"></td>
+                        <td><input type="text" name="value[4]" value="double_tap"></td>
+                        <td><span class="mode-double-tap">Double Tap</span></td>
+                    </tr>
+                    
+                    <!-- js1_button2 - Pour comparaison -->
+                    <tr id="binding-button2">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[5]" value="js1_button2"></td>
+                        <td>Space Brake</td>
+                        <td><input type="text" name="opts[5]" value=""></td>
+                        <td><input type="text" name="value[5]" value=""></td>
+                        <td><span class="mode-simple">Simple</span></td>
+                    </tr>
+                    
+                    <!-- HAT pour test complet -->
+                    <tr id="binding-hat-simple">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[6]" value="js1_hat1_up"></td>
+                        <td>Look Up</td>
+                        <td><input type="text" name="opts[6]" value=""></td>
+                        <td><input type="text" name="value[6]" value=""></td>
+                        <td><span class="mode-simple">Simple</span></td>
+                    </tr>
+                    <tr id="binding-hat-hold">
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[7]" value="js1_hat1_up"></td>
+                        <td>Target Nearest Enemy (Hold)</td>
+                        <td><input type="text" name="opts[7]" value="activationmode"></td>
+                        <td><input type="text" name="value[7]" value="hold"></td>
+                        <td><span class="mode-hold">Hold</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="overlay" class="overlay"></div>
+
+    <script type="module">
+        import { SCConfigEditor } from './assets/js/scConfigEditor.js';
+        
+        let editor;
+        let gamepadCheckInterval;
+        
+        function logGamepad(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const log = document.getElementById('gamepad-log');
+            const entry = document.createElement('div');
+            
+            let style = '';
+            switch(type) {
+                case 'success': style = 'color: #28a745; font-weight: bold;'; break;
+                case 'error': style = 'color: #dc3545; font-weight: bold;'; break;
+                case 'warning': style = 'color: #ffc107; font-weight: bold;'; break;
+                case 'hold': style = 'color: #28a745; font-weight: bold;'; break;
+                case 'double_tap': style = 'color: #ffc107; font-weight: bold;'; break;
+                default: style = 'color: #333;';
+            }
+            
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            entry.style.cssText = style;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function logAnchor(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const log = document.getElementById('anchor-log');
+            const entry = document.createElement('div');
+            
+            let style = '';
+            switch(type) {
+                case 'success': style = 'color: #28a745; font-weight: bold;'; break;
+                case 'error': style = 'color: #dc3545; font-weight: bold;'; break;
+                case 'anchor': style = 'color: #007cba; font-weight: bold;'; break;
+                default: style = 'color: #333;';
+            }
+            
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            entry.style.cssText = style;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function updateCycleIndices() {
+            if (!editor || !editor.bindingsHandler) return;
+            
+            const cycleDiv = document.getElementById('cycle-indices');
+            const buttonIndices = JSON.stringify(editor.bindingsHandler.currentButtonIndexByMode, null, 2);
+            const hatIndices = JSON.stringify(editor.bindingsHandler.currentHatIndexByMode, null, 2);
+            
+            cycleDiv.innerHTML = `
+                <strong>Indices Boutons par Mode:</strong><br>
+                <pre>${buttonIndices}</pre>
+                <strong>Indices HATs par Mode:</strong><br>
+                <pre>${hatIndices}</pre>
+                <em>Dernière mise à jour: ${new Date().toLocaleTimeString()}</em>
+            `;
+        }
+        
+        function checkGamepadStatus() {
+            const gamepads = navigator.getGamepads();
+            const statusDiv = document.getElementById('gamepad-status');
+            const detailsDiv = document.getElementById('gamepad-details');
+            
+            let connectedGamepads = [];
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    connectedGamepads.push(gamepads[i]);
+                }
+            }
+            
+            if (connectedGamepads.length > 0) {
+                statusDiv.className = 'gamepad-status gamepad-connected';
+                statusDiv.innerHTML = `✅ ${connectedGamepads.length} gamepad(s) connecté(s)`;
+                
+                let details = '<ul>';
+                connectedGamepads.forEach((gp, i) => {
+                    details += `<li><strong>${gp.id}</strong> - Index: ${gp.index} - Boutons: ${gp.buttons.length} - Axes: ${gp.axes.length}</li>`;
+                });
+                details += '</ul>';
+                detailsDiv.innerHTML = details;
+            } else {
+                statusDiv.className = 'gamepad-status gamepad-disconnected';
+                statusDiv.innerHTML = 'Aucun gamepad détecté - Connectez un gamepad pour commencer';
+                detailsDiv.innerHTML = '';
+            }
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Simuler des données device pour le test
+                const testDevicesData = [
+                    {
+                        id: "Test Controller",
+                        vendor_id: "0x045e",
+                        product_id: "0x028e",
+                        xml_instance: "1",
+                        axes_map: {
+                            "0": "x",
+                            "1": "y",
+                            "2": "z",
+                            "5": "rotz"
+                        },
+                        hats: {
+                            "9": {
+                                directions: {
+                                    "up": { "axis": 9, "value": -1, "value_min": -1.05, "value_max": -0.95 },
+                                    "down": { "axis": 9, "value": 0.13, "value_min": 0.08, "value_max": 0.18 },
+                                    "left": { "axis": 9, "value": 0.71, "value_min": 0.66, "value_max": 0.76 },
+                                    "right": { "axis": 9, "value": -0.43, "value_min": -0.48, "value_max": -0.38 }
+                                }
+                            }
+                        }
+                    }
+                ];
+                
+                window.devicesDataJs = testDevicesData;
+                
+                editor = new SCConfigEditor({
+                    devicesDataJs: testDevicesData,
+                    buttonNamesByInstance: { "1": { 1: "js1_button1", 2: "js1_button2" } }
+                });
+                
+                logAnchor('✅ Système Hold Mode Anchor initialisé', 'success');
+                logGamepad('🎮 Système gamepad démarré', 'success');
+                
+                // Vérifier le statut des gamepads régulièrement
+                gamepadCheckInterval = setInterval(checkGamepadStatus, 1000);
+                checkGamepadStatus();
+                
+                // Mettre à jour les indices régulièrement
+                setInterval(updateCycleIndices, 1000);
+                updateCycleIndices();
+                
+            } catch (error) {
+                logAnchor(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+            }
+        });
+        
+        // Événements gamepad personnalisés
+        window.addEventListener('buttonPressed', (event) => {
+            const { instance, buttonName, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            logGamepad(`🎮 Bouton: ${buttonName}${modeText}`, mode || 'info');
+            
+            // Log de l'ancrage
+            logAnchor(`🎯 Recherche ancrage pour ${buttonName} mode '${mode}'`, 'anchor');
+            updateCycleIndices();
+        });
+        
+        window.addEventListener('hatMoved', (event) => {
+            const { instance, hatName, direction, mode } = event.detail;
+            const modeText = mode ? ` [${mode.toUpperCase()}]` : ' [SIMPLE]';
+            logGamepad(`🧭 HAT: ${hatName} (${direction})${modeText}`, mode || 'info');
+            
+            // Log de l'ancrage
+            logAnchor(`🎯 Recherche ancrage pour ${hatName} mode '${mode}'`, 'anchor');
+            updateCycleIndices();
+        });
+        
+        window.addEventListener('axisMoved', (event) => {
+            const { instance, axisName, value } = event.detail;
+            logGamepad(`🎯 Axe: ${axisName} = ${value.toFixed(3)}`, 'info');
+        });
+        
+        window.clearGamepadLog = function() {
+            document.getElementById('gamepad-log').innerHTML = '';
+        };
+        
+        window.clearAnchorLog = function() {
+            document.getElementById('anchor-log').innerHTML = '';
+        };
+        
+        // Cleanup
+        window.addEventListener('beforeunload', () => {
+            if (gamepadCheckInterval) {
+                clearInterval(gamepadCheckInterval);
+            }
+        });
+    </script>
+</body>
+</html>

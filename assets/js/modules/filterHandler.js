@@ -1,33 +1,82 @@
 export class FilterHandler {
     constructor() {
+        this.initialized = false;
         this.setupEventListeners();
     }
 
     setupEventListeners() {
-        const filterBox = document.getElementById('filter-nonempty');
-        const table = document.getElementById('bindings-table');
-        
-        if (filterBox) {
-            filterBox.addEventListener('change', () => {
-                this.updateFilters(filterBox.checked, table);
-            });
-        }
+        // Use a slight delay to ensure DOM elements are available
+        setTimeout(() => {
+            this.initializeFilters();
+        }, 100);
     }
 
-    updateFilters(showOnlyNonEmpty, table) {
+    initializeFilters() {
+        const filterNonEmpty = document.getElementById('filter-nonempty');
+        const filterHold = document.getElementById('filter-hold');
+        const table = document.getElementById('bindings-table');
+        
+        if (filterNonEmpty) {
+            filterNonEmpty.addEventListener('change', () => {
+                this.updateFilters(table);
+            });
+        }
+        
+        if (filterHold) {
+            filterHold.addEventListener('change', () => {
+                this.updateFilters(table);
+            });
+        }
+        
+        this.initialized = true;
+        console.log('🎯 FilterHandler initialized successfully', {
+            nonEmptyFilter: !!filterNonEmpty,
+            holdFilter: !!filterHold,
+            table: !!table
+        });
+    }
+
+    updateFilters(table) {
         if (!table) return;
+        
+        // Ensure filters are initialized
+        if (!this.initialized) {
+            this.initializeFilters();
+        }
+        
+        const filterNonEmpty = document.getElementById('filter-nonempty');
+        const filterHold = document.getElementById('filter-hold');
+        
+        const showOnlyNonEmpty = filterNonEmpty && filterNonEmpty.checked;
+        const showOnlyHold = filterHold && filterHold.checked;
+        
+        console.log('🔍 Updating filters:', { showOnlyNonEmpty, showOnlyHold });
         
         Array.from(table.rows).forEach((row, idx) => {
             if (idx === 0) return; // skip header
-            const inputCell = row.querySelector('input[name^="input["]');
+            
+            // Récupérer les valeurs nécessaires
+            const inputCell = row.cells[3] ? row.cells[3].querySelector('input') : null;
+            const actionId = row.cells[1] ? row.cells[1].textContent.trim() : ''; // 2ème colonne = ID de l'action
+            const actionName = row.cells[2] ? row.cells[2].textContent.trim() : ''; // 3ème colonne = nom de l'action
+            
             if (!inputCell) return;
             
-            const val = inputCell.value;
-            if (showOnlyNonEmpty) {
-                row.style.display = this.isBindingEmpty(val) ? 'none' : '';
-            } else {
-                row.style.display = '';
+            const inputVal = inputCell.value;
+            
+            let shouldShow = true;
+            
+            // Appliquer le filtre non-vide si activé
+            if (showOnlyNonEmpty && this.isBindingEmpty(inputVal)) {
+                shouldShow = false;
             }
+            
+            // Appliquer le filtre hold si activé (regarder l'ID ET le nom de l'action)
+            if (showOnlyHold && !this.isHoldModeAction(actionId, actionName)) {
+                shouldShow = false;
+            }
+            
+            row.style.display = shouldShow ? '' : 'none';
         });
     }
 
@@ -35,6 +84,26 @@ export class FilterHandler {
         return val.trim() === '' || 
                /^((js|kb|mo)[0-9]+_)$/i.test(val.trim()) || 
                /^mo_$/i.test(val.trim());
+    }
+
+    isHoldModeAction(actionId, actionName) {
+        // Vérifier l'ID de l'action (colonne "action")
+        const actionIdLower = actionId.toLowerCase();
+        const hasHoldInId = actionIdLower.includes('_hold') || 
+                           actionIdLower.endsWith('hold') ||
+                           actionIdLower.includes('hold_');
+        
+        // Vérifier le nom de l'action (colonne "name") 
+        const actionNameLower = actionName.toLowerCase();
+        const hasHoldInName = actionNameLower.includes('(hold)') || 
+                             actionNameLower.includes('hold') ||
+                             actionNameLower.includes('maintenir') ||
+                             actionNameLower.includes('continuous') ||
+                             actionNameLower.includes('continu') ||
+                             actionNameLower.includes('temporarily');
+        
+        // Retourner true si l'une des deux colonnes indique Hold
+        return hasHoldInId || hasHoldInName;
     }
 }
 
@@ -63,7 +132,8 @@ export class BindingsModal {
         const bindingsByButton = {};
         
         rows.forEach(row => {
-            const inputCell = row.querySelector('input[name^="input["]');
+            // Chercher l'input dans la 4ème colonne (index 3)
+            const inputCell = row.cells[3] ? row.cells[3].querySelector('input') : null;
             if (!inputCell) return;
             
             const val = inputCell.value.trim();
@@ -71,10 +141,12 @@ export class BindingsModal {
             
             if (match && match[2] == instance) {
                 const button = match[0];
-                const action = row.cells[2].textContent;
+                const action = row.cells[1].textContent;
                 const category = row.cells[0].textContent;
-                const opts = row.cells[4].querySelector('input')?.value || '';
-                const value = row.cells[5].querySelector('input')?.value || '';
+                
+                // Chercher opts et value dans les colonnes 5 et 6
+                const opts = row.cells[4] ? (row.cells[4].querySelector('input')?.value || '') : '';
+                const value = row.cells[5] ? (row.cells[5].querySelector('input')?.value || '') : '';
                 
                 bindingsByButton[button] = bindingsByButton[button] || [];
                 bindingsByButton[button].push({ action, category, opts, value });

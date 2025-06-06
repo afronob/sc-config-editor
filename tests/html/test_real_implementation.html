@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Implémentation Réelle - Filtres Hold</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .filter-section { margin: 20px 0; padding: 15px; background: #f9f9f9; border: 1px solid #ddd; }
+        .diagnostic { margin: 20px 0; padding: 10px; background: #e8f4f8; border-left: 4px solid #2196F3; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        input[type="checkbox"] { margin-right: 8px; }
+        label { display: block; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de l'Implémentation Réelle - Filtres Hold</h1>
+    
+    <div class="diagnostic" id="diagnostic">
+        <h3>📊 Diagnostic en cours...</h3>
+        <div id="diagnostic-results"></div>
+    </div>
+
+    <!-- Simulation de la structure réelle -->
+    <div class="filter-section">
+        <h3>🔍 Filtres</h3>
+        <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label>
+        <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+    </div>
+
+    <table id="bindings-table">
+        <thead>
+            <tr>
+                <th>Catégorie</th>
+                <th>Sous-catégorie</th>
+                <th>Action</th>
+                <th>Input</th>
+                <th>Opts</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Binding vide -->
+            <tr>
+                <td>Flight</td>
+                <td>Movement</td>
+                <td>Forward</td>
+                <td><input name="input[0]" value=""></td>
+                <td><input name="opts[0]" value=""></td>
+                <td><input name="value[0]" value=""></td>
+            </tr>
+            <!-- Binding normal -->
+            <tr>
+                <td>Flight</td>
+                <td>Movement</td>
+                <td>Backward</td>
+                <td><input name="input[1]" value="js1_button1"></td>
+                <td><input name="opts[1]" value=""></td>
+                <td><input name="value[1]" value=""></td>
+            </tr>
+            <!-- Binding Hold mode -->
+            <tr>
+                <td>Flight</td>
+                <td>Weapons</td>
+                <td>Fire</td>
+                <td><input name="input[2]" value="js1_button2"></td>
+                <td><input name="opts[2]" value="ActivationMode"></td>
+                <td><input name="value[2]" value="hold"></td>
+            </tr>
+            <!-- Binding Hold mode (case variation) -->
+            <tr>
+                <td>Flight</td>
+                <td>Weapons</td>
+                <td>Secondary Fire</td>
+                <td><input name="input[3]" value="js1_button3"></td>
+                <td><input name="opts[3]" value="activationmode"></td>
+                <td><input name="value[3]" value="HOLD"></td>
+            </tr>
+            <!-- Binding avec input partiel -->
+            <tr>
+                <td>Flight</td>
+                <td>Movement</td>
+                <td>Strafe Left</td>
+                <td><input name="input[4]" value="js1_"></td>
+                <td><input name="opts[4]" value=""></td>
+                <td><input name="value[4]" value=""></td>
+            </tr>
+            <!-- Binding Hold mode avec input vide -->
+            <tr>
+                <td>Flight</td>
+                <td>Weapons</td>
+                <td>Lock Target</td>
+                <td><input name="input[5]" value=""></td>
+                <td><input name="opts[5]" value="ActivationMode"></td>
+                <td><input name="value[5]" value="hold"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="diagnostic">
+        <h3>🎮 Tests Manuels</h3>
+        <button onclick="testNonEmptyFilter()">Tester Filtre Non-Vide</button>
+        <button onclick="testHoldFilter()">Tester Filtre Hold</button>
+        <button onclick="testCombinedFilters()">Tester Filtres Combinés</button>
+        <button onclick="resetFilters()">Reset Filtres</button>
+        <div id="manual-test-results"></div>
+    </div>
+
+    <script type="module">
+        // Import direct depuis la structure réelle
+        import { SCConfigEditor } from '/assets/js/scConfigEditor.js';
+
+        let scEditor;
+        let filterHandler;
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('diagnostic-results');
+            const span = document.createElement('div');
+            span.className = type;
+            span.innerHTML = `${new Date().toLocaleTimeString()} - ${message}`;
+            results.appendChild(span);
+        }
+
+        function manualLog(message, type = 'info') {
+            const results = document.getElementById('manual-test-results');
+            const span = document.createElement('div');
+            span.className = type;
+            span.innerHTML = `${message}`;
+            results.appendChild(span);
+        }
+
+        // Fonction pour analyser l'état des filtres
+        function analyzeFilters() {
+            const table = document.getElementById('bindings-table');
+            const rows = Array.from(table.rows).slice(1); // Skip header
+            
+            let visible = 0, hidden = 0;
+            const details = [];
+            
+            rows.forEach((row, idx) => {
+                const isVisible = row.style.display !== 'none';
+                const inputVal = row.querySelector('input[name^="input["]').value;
+                const optsVal = row.querySelector('input[name^="opts["]').value;
+                const valueVal = row.querySelector('input[name^="value["]').value;
+                
+                if (isVisible) visible++;
+                else hidden++;
+                
+                details.push({
+                    index: idx,
+                    visible: isVisible,
+                    input: inputVal,
+                    opts: optsVal,
+                    value: valueVal
+                });
+            });
+            
+            return { visible, hidden, total: rows.length, details };
+        }
+
+        // Tests manuels
+        window.testNonEmptyFilter = function() {
+            manualLog('<h4>🧪 Test Filtre Non-Vide</h4>', 'info');
+            
+            // Reset first
+            document.getElementById('filter-nonempty').checked = false;
+            document.getElementById('filter-hold').checked = false;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            
+            // Apply non-empty filter
+            document.getElementById('filter-nonempty').checked = true;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            
+            const result = analyzeFilters();
+            manualLog(`Résultat: ${result.visible}/${result.total} lignes visibles`, 'info');
+            
+            result.details.forEach(detail => {
+                if (detail.visible) {
+                    manualLog(`✅ Ligne ${detail.index}: "${detail.input}" (visible)`, 'success');
+                } else {
+                    manualLog(`❌ Ligne ${detail.index}: "${detail.input}" (masquée)`, 'error');
+                }
+            });
+        };
+
+        window.testHoldFilter = function() {
+            manualLog('<h4>🎯 Test Filtre Hold</h4>', 'info');
+            
+            // Reset first
+            document.getElementById('filter-nonempty').checked = false;
+            document.getElementById('filter-hold').checked = false;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            
+            // Apply hold filter
+            document.getElementById('filter-hold').checked = true;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            
+            const result = analyzeFilters();
+            manualLog(`Résultat: ${result.visible}/${result.total} lignes visibles`, 'info');
+            
+            result.details.forEach(detail => {
+                const isHold = detail.opts.toLowerCase() === 'activationmode' && detail.value.toLowerCase() === 'hold';
+                if (detail.visible) {
+                    manualLog(`✅ Ligne ${detail.index}: opts="${detail.opts}" value="${detail.value}" ${isHold ? '(HOLD)' : '(NON-HOLD)'} (visible)`, isHold ? 'success' : 'error');
+                } else {
+                    manualLog(`❌ Ligne ${detail.index}: opts="${detail.opts}" value="${detail.value}" ${isHold ? '(HOLD)' : '(NON-HOLD)'} (masquée)`, isHold ? 'error' : 'success');
+                }
+            });
+        };
+
+        window.testCombinedFilters = function() {
+            manualLog('<h4>🔄 Test Filtres Combinés</h4>', 'info');
+            
+            // Reset first
+            document.getElementById('filter-nonempty').checked = false;
+            document.getElementById('filter-hold').checked = false;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            
+            // Apply both filters
+            document.getElementById('filter-nonempty').checked = true;
+            document.getElementById('filter-hold').checked = true;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            
+            const result = analyzeFilters();
+            manualLog(`Résultat: ${result.visible}/${result.total} lignes visibles`, 'info');
+            
+            result.details.forEach(detail => {
+                const isEmpty = filterHandler.isBindingEmpty(detail.input);
+                const isHold = detail.opts.toLowerCase() === 'activationmode' && detail.value.toLowerCase() === 'hold';
+                const shouldBeVisible = !isEmpty && isHold;
+                
+                if (detail.visible === shouldBeVisible) {
+                    manualLog(`✅ Ligne ${detail.index}: ${shouldBeVisible ? 'visible' : 'masquée'} (correct)`, 'success');
+                } else {
+                    manualLog(`❌ Ligne ${detail.index}: ${detail.visible ? 'visible' : 'masquée'} (devrait être ${shouldBeVisible ? 'visible' : 'masquée'})`, 'error');
+                }
+            });
+        };
+
+        window.resetFilters = function() {
+            document.getElementById('filter-nonempty').checked = false;
+            document.getElementById('filter-hold').checked = false;
+            filterHandler.updateFilters(document.getElementById('bindings-table'));
+            manualLog('<h4>🔄 Filtres remis à zéro</h4>', 'info');
+        };
+
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Initialisation du test...', 'info');
+            
+            try {
+                // Simuler la configuration comme dans layout.php
+                const config = {
+                    buttonNamesByInstance: {},
+                    devicesData: []
+                };
+                
+                scEditor = new SCConfigEditor(config);
+                filterHandler = scEditor.filter;
+                
+                log(`✅ SCConfigEditor initialisé`, 'success');
+                log(`✅ FilterHandler: ${filterHandler ? 'OK' : 'ERREUR'}`, filterHandler ? 'success' : 'error');
+                
+                if (filterHandler) {
+                    log(`🔧 Méthodes disponibles:`, 'info');
+                    log(`   - isBindingEmpty: ${typeof filterHandler.isBindingEmpty}`, 'info');
+                    log(`   - isHoldModeBinding: ${typeof filterHandler.isHoldModeBinding}`, 'info');
+                    log(`   - updateFilters: ${typeof filterHandler.updateFilters}`, 'info');
+                    
+                    // Test des checkbox
+                    const nonEmptyCheckbox = document.getElementById('filter-nonempty');
+                    const holdCheckbox = document.getElementById('filter-hold');
+                    
+                    log(`📋 Checkbox non-empty: ${nonEmptyCheckbox ? 'OK' : 'ERREUR'}`, nonEmptyCheckbox ? 'success' : 'error');
+                    log(`📋 Checkbox hold: ${holdCheckbox ? 'OK' : 'ERREUR'}`, holdCheckbox ? 'success' : 'error');
+                    
+                    if (nonEmptyCheckbox && holdCheckbox) {
+                        log(`🎯 Système prêt pour les tests manuels`, 'success');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Diagnostic des filtres</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .diagnostic { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .code { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; margin: 10px 0; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        .filter-section { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnostic du système de filtres</h1>
+    
+    <div class="diagnostic info">
+        <h3>📋 Étapes de diagnostic</h3>
+        <ol>
+            <li>Vérifier que les éléments de filtre existent</li>
+            <li>Vérifier que la table existe</li>
+            <li>Vérifier la structure des lignes</li>
+            <li>Tester la logique de filtrage</li>
+            <li>Vérifier les event listeners</li>
+        </ol>
+    </div>
+
+    <!-- Reproduction exacte de la structure attendue -->
+    <div class="filter-section">
+        <h3>Filtres (reproduction exacte)</h3>
+        <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+        <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+    </div>
+
+    <!-- Table de test avec structure exacte du template PHP -->
+    <table id="bindings-table">
+        <tr>
+            <th>category</th>
+            <th>action</th>
+            <th>name</th>
+            <th>input</th>
+            <th>opts</th>
+            <th>value</th>
+        </tr>
+        <!-- Test case 1: Empty binding -->
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_pitch</td>
+            <td>Tangage</td>
+            <td><input name="input[spaceship_movement][v_pitch][0]" value="" /></td>
+            <td><input name="opts[spaceship_movement][v_pitch][0]" value="" /></td>
+            <td><input name="value[spaceship_movement][v_pitch][0]" value="" /></td>
+        </tr>
+        <!-- Test case 2: Hold mode binding -->
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_roll</td>
+            <td>Roulis</td>
+            <td><input name="input[spaceship_movement][v_roll][0]" value="js1_button2" /></td>
+            <td><input name="opts[spaceship_movement][v_roll][0]" value="activationmode" /></td>
+            <td><input name="value[spaceship_movement][v_roll][0]" value="hold" /></td>
+        </tr>
+        <!-- Test case 3: Normal binding -->
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_yaw</td>
+            <td>Lacet</td>
+            <td><input name="input[spaceship_movement][v_yaw][0]" value="js1_button1" /></td>
+            <td><input name="opts[spaceship_movement][v_yaw][0]" value="activationmode" /></td>
+            <td><input name="value[spaceship_movement][v_yaw][0]" value="press" /></td>
+        </tr>
+        <!-- Test case 4: Prefix only (empty) -->
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_strafe_forward</td>
+            <td>Avancer</td>
+            <td><input name="input[spaceship_movement][v_strafe_forward][0]" value="js1_" /></td>
+            <td><input name="opts[spaceship_movement][v_strafe_forward][0]" value="" /></td>
+            <td><input name="value[spaceship_movement][v_strafe_forward][0]" value="" /></td>
+        </tr>
+    </table>
+
+    <button onclick="runDiagnostic()">🔍 Lancer le diagnostic</button>
+    <button onclick="clearResults()">🧹 Effacer les résultats</button>
+
+    <div id="diagnostic-results"></div>
+
+    <script type="module">
+        import { FilterHandler } from '/assets/js/modules/filterHandler.js';
+        
+        let filterHandler;
+        let results = [];
+        
+        // Fonction de diagnostic globale
+        window.runDiagnostic = function() {
+            results = [];
+            addResult('🚀 Démarrage du diagnostic...', 'info');
+            
+            // Test 1: Vérifier l'existence des éléments
+            test1CheckElements();
+            
+            // Test 2: Initialiser FilterHandler
+            test2InitializeHandler();
+            
+            // Test 3: Tester les sélecteurs
+            test3TestSelectors();
+            
+            // Test 4: Tester la logique de filtrage
+            test4TestFilterLogic();
+            
+            // Test 5: Tester les event listeners
+            test5TestEventListeners();
+            
+            addResult('✅ Diagnostic terminé', 'success');
+        };
+        
+        window.clearResults = function() {
+            document.getElementById('diagnostic-results').innerHTML = '';
+            results = [];
+        };
+        
+        function test1CheckElements() {
+            addResult('Test 1: Vérification des éléments DOM', 'info');
+            
+            const filterNonEmpty = document.getElementById('filter-nonempty');
+            const filterHold = document.getElementById('filter-hold');
+            const table = document.getElementById('bindings-table');
+            
+            if (filterNonEmpty) {
+                addResult('✅ Élément filter-nonempty trouvé', 'success');
+            } else {
+                addResult('❌ Élément filter-nonempty manquant', 'error');
+            }
+            
+            if (filterHold) {
+                addResult('✅ Élément filter-hold trouvé', 'success');
+            } else {
+                addResult('❌ Élément filter-hold manquant', 'error');
+            }
+            
+            if (table) {
+                addResult(`✅ Table trouvée avec ${table.rows.length} lignes`, 'success');
+            } else {
+                addResult('❌ Table bindings-table manquante', 'error');
+            }
+        }
+        
+        function test2InitializeHandler() {
+            addResult('Test 2: Initialisation de FilterHandler', 'info');
+            
+            try {
+                filterHandler = new FilterHandler();
+                addResult('✅ FilterHandler initialisé avec succès', 'success');
+                
+                // Vérifier les méthodes
+                if (typeof filterHandler.isBindingEmpty === 'function') {
+                    addResult('✅ Méthode isBindingEmpty trouvée', 'success');
+                } else {
+                    addResult('❌ Méthode isBindingEmpty manquante', 'error');
+                }
+                
+                if (typeof filterHandler.isHoldModeBinding === 'function') {
+                    addResult('✅ Méthode isHoldModeBinding trouvée', 'success');
+                } else {
+                    addResult('❌ Méthode isHoldModeBinding manquante', 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Erreur lors de l'initialisation: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        function test3TestSelectors() {
+            addResult('Test 3: Test des sélecteurs CSS', 'info');
+            
+            const table = document.getElementById('bindings-table');
+            if (!table) {
+                addResult('❌ Table non trouvée pour les tests de sélecteurs', 'error');
+                return;
+            }
+            
+            const rows = Array.from(table.rows).slice(1); // Skip header
+            addResult(`📊 ${rows.length} lignes de données trouvées`, 'info');
+            
+            rows.forEach((row, idx) => {
+                const inputCell = row.querySelector('input[name^="input["]');
+                const optsCell = row.querySelector('input[name^="opts["]');
+                const valueCell = row.querySelector('input[name^="value["]');
+                
+                const hasInput = inputCell ? '✅' : '❌';
+                const hasOpts = optsCell ? '✅' : '❌';
+                const hasValue = valueCell ? '✅' : '❌';
+                
+                addResult(`Ligne ${idx + 1}: Input ${hasInput} Opts ${hasOpts} Value ${hasValue}`, 
+                         (hasInput === '✅' && hasOpts === '✅' && hasValue === '✅') ? 'success' : 'warning');
+                
+                if (inputCell && optsCell && valueCell) {
+                    const inputVal = inputCell.value;
+                    const optsVal = optsCell.value;
+                    const valueVal = valueCell.value;
+                    
+                    addResult(`  └─ Input: "${inputVal}", Opts: "${optsVal}", Value: "${valueVal}"`, 'info');
+                }
+            });
+        }
+        
+        function test4TestFilterLogic() {
+            addResult('Test 4: Test de la logique de filtrage', 'info');
+            
+            if (!filterHandler) {
+                addResult('❌ FilterHandler non initialisé', 'error');
+                return;
+            }
+            
+            // Test isBindingEmpty
+            const emptyTests = [
+                { value: '', expected: true, description: 'Chaîne vide' },
+                { value: 'js1_', expected: true, description: 'Préfixe seul' },
+                { value: 'kb1_', expected: true, description: 'Préfixe clavier' },
+                { value: 'mo_', expected: true, description: 'Préfixe mouse' },
+                { value: 'js1_button1', expected: false, description: 'Binding valide' },
+            ];
+            
+            emptyTests.forEach(test => {
+                try {
+                    const result = filterHandler.isBindingEmpty(test.value);
+                    const status = result === test.expected ? '✅' : '❌';
+                    addResult(`${status} isBindingEmpty("${test.value}") = ${result} (${test.description})`, 
+                             result === test.expected ? 'success' : 'error');
+                } catch (error) {
+                    addResult(`❌ Erreur avec isBindingEmpty("${test.value}"): ${error.message}`, 'error');
+                }
+            });
+            
+            // Test isHoldModeBinding
+            const holdTests = [
+                { opts: 'activationmode', value: 'hold', expected: true, description: 'Hold mode normal' },
+                { opts: 'activationmode', value: 'HOLD', expected: true, description: 'Hold mode majuscules' },
+                { opts: 'activationmode', value: 'press', expected: false, description: 'Press mode' },
+                { opts: '', value: 'hold', expected: false, description: 'Hold sans activationmode' },
+                { opts: 'other', value: 'hold', expected: false, description: 'Autre opts' },
+            ];
+            
+            holdTests.forEach(test => {
+                try {
+                    const result = filterHandler.isHoldModeBinding(test.opts, test.value);
+                    const status = result === test.expected ? '✅' : '❌';
+                    addResult(`${status} isHoldModeBinding("${test.opts}", "${test.value}") = ${result} (${test.description})`, 
+                             result === test.expected ? 'success' : 'error');
+                } catch (error) {
+                    addResult(`❌ Erreur avec isHoldModeBinding: ${error.message}`, 'error');
+                }
+            });
+        }
+        
+        function test5TestEventListeners() {
+            addResult('Test 5: Test des event listeners', 'info');
+            
+            const filterNonEmpty = document.getElementById('filter-nonempty');
+            const filterHold = document.getElementById('filter-hold');
+            
+            if (filterNonEmpty) {
+                // Tester le changement de filtre
+                filterNonEmpty.checked = true;
+                filterNonEmpty.dispatchEvent(new Event('change'));
+                addResult('✅ Event change envoyé sur filter-nonempty', 'success');
+                
+                filterNonEmpty.checked = false;
+                filterNonEmpty.dispatchEvent(new Event('change'));
+            }
+            
+            if (filterHold) {
+                filterHold.checked = true;
+                filterHold.dispatchEvent(new Event('change'));
+                addResult('✅ Event change envoyé sur filter-hold', 'success');
+                
+                filterHold.checked = false;
+                filterHold.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        function addResult(message, type = 'info') {
+            results.push({ message, type, timestamp: new Date().toLocaleTimeString() });
+            displayResults();
+        }
+        
+        function displayResults() {
+            const container = document.getElementById('diagnostic-results');
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `diagnostic ${result.type}`;
+                div.innerHTML = `
+                    <strong>[${result.timestamp}]</strong> ${result.message}
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        console.log('🔍 Diagnostic des filtres initialisé');
+        console.log('Utilisez runDiagnostic() pour lancer le diagnostic complet');
+    </script>
+</body>
+</html>

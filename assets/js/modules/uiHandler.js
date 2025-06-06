@@ -30,7 +30,7 @@ export class UIHandler {
             
             if (buttonNumber) {
                 const rows = this.bindingsHandler.findMappingRows('button', instance, buttonNumber, mode);
-                const row = this.bindingsHandler.cycleRows(rows, buttonName, this.bindingsHandler.currentButtonIndex);
+                const row = this.bindingsHandler.cycleRows(rows, buttonName, this.bindingsHandler.currentButtonIndex, mode);
                 if (row) this.highlightRow(row);
             }
         }
@@ -46,7 +46,7 @@ export class UIHandler {
             const cleanAxisName = axisMatch ? axisMatch[1] : axisName;
             
             const rows = this.bindingsHandler.findMappingRows('axis', instance, cleanAxisName);
-            const row = this.bindingsHandler.cycleRows(rows, axisName, this.bindingsHandler.currentAxisIndex);
+            const row = this.bindingsHandler.cycleRows(rows, axisName, this.bindingsHandler.currentAxisIndex, '');
             if (row) this.highlightRow(row);
         }
     }
@@ -64,7 +64,7 @@ export class UIHandler {
             document.activeElement.value = hatName;
         } else {
             const rows = this.bindingsHandler.findMappingRows('hat', instance, direction, mode);
-            const row = this.bindingsHandler.cycleRows(rows, hatName, this.bindingsHandler.currentHatIndex);
+            const row = this.bindingsHandler.cycleRows(rows, hatName, this.bindingsHandler.currentHatIndex, mode);
             if (row) this.highlightRow(row);
         }
     }

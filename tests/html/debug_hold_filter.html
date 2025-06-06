@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 Test de débogage du filtre Hold</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin: 10px 0; }
+        .debug { background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0; }
+        .error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .warning { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        .filter-section { background: #e8f4f8; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .console-output { background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🚨 Débogage approfondi du système de filtres</h1>
+    
+    <div class="container">
+        <h3>🎯 Objectif</h3>
+        <p>Identifier pourquoi le filtre "Hold Mode" ne fonctionne pas et le réparer.</p>
+    </div>
+
+    <!-- Reproduction exacte de la structure du template -->
+    <div class="filter-section">
+        <b>Filtres</b><br>
+        <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+        <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+    </div>
+
+    <!-- Table avec structure exacte du template PHP -->
+    <table border="1" cellpadding="4" id="bindings-table">
+        <tr>
+            <th translate="no">category</th>
+            <th>action</th>
+            <th>name</th>
+            <th translate="no">input</th>
+            <th>opts</th>
+            <th>value</th>
+        </tr>
+        <!-- Cas 1: Binding vide -->
+        <tr>
+            <td translate="no">spaceship_movement</td>
+            <td>v_pitch</td>
+            <td>Tangage</td>
+            <td translate="no"><input name="input[spaceship_movement][v_pitch][0]" value="" /></td>
+            <td><input name="opts[spaceship_movement][v_pitch][0]" value="" /></td>
+            <td><input name="value[spaceship_movement][v_pitch][0]" value="" /></td>
+        </tr>
+        <!-- Cas 2: Binding normal (press) -->
+        <tr>
+            <td translate="no">spaceship_movement</td>
+            <td>v_yaw</td>
+            <td>Lacet</td>
+            <td translate="no"><input name="input[spaceship_movement][v_yaw][0]" value="js1_button1" /></td>
+            <td><input name="opts[spaceship_movement][v_yaw][0]" value="activationmode" /></td>
+            <td><input name="value[spaceship_movement][v_yaw][0]" value="press" /></td>
+        </tr>
+        <!-- Cas 3: Binding HOLD (minuscules) -->
+        <tr>
+            <td translate="no">spaceship_movement</td>
+            <td>v_roll</td>
+            <td>Roulis</td>
+            <td translate="no"><input name="input[spaceship_movement][v_roll][0]" value="js1_button2" /></td>
+            <td><input name="opts[spaceship_movement][v_roll][0]" value="activationmode" /></td>
+            <td><input name="value[spaceship_movement][v_roll][0]" value="hold" /></td>
+        </tr>
+        <!-- Cas 4: Binding avec préfixe seul -->
+        <tr>
+            <td translate="no">spaceship_movement</td>
+            <td>v_strafe_forward</td>
+            <td>Avancer</td>
+            <td translate="no"><input name="input[spaceship_movement][v_strafe_forward][0]" value="js1_" /></td>
+            <td><input name="opts[spaceship_movement][v_strafe_forward][0]" value="" /></td>
+            <td><input name="value[spaceship_movement][v_strafe_forward][0]" value="" /></td>
+        </tr>
+        <!-- Cas 5: Binding HOLD (majuscules) -->
+        <tr>
+            <td translate="no">spaceship_movement</td>
+            <td>v_strafe_up</td>
+            <td>Monter</td>
+            <td translate="no"><input name="input[spaceship_movement][v_strafe_up][0]" value="kb1_space" /></td>
+            <td><input name="opts[spaceship_movement][v_strafe_up][0]" value="activationmode" /></td>
+            <td><input name="value[spaceship_movement][v_strafe_up][0]" value="HOLD" /></td>
+        </tr>
+        <!-- Cas 6: Double tap -->
+        <tr>
+            <td translate="no">spaceship_weapons</td>
+            <td>v_weapon_group_1</td>
+            <td>Arme groupe 1</td>
+            <td translate="no"><input name="input[spaceship_weapons][v_weapon_group_1][0]" value="js1_button3" /></td>
+            <td><input name="opts[spaceship_weapons][v_weapon_group_1][0]" value="activationmode" /></td>
+            <td><input name="value[spaceship_weapons][v_weapon_group_1][0]" value="double_tap" /></td>
+        </tr>
+    </table>
+
+    <div class="container">
+        <h3>🔧 Actions de débogage</h3>
+        <button onclick="initializeSystem()">🚀 Initialiser le système</button>
+        <button onclick="testFilters()">🧪 Tester les filtres</button>
+        <button onclick="testFilterEvents()">📡 Tester les événements</button>
+        <button onclick="inspectDOM()">🔍 Inspecter le DOM</button>
+        <button onclick="clearDebug()">🧹 Effacer</button>
+    </div>
+
+    <div class="console-output" id="debug-console">
+        Console de débogage - Prêt
+    </div>
+
+    <script type="module">
+        // Import du système réel
+        import { SCConfigEditor } from '/assets/js/scConfigEditor.js';
+        
+        let scEditor;
+        let filterHandler;
+        
+        // Console de débogage
+        function log(message, type = 'info') {
+            const console = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = {
+                'info': '📋',
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️'
+            }[type] || '📋';
+            
+            console.innerHTML += `\n[${timestamp}] ${prefix} ${message}`;
+            console.scrollTop = console.scrollHeight;
+            
+            // Log aussi dans la vraie console
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        // Fonctions globales pour les boutons
+        window.initializeSystem = function() {
+            log('🚀 Initialisation du système SCConfigEditor...');
+            
+            try {
+                // Initialiser comme dans l'application réelle
+                const config = {
+                    buttonNamesByInstance: {},
+                    devicesData: []
+                };
+                
+                scEditor = new SCConfigEditor(config);
+                filterHandler = scEditor.filter;
+                
+                log('✅ SCConfigEditor initialisé avec succès', 'success');
+                log(`📊 FilterHandler: ${filterHandler ? 'OK' : 'ERREUR'}`, filterHandler ? 'success' : 'error');
+                
+                // Vérifier les méthodes
+                if (filterHandler) {
+                    log(`🔧 isBindingEmpty: ${typeof filterHandler.isBindingEmpty}`, 'info');
+                    log(`🔧 isHoldModeBinding: ${typeof filterHandler.isHoldModeBinding}`, 'info');
+                    log(`🔧 updateFilters: ${typeof filterHandler.updateFilters}`, 'info');
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                console.error(error);
+            }
+        };
+        
+        window.testFilters = function() {
+            log('🧪 Test des fonctions de filtrage...');
+            
+            if (!filterHandler) {
+                log('❌ FilterHandler non initialisé', 'error');
+                return;
+            }
+            
+            // Test isBindingEmpty
+            const emptyTests = [
+                ['', 'Chaîne vide'],
+                ['js1_', 'Préfixe js1_'],
+                ['kb1_', 'Préfixe kb1_'],
+                ['mo_', 'Préfixe mo_'],
+                ['js1_button1', 'Binding valide']
+            ];
+            
+            log('🔍 Test isBindingEmpty:', 'info');
+            emptyTests.forEach(([value, desc]) => {
+                try {
+                    const result = filterHandler.isBindingEmpty(value);
+                    log(`  "${value}" (${desc}) -> ${result}`, 'info');
+                } catch (error) {
+                    log(`  ERREUR avec "${value}": ${error.message}`, 'error');
+                }
+            });
+            
+            // Test isHoldModeBinding
+            const holdTests = [
+                ['activationmode', 'hold', 'Hold normal'],
+                ['activationmode', 'HOLD', 'Hold majuscules'],
+                ['activationmode', 'press', 'Press mode'],
+                ['', 'hold', 'Hold sans activationmode'],
+                ['other', 'hold', 'Autre opts']
+            ];
+            
+            log('🔍 Test isHoldModeBinding:', 'info');
+            holdTests.forEach(([opts, value, desc]) => {
+                try {
+                    const result = filterHandler.isHoldModeBinding(opts, value);
+                    log(`  ("${opts}", "${value}") ${desc} -> ${result}`, 'info');
+                } catch (error) {
+                    log(`  ERREUR avec ("${opts}", "${value}"): ${error.message}`, 'error');
+                }
+            });
+        };
+        
+        window.testFilterEvents = function() {
+            log('📡 Test des événements de filtrage...');
+            
+            const filterNonEmpty = document.getElementById('filter-nonempty');
+            const filterHold = document.getElementById('filter-hold');
+            const table = document.getElementById('bindings-table');
+            
+            if (!filterNonEmpty || !filterHold || !table) {
+                log('❌ Éléments DOM manquants', 'error');
+                return;
+            }
+            
+            // Compter les lignes visibles avant
+            const countVisible = () => {
+                return Array.from(table.rows).slice(1).filter(row => row.style.display !== 'none').length;
+            };
+            
+            const initialCount = countVisible();
+            log(`📊 Lignes visibles initialement: ${initialCount}`, 'info');
+            
+            // Test filtre non-vide
+            log('🔄 Test filtre non-vide...', 'info');
+            filterNonEmpty.checked = true;
+            filterNonEmpty.dispatchEvent(new Event('change'));
+            const nonEmptyCount = countVisible();
+            log(`📊 Après filtre non-vide: ${nonEmptyCount} lignes`, nonEmptyCount < initialCount ? 'success' : 'warning');
+            
+            // Reset
+            filterNonEmpty.checked = false;
+            filterNonEmpty.dispatchEvent(new Event('change'));
+            
+            // Test filtre hold
+            log('🔄 Test filtre hold...', 'info');
+            filterHold.checked = true;
+            filterHold.dispatchEvent(new Event('change'));
+            const holdCount = countVisible();
+            log(`📊 Après filtre hold: ${holdCount} lignes`, holdCount < initialCount ? 'success' : 'warning');
+            
+            // Test combiné
+            log('🔄 Test filtres combinés...', 'info');
+            filterNonEmpty.checked = true;
+            filterNonEmpty.dispatchEvent(new Event('change'));
+            const combinedCount = countVisible();
+            log(`📊 Après filtres combinés: ${combinedCount} lignes`, 'info');
+            
+            // Reset
+            filterNonEmpty.checked = false;
+            filterHold.checked = false;
+            filterNonEmpty.dispatchEvent(new Event('change'));
+            
+            const finalCount = countVisible();
+            log(`📊 Après reset: ${finalCount} lignes`, finalCount === initialCount ? 'success' : 'warning');
+        };
+        
+        window.inspectDOM = function() {
+            log('🔍 Inspection du DOM...');
+            
+            const table = document.getElementById('bindings-table');
+            if (!table) {
+                log('❌ Table non trouvée', 'error');
+                return;
+            }
+            
+            const rows = Array.from(table.rows).slice(1);
+            log(`📊 ${rows.length} lignes de données trouvées`, 'info');
+            
+            rows.forEach((row, idx) => {
+                const inputCell = row.querySelector('input[name^="input["]');
+                const optsCell = row.querySelector('input[name^="opts["]');
+                const valueCell = row.querySelector('input[name^="value["]');
+                
+                if (inputCell && optsCell && valueCell) {
+                    const inputVal = inputCell.value;
+                    const optsVal = optsCell.value;
+                    const valueVal = valueCell.value;
+                    
+                    log(`Ligne ${idx + 1}: "${inputVal}" | "${optsVal}" | "${valueVal}"`, 'info');
+                    
+                    // Analyser avec les fonctions de filtrage
+                    if (filterHandler) {
+                        const isEmpty = filterHandler.isBindingEmpty(inputVal);
+                        const isHold = filterHandler.isHoldModeBinding(optsVal, valueVal);
+                        log(`  └─ Vide: ${isEmpty}, Hold: ${isHold}`, 'info');
+                    }
+                } else {
+                    log(`Ligne ${idx + 1}: Cellules manquantes`, 'error');
+                }
+            });
+        };
+        
+        window.clearDebug = function() {
+            document.getElementById('debug-console').innerHTML = 'Console de débogage - Effacée';
+        };
+        
+        // Initialisation automatique
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🎯 Page de débogage chargée - Prêt pour les tests');
+        });
+        
+    </script>
+</body>
+</html>
