@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gamepad - SC Config Editor</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .device-info {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+        
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .button-test {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .button-test.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+        
+        .axis-display {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .axis-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .axis-progress {
+            flex: 1;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .axis-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.1s ease;
+        }
+        
+        .back-button {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 1rem 0;
+            transition: background 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #0b7dda;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <a href="index.html" class="back-button">← Retour à l'accueil</a>
+            <h1>🎮 Test Gamepad</h1>
+            <p>Testez et vérifiez le fonctionnement de vos contrôleurs de jeu</p>
+        </header>
+
+        <div id="gamepad-status" class="device-info">
+            <h2>État des contrôleurs</h2>
+            <p id="connection-status">Aucun contrôleur détecté</p>
+        </div>
+
+        <div id="gamepad-info" style="display: none;">
+            <div class="device-info">
+                <h3>Informations du contrôleur</h3>
+                <p><strong>Nom:</strong> <span id="gamepad-name">-</span></p>
+                <p><strong>Index:</strong> <span id="gamepad-index">-</span></p>
+                <p><strong>Boutons:</strong> <span id="gamepad-buttons">-</span></p>
+                <p><strong>Axes:</strong> <span id="gamepad-axes">-</span></p>
+            </div>
+
+            <div class="device-info">
+                <h3>Test des boutons</h3>
+                <div id="buttons-grid" class="button-grid">
+                    <!-- Les boutons seront générés dynamiquement -->
+                </div>
+            </div>
+
+            <div class="device-info">
+                <h3>Test des axes</h3>
+                <div id="axes-display" class="axis-display">
+                    <!-- Les axes seront générés dynamiquement -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gamepadIndex = null;
+        let animationId = null;
+
+        function detectGamepads() {
+            const gamepads = navigator.getGamepads();
+            let connectedGamepad = null;
+
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    connectedGamepad = gamepads[i];
+                    gamepadIndex = i;
+                    break;
+                }
+            }
+
+            const statusElement = document.getElementById('connection-status');
+            const infoElement = document.getElementById('gamepad-info');
+
+            if (connectedGamepad) {
+                statusElement.textContent = `Contrôleur connecté: ${connectedGamepad.id}`;
+                statusElement.style.color = '#4CAF50';
+                infoElement.style.display = 'block';
+                
+                updateGamepadInfo(connectedGamepad);
+                
+                if (!animationId) {
+                    animationId = requestAnimationFrame(updateGamepadState);
+                }
+            } else {
+                statusElement.textContent = 'Aucun contrôleur détecté - Connectez un contrôleur et appuyez sur un bouton';
+                statusElement.style.color = '#f44336';
+                infoElement.style.display = 'none';
+                gamepadIndex = null;
+                
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+
+        function updateGamepadInfo(gamepad) {
+            document.getElementById('gamepad-name').textContent = gamepad.id;
+            document.getElementById('gamepad-index').textContent = gamepad.index;
+            document.getElementById('gamepad-buttons').textContent = gamepad.buttons.length;
+            document.getElementById('gamepad-axes').textContent = gamepad.axes.length;
+
+            // Générer les boutons
+            const buttonsGrid = document.getElementById('buttons-grid');
+            buttonsGrid.innerHTML = '';
+            
+            for (let i = 0; i < gamepad.buttons.length; i++) {
+                const buttonDiv = document.createElement('div');
+                buttonDiv.className = 'button-test';
+                buttonDiv.id = `button-${i}`;
+                buttonDiv.innerHTML = `<strong>Bouton ${i}</strong><br><span id="button-value-${i}">0</span>`;
+                buttonsGrid.appendChild(buttonDiv);
+            }
+
+            // Générer les axes
+            const axesDisplay = document.getElementById('axes-display');
+            axesDisplay.innerHTML = '';
+            
+            for (let i = 0; i < gamepad.axes.length; i++) {
+                const axisDiv = document.createElement('div');
+                axisDiv.className = 'axis-bar';
+                axisDiv.innerHTML = `
+                    <span style="min-width: 60px;">Axe ${i}:</span>
+                    <div class="axis-progress">
+                        <div class="axis-fill" id="axis-${i}" style="width: 50%"></div>
+                    </div>
+                    <span id="axis-value-${i}" style="min-width: 60px; text-align: right;">0.00</span>
+                `;
+                axesDisplay.appendChild(axisDiv);
+            }
+        }
+
+        function updateGamepadState() {
+            if (gamepadIndex !== null) {
+                const gamepads = navigator.getGamepads();
+                const gamepad = gamepads[gamepadIndex];
+
+                if (gamepad) {
+                    // Mettre à jour les boutons
+                    for (let i = 0; i < gamepad.buttons.length; i++) {
+                        const button = gamepad.buttons[i];
+                        const buttonElement = document.getElementById(`button-${i}`);
+                        const valueElement = document.getElementById(`button-value-${i}`);
+                        
+                        if (buttonElement && valueElement) {
+                            const value = button.value;
+                            valueElement.textContent = value.toFixed(2);
+                            
+                            if (button.pressed) {
+                                buttonElement.classList.add('active');
+                            } else {
+                                buttonElement.classList.remove('active');
+                            }
+                        }
+                    }
+
+                    // Mettre à jour les axes
+                    for (let i = 0; i < gamepad.axes.length; i++) {
+                        const value = gamepad.axes[i];
+                        const axisElement = document.getElementById(`axis-${i}`);
+                        const valueElement = document.getElementById(`axis-value-${i}`);
+                        
+                        if (axisElement && valueElement) {
+                            // Convertir la valeur [-1, 1] en pourcentage [0, 100]
+                            const percentage = ((value + 1) / 2) * 100;
+                            axisElement.style.width = percentage + '%';
+                            valueElement.textContent = value.toFixed(2);
+                        }
+                    }
+                }
+            }
+            
+            animationId = requestAnimationFrame(updateGamepadState);
+        }
+
+        // Événements pour la détection des contrôleurs
+        window.addEventListener('gamepadconnected', (e) => {
+            console.log('Contrôleur connecté:', e.gamepad);
+            detectGamepads();
+        });
+
+        window.addEventListener('gamepaddisconnected', (e) => {
+            console.log('Contrôleur déconnecté:', e.gamepad);
+            detectGamepads();
+        });
+
+        // Démarrer la détection
+        setInterval(detectGamepads, 1000);
+        detectGamepads();
+    </script>
+</body>
+</html>

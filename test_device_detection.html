@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Détection Automatique des Devices</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .connected-devices {
+            background: #e8f5e8;
+        }
+        .unknown-devices {
+            background: #fff3cd;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        .device-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Test de Détection Automatique des Devices</h1>
+        
+        <div class="test-section">
+            <h3>Actions de Test</h3>
+            <button onclick="simulateUnknownDevice()">Simuler Device Inconnu</button>
+            <button onclick="refreshDevicesList()">Actualiser Liste</button>
+            <button onclick="clearLog()">Effacer Log</button>
+        </div>
+        
+        <div class="test-section connected-devices">
+            <h3>Devices Connectés</h3>
+            <div id="connectedDevices">Aucun device détecté</div>
+        </div>
+        
+        <div class="test-section unknown-devices">
+            <h3>Devices Inconnus Détectés</h3>
+            <div id="unknownDevices">Aucun device inconnu</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Log des Événements</h3>
+            <div id="logOutput" class="log">Système de détection initialisé...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetector.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        // Variables globales pour le test
+        window.devicesDataJs = [
+            {
+                "id": "VKB-Sim Gladiator NXT EVO R",
+                "vendor_id": "0x231d",
+                "product_id": "0x0201",
+                "xml_instance": "231d_0201"
+            }
+        ];
+
+        let autoDetection, setupUI;
+        let logElement = document.getElementById('logOutput');
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function initializeSystem() {
+            try {
+                // Initialiser le système de détection
+                autoDetection = new DeviceAutoDetection();
+                setupUI = new DeviceSetupUI(autoDetection);
+                
+                // Rendre disponible globalement
+                window.deviceSetupUI = setupUI;
+                window.testAutoDetection = autoDetection;
+                
+                // Écouter les détections
+                autoDetection.onNewDeviceDetected((deviceInfo) => {
+                    log(`🔍 Nouveau device détecté: ${deviceInfo.id}`);
+                    updateUnknownDevicesList();
+                });
+                
+                // Écouter les connexions/déconnexions de gamepad
+                window.addEventListener('gamepadconnected', (e) => {
+                    log(`🎮 Gamepad connecté: ${e.gamepad.id}`);
+                    updateConnectedDevicesList();
+                });
+                
+                window.addEventListener('gamepaddisconnected', (e) => {
+                    log(`🎮 Gamepad déconnecté: ${e.gamepad.id}`);
+                    updateConnectedDevicesList();
+                });
+                
+                log('✅ Système de détection initialisé avec succès');
+                
+                // Mise à jour initiale
+                updateConnectedDevicesList();
+                updateUnknownDevicesList();
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`);
+                console.error('Erreur d\'initialisation:', error);
+            }
+        }
+
+        function updateConnectedDevicesList() {
+            const container = document.getElementById('connectedDevices');
+            const gamepads = navigator.getGamepads();
+            
+            let html = '';
+            let foundAny = false;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    foundAny = true;
+                    const isKnown = autoDetection ? autoDetection.isDeviceKnown(gamepads[i]) : false;
+                    html += `
+                        <div class="device-info">
+                            <strong>${gamepads[i].id}</strong><br>
+                            <small>Index: ${i} | Boutons: ${gamepads[i].buttons.length} | Axes: ${gamepads[i].axes.length}</small><br>
+                            <span style="color: ${isKnown ? 'green' : 'orange'}">
+                                ${isKnown ? '✅ Device connu' : '❓ Device inconnu'}
+                            </span>
+                        </div>
+                    `;
+                }
+            }
+            
+            container.innerHTML = foundAny ? html : 'Aucun device connecté';
+        }
+
+        function updateUnknownDevicesList() {
+            const container = document.getElementById('unknownDevices');
+            
+            if (!autoDetection) {
+                container.innerHTML = 'Système non initialisé';
+                return;
+            }
+            
+            const unknownDevices = autoDetection.getUnknownDevices();
+            
+            if (unknownDevices.length === 0) {
+                container.innerHTML = 'Aucun device inconnu détecté';
+                return;
+            }
+            
+            let html = '';
+            unknownDevices.forEach(device => {
+                html += `
+                    <div class="device-info">
+                        <strong>${device.id}</strong><br>
+                        <small>Vendor: ${device.vendor_id || 'N/A'} | Product: ${device.product_id || 'N/A'}</small><br>
+                        <small>Boutons: ${device.buttons} | Axes: ${device.axes}</small><br>
+                        <button onclick="startDeviceSetup('${autoDetection.getDeviceKey(device.gamepad)}')">
+                            Configurer ce device
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Fonctions globales pour les boutons
+        window.simulateUnknownDevice = function() {
+            log('🔧 Simulation d\'un device inconnu (nécessite une vraie manette connectée)');
+            log('💡 Connectez une manette inconnue pour tester la détection automatique');
+        };
+
+        window.refreshDevicesList = function() {
+            log('🔄 Actualisation des listes de devices');
+            updateConnectedDevicesList();
+            updateUnknownDevicesList();
+        };
+
+        window.clearLog = function() {
+            logElement.textContent = 'Log effacé...\n';
+        };
+
+        window.startDeviceSetup = function(deviceKey) {
+            if (setupUI) {
+                log(`⚙️ Démarrage de la configuration pour le device: ${deviceKey}`);
+                setupUI.startSetup(deviceKey);
+            } else {
+                log('❌ Interface de configuration non disponible');
+            }
+        };
+
+        // Initialiser au chargement
+        initializeSystem();
+
+        // Actualiser périodiquement la liste des devices connectés
+        setInterval(updateConnectedDevicesList, 1000);
+    </script>
+</body>
+</html>

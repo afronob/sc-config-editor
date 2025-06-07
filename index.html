@@ -124,6 +124,46 @@
             animation: pulse 2s infinite;
         }
 
+        .new-features {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 1200px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .new-features h3 {
+            color: #4CAF50;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .new-features p {
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .features-list {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature-tag {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -158,12 +198,27 @@
         .icon-docs::before { content: "📖"; }
         .icon-upload::before { content: "📁"; }
         .icon-hat::before { content: "🕹️"; }
+        .icon-auto::before { content: "🤖"; }
+        .icon-validation::before { content: "✅"; }
+        .icon-device::before { content: "🎯"; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>SC Config Editor</h1>
-        <p class="subtitle">Éditeur de configuration Star Citizen</p>
+        <p class="subtitle">Éditeur de configuration Star Citizen avec détection automatique des devices</p>
+    </div>
+
+    <div class="new-features">
+        <h3>🎉 Nouvelles Fonctionnalités Disponibles</h3>
+        <p>Le système de détection automatique des devices est maintenant opérationnel !</p>
+        <div class="features-list">
+            <span class="feature-tag">🤖 Détection Auto</span>
+            <span class="feature-tag">⚙️ Configuration Guidée</span>
+            <span class="feature-tag">🔘 Bouton Corrigé</span>
+            <span class="feature-tag">✅ Tests Complets</span>
+            <span class="feature-tag">🕹️ HAT Dynamique</span>
+        </div>
     </div>
 
     <div class="grid">
@@ -172,7 +227,25 @@
             <div class="card-icon icon-edit"></div>
             <div class="card-title">Éditeur de Bindings</div>
             <div class="card-description">
-                Éditer et configurer vos contrôles et mappings de touches Star Citizen avec détection gamepad en temps réel
+                Éditeur principal avec détection automatique des devices, configuration en temps réel et interface moderne
+            </div>
+        </a>
+
+        <!-- Détection automatique des devices -->
+        <a href="test_final_system.html" class="card">
+            <div class="card-icon icon-auto"></div>
+            <div class="card-title">Détection Auto Devices</div>
+            <div class="card-description">
+                🆕 Système de détection automatique des nouveaux devices avec assistant de configuration intégré
+            </div>
+        </a>
+
+        <!-- Test des nouvelles fonctionnalités -->
+        <a href="test_configure_button.html" class="card">
+            <div class="card-icon icon-device"></div>
+            <div class="card-title">Test Configuration Device</div>
+            <div class="card-description">
+                🆕 Tester le bouton "Configurer maintenant" et l'assistant de configuration des nouveaux devices
             </div>
         </a>
 
@@ -199,7 +272,16 @@
             <div class="card-icon icon-hat"></div>
             <div class="card-title">Test HAT Modes</div>
             <div class="card-description">
-                Tester spécifiquement les modes HAT/D-Pad (Simple, Hold, Double Tap) avec simulation
+                Tester spécifiquement les modes HAT/D-Pad (Simple, Hold, Double Tap) avec clés dynamiques
+            </div>
+        </a>
+
+        <!-- Validation finale -->
+        <a href="validate_button_fix.html" class="card">
+            <div class="card-icon icon-validation"></div>
+            <div class="card-title">Validation Système</div>
+            <div class="card-description">
+                🆕 Suite de tests complète pour valider toutes les fonctionnalités du système de détection
             </div>
         </a>
 
@@ -217,7 +299,7 @@
             <div class="card-icon icon-docs"></div>
             <div class="card-title">Documentation</div>
             <div class="card-description">
-                Guide d'utilisation du système de détection gamepad et des fonctionnalités avancées
+                Guide complet du système de détection automatique, rapports de validation et guides d'utilisation
             </div>
         </a>
     </div>
@@ -250,34 +332,59 @@
 
         // Ouvrir la documentation
         function openDocumentation() {
-            // Essayer d'ouvrir le fichier markdown
-            fetch('GAMEPAD_DETECTION_SYSTEM.md')
-                .then(response => {
-                    if (response.ok) {
-                        window.open('GAMEPAD_DETECTION_SYSTEM.md', '_blank');
-                    } else {
-                        alert('Documentation non disponible. Veuillez consulter le fichier GAMEPAD_DETECTION_SYSTEM.md');
-                    }
-                })
-                .catch(() => {
-                    alert('Documentation non disponible. Veuillez consulter le fichier GAMEPAD_DETECTION_SYSTEM.md');
-                });
+            // Créer un menu de documentation
+            const docOptions = [
+                { title: 'Guide Détection Automatique', file: 'DEVICE_AUTO_DETECTION_GUIDE.md' },
+                { title: 'Rapport Final Système', file: 'DEVICE_AUTO_DETECTION_FINAL_REPORT.md' },
+                { title: 'Rapport Validation Bouton', file: 'VALIDATION_REPORT_BUTTON_FIX.md' },
+                { title: 'Guide HAT Dynamique', file: 'HAT_DYNAMIC_KEYS_FIX_COMPLETE.md' },
+                { title: 'Guide Maintenance', file: 'MAINTENANCE_GUIDE.md' }
+            ];
+
+            let menu = 'Choisissez la documentation à consulter :\n\n';
+            docOptions.forEach((doc, index) => {
+                menu += `${index + 1}. ${doc.title}\n`;
+            });
+
+            const choice = prompt(menu + '\nEntrez le numéro (1-' + docOptions.length + '):');
+            const selectedIndex = parseInt(choice) - 1;
+
+            if (selectedIndex >= 0 && selectedIndex < docOptions.length) {
+                const selectedDoc = docOptions[selectedIndex];
+                fetch(selectedDoc.file)
+                    .then(response => {
+                        if (response.ok) {
+                            window.open(selectedDoc.file, '_blank');
+                        } else {
+                            alert(`Documentation "${selectedDoc.title}" non disponible.\nFichier: ${selectedDoc.file}`);
+                        }
+                    })
+                    .catch(() => {
+                        alert(`Documentation "${selectedDoc.title}" non accessible.\nFichier: ${selectedDoc.file}`);
+                    });
+            }
         }
 
-        // Détecter les gamepads connectés
+        // Détecter les gamepads connectés avec notification de nouveaux devices
         function checkGamepads() {
             const gamepads = navigator.getGamepads();
             let connectedCount = 0;
+            let gamepadNames = [];
             
             for (let i = 0; i < gamepads.length; i++) {
                 if (gamepads[i]) {
                     connectedCount++;
+                    gamepadNames.push(gamepads[i].id.split('(')[0].trim());
                 }
             }
             
+            const statusText = document.getElementById('statusText');
             if (connectedCount > 0) {
-                const statusText = document.getElementById('statusText');
-                statusText.textContent = `${connectedCount} gamepad(s) détecté(s)`;
+                statusText.textContent = `${connectedCount} device(s): ${gamepadNames.join(', ')}`;
+                statusText.title = `Devices détectés:\n${gamepadNames.join('\n')}`;
+            } else {
+                statusText.textContent = 'Aucun device détecté';
+                statusText.title = '';
             }
         }
 
@@ -301,17 +408,29 @@
             setInterval(checkGamepads, 3000);
         });
 
-        // Support des événements gamepad
+        // Support des événements gamepad avec détection automatique
         window.addEventListener('gamepadconnected', function(e) {
             const statusText = document.getElementById('statusText');
-            statusText.textContent = `Gamepad connecté: ${e.gamepad.id}`;
+            const deviceName = e.gamepad.id.split('(')[0].trim();
+            statusText.textContent = `✅ Device connecté: ${deviceName}`;
+            statusText.title = `Device complet: ${e.gamepad.id}`;
             document.querySelector('.status-indicator').style.background = '#4CAF50';
+            
+            // Notification discrète
+            setTimeout(() => {
+                checkGamepads();
+            }, 3000);
         });
 
         window.addEventListener('gamepaddisconnected', function(e) {
             const statusText = document.getElementById('statusText');
-            statusText.textContent = 'Gamepad déconnecté';
+            const deviceName = e.gamepad.id.split('(')[0].trim();
+            statusText.textContent = `❌ Device déconnecté: ${deviceName}`;
             document.querySelector('.status-indicator').style.background = '#FF9800';
+            
+            setTimeout(() => {
+                checkGamepads();
+            }, 2000);
         });
     </script>
 </body>

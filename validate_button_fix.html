@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Validation Finale - Bouton Configurer</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #007cba;
+            border-bottom: 2px solid #007cba;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        .test-button:hover {
+            background: #005a8b;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.danger {
+            background: #dc3545;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .log {
+            background: #2d3748;
+            color: #e2e8f0;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .test-card {
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-card.passed {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+        .test-card.failed {
+            border-color: #dc3545;
+            background: #fff8f8;
+        }
+        .test-card h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .notification-demo {
+            position: relative;
+            min-height: 200px;
+            border: 2px dashed #007cba;
+            border-radius: 8px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Validation Finale - Correction du Bouton "Configurer Maintenant"</h1>
+        
+        <div class="status info">
+            <strong>🎯 Objectif :</strong> Vérifier que la correction du bouton "Configurer maintenant" fonctionne parfaitement après les modifications apportées au système de détection automatique des devices.
+        </div>
+
+        <!-- Section 1: Tests de base -->
+        <div class="test-section">
+            <h3>📋 1. Tests d'Initialisation du Système</h3>
+            <div>
+                <button class="test-button" onclick="runInitializationTests()">
+                    🚀 Tester l'Initialisation
+                </button>
+                <button class="test-button" onclick="checkGlobalReferences()">
+                    🌐 Vérifier les Références Globales
+                </button>
+            </div>
+            <div id="initResults" class="test-results"></div>
+        </div>
+
+        <!-- Section 2: Tests du bouton -->
+        <div class="test-section">
+            <h3>🔘 2. Tests du Bouton "Configurer Maintenant"</h3>
+            <div>
+                <button class="test-button" onclick="testButtonCreation()">
+                    🔨 Tester Création du Bouton
+                </button>
+                <button class="test-button" onclick="testButtonFunctionality()">
+                    ⚡ Tester Fonctionnalité du Bouton
+                </button>
+                <button class="test-button" onclick="simulateRealScenario()">
+                    🎮 Simuler Scénario Réel
+                </button>
+            </div>
+            <div id="buttonResults" class="test-results"></div>
+        </div>
+
+        <!-- Section 3: Tests d'intégration -->
+        <div class="test-section">
+            <h3>🔗 3. Tests d'Intégration Complète</h3>
+            <div>
+                <button class="test-button" onclick="testFullWorkflow()">
+                    🔄 Test du Workflow Complet
+                </button>
+                <button class="test-button" onclick="testModalOpening()">
+                    📋 Test d'Ouverture du Modal
+                </button>
+                <button class="test-button success" onclick="runAllTests()">
+                    ✅ Exécuter Tous les Tests
+                </button>
+            </div>
+            <div id="integrationResults" class="test-results"></div>
+        </div>
+
+        <!-- Zone de démonstration des notifications -->
+        <div class="test-section">
+            <h3>📢 4. Zone de Démonstration des Notifications</h3>
+            <div class="notification-demo" id="notificationDemo">
+                <p>Les notifications de nouveau device apparaîtront ici lors des tests</p>
+                <button class="test-button" onclick="clearNotifications()">🧹 Nettoyer les Notifications</button>
+            </div>
+        </div>
+
+        <!-- Statut général -->
+        <div id="globalStatus" class="status info">
+            🔄 Système prêt pour les tests...
+        </div>
+
+        <!-- Logs détaillés -->
+        <div id="detailedLog" class="log">
+=== LOGS DE VALIDATION FINALE ===
+Système initialisé et prêt pour la validation...
+
+</div>
+    </div>
+
+    <script type="module">
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetector.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let autoDetection, setupUI;
+        let testResults = {};
+        const logElement = document.getElementById('detailedLog');
+        const statusElement = document.getElementById('globalStatus');
+
+        function log(message, level = 'INFO') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] [${level}] ${message}\n`;
+            logElement.textContent += logEntry;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[ValidateButton] ${message}`);
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function createTestCard(title, result, details = '') {
+            const card = document.createElement('div');
+            card.className = `test-card ${result ? 'passed' : 'failed'}`;
+            card.innerHTML = `
+                <h4>${result ? '✅' : '❌'} ${title}</h4>
+                <p><strong>Résultat:</strong> ${result ? 'RÉUSSI' : 'ÉCHEC'}</p>
+                ${details ? `<p><strong>Détails:</strong> ${details}</p>` : ''}
+            `;
+            return card;
+        }
+
+        // Tests d'initialisation
+        window.runInitializationTests = async function() {
+            log('🚀 Début des tests d\'initialisation...', 'TEST');
+            const resultsContainer = document.getElementById('initResults');
+            resultsContainer.innerHTML = '';
+
+            try {
+                // Test 1: Initialisation des modules
+                let test1Result = false;
+                try {
+                    // Données de test
+                    window.devicesDataJs = [
+                        {
+                            "id": "VKB-Sim Gladiator NXT EVO R",
+                            "vendor_id": "0x231d",
+                            "product_id": "0x0201",
+                            "xml_instance": "231d_0201"
+                        }
+                    ];
+
+                    autoDetection = new DeviceAutoDetection();
+                    setupUI = new DeviceSetupUI(autoDetection);
+                    window.deviceSetupUI = setupUI;
+                    
+                    test1Result = true;
+                    log('✅ Modules initialisés avec succès');
+                } catch (error) {
+                    log(`❌ Erreur d\'initialisation: ${error.message}`, 'ERROR');
+                }
+
+                resultsContainer.appendChild(createTestCard(
+                    'Initialisation des Modules',
+                    test1Result,
+                    test1Result ? 'DeviceAutoDetection et DeviceSetupUI créés' : 'Échec de l\'initialisation'
+                ));
+
+                // Test 2: Référence globale
+                const test2Result = (window.deviceSetupUI && typeof window.deviceSetupUI.startSetup === 'function');
+                resultsContainer.appendChild(createTestCard(
+                    'Référence Globale DeviceSetupUI',
+                    test2Result,
+                    test2Result ? 'window.deviceSetupUI disponible avec startSetup()' : 'Référence globale manquante'
+                ));
+
+                testResults.initialization = test1Result && test2Result;
+                log(`📊 Tests d\'initialisation: ${testResults.initialization ? 'RÉUSSIS' : 'ÉCHEC'}`, 'RESULT');
+
+            } catch (error) {
+                log(`❌ Erreur générale dans les tests d\'initialisation: ${error.message}`, 'ERROR');
+                testResults.initialization = false;
+            }
+        };
+
+        // Tests du bouton
+        window.testButtonCreation = function() {
+            log('🔨 Test de création du bouton...', 'TEST');
+            const resultsContainer = document.getElementById('buttonResults');
+            resultsContainer.innerHTML = '';
+
+            if (!setupUI) {
+                resultsContainer.appendChild(createTestCard(
+                    'Création du Bouton',
+                    false,
+                    'SetupUI non initialisé'
+                ));
+                return;
+            }
+
+            try {
+                // Créer un device fictif
+                const fakeDeviceInfo = {
+                    id: 'Test Device for Button Creation',
+                    vendor_id: '0x9999',
+                    product_id: '0x8888',
+                    gamepad: {
+                        id: 'Test Device for Button Creation',
+                        axes: Array(4).fill(0),
+                        buttons: Array(10).fill({ pressed: false, value: 0 })
+                    },
+                    axes: 4,
+                    buttons: 10
+                };
+
+                // Simuler la notification
+                setupUI.showNewDeviceNotification(fakeDeviceInfo);
+                
+                // Vérifier qu'une notification a été créée
+                const notifications = document.querySelectorAll('.device-notification');
+                const hasNotification = notifications.length > 0;
+                
+                // Vérifier que le bouton a un event listener
+                let hasEventListener = false;
+                if (hasNotification) {
+                    const button = notifications[0].querySelector('.btn-primary');
+                    hasEventListener = button && button.getAttribute('data-device-key');
+                }
+
+                resultsContainer.appendChild(createTestCard(
+                    'Création de Notification',
+                    hasNotification,
+                    hasNotification ? 'Notification créée avec succès' : 'Aucune notification créée'
+                ));
+
+                resultsContainer.appendChild(createTestCard(
+                    'Event Listener du Bouton',
+                    hasEventListener,
+                    hasEventListener ? 'Bouton avec data-device-key et event listener' : 'Event listener manquant'
+                ));
+
+                testResults.buttonCreation = hasNotification && hasEventListener;
+                log(`📊 Test de création du bouton: ${testResults.buttonCreation ? 'RÉUSSI' : 'ÉCHEC'}`, 'RESULT');
+
+            } catch (error) {
+                log(`❌ Erreur lors du test de création: ${error.message}`, 'ERROR');
+                testResults.buttonCreation = false;
+            }
+        };
+
+        // Test de fonctionnalité du bouton
+        window.testButtonFunctionality = function() {
+            log('⚡ Test de fonctionnalité du bouton...', 'TEST');
+            const resultsContainer = document.getElementById('buttonResults');
+            
+            if (!testResults.buttonCreation) {
+                log('⚠️ Exécution du test de création d\'abord...', 'WARN');
+                testButtonCreation();
+            }
+
+            try {
+                // Trouver le bouton créé
+                const notifications = document.querySelectorAll('.device-notification');
+                if (notifications.length === 0) {
+                    resultsContainer.appendChild(createTestCard(
+                        'Test de Clic du Bouton',
+                        false,
+                        'Aucune notification trouvée'
+                    ));
+                    return;
+                }
+
+                const button = notifications[0].querySelector('.btn-primary');
+                if (!button) {
+                    resultsContainer.appendChild(createTestCard(
+                        'Test de Clic du Bouton',
+                        false,
+                        'Bouton non trouvé dans la notification'
+                    ));
+                    return;
+                }
+
+                // Test du clic
+                let clickSuccessful = false;
+                try {
+                    // Simuler le clic
+                    button.click();
+                    clickSuccessful = true;
+                    log('✅ Clic sur le bouton effectué');
+                    
+                    // Vérifier que le modal s'ouvre
+                    setTimeout(() => {
+                        const modal = document.getElementById('deviceSetupModal');
+                        const modalVisible = modal && modal.style.display !== 'none';
+                        
+                        resultsContainer.appendChild(createTestCard(
+                            'Ouverture du Modal',
+                            modalVisible,
+                            modalVisible ? 'Modal de configuration ouvert' : 'Modal non ouvert'
+                        ));
+
+                        testResults.buttonFunctionality = modalVisible;
+                    }, 500);
+
+                } catch (error) {
+                    log(`❌ Erreur lors du clic: ${error.message}`, 'ERROR');
+                }
+
+                resultsContainer.appendChild(createTestCard(
+                    'Exécution du Clic',
+                    clickSuccessful,
+                    clickSuccessful ? 'Clic exécuté sans erreur' : 'Erreur lors du clic'
+                ));
+
+            } catch (error) {
+                log(`❌ Erreur lors du test de fonctionnalité: ${error.message}`, 'ERROR');
+                testResults.buttonFunctionality = false;
+            }
+        };
+
+        // Simulation de scénario réel
+        window.simulateRealScenario = function() {
+            log('🎮 Simulation d\'un scénario réel...', 'TEST');
+            
+            if (!autoDetection) {
+                log('❌ AutoDetection non initialisé', 'ERROR');
+                return;
+            }
+
+            try {
+                // Nettoyer les notifications existantes
+                clearNotifications();
+
+                // Créer un gamepad fictif plus réaliste
+                const fakeGamepad = {
+                    id: 'Thrustmaster T.16000M FCS (Vendor: 044f Product: b10a)',
+                    index: 0,
+                    connected: true,
+                    timestamp: Date.now(),
+                    mapping: 'standard',
+                    axes: [-0.1, 0.05, 0.8, -0.3, 0.0, 0.0],
+                    buttons: Array(16).fill().map((_, i) => ({
+                        pressed: false,
+                        touched: false,
+                        value: 0
+                    }))
+                };
+
+                // Simuler la détection
+                autoDetection.handleGamepadConnected(fakeGamepad);
+                
+                log('✅ Scénario réel simulé avec gamepad Thrustmaster');
+                updateStatus('🎮 Scénario réel en cours - Vérifiez les notifications !', 'info');
+
+            } catch (error) {
+                log(`❌ Erreur lors de la simulation: ${error.message}`, 'ERROR');
+            }
+        };
+
+        // Test du workflow complet
+        window.testFullWorkflow = async function() {
+            log('🔄 Test du workflow complet...', 'TEST');
+            const resultsContainer = document.getElementById('integrationResults');
+            resultsContainer.innerHTML = '';
+
+            try {
+                // 1. Initialisation
+                await runInitializationTests();
+                
+                // 2. Création de notification
+                testButtonCreation();
+                
+                // 3. Test du bouton
+                setTimeout(() => {
+                    testButtonFunctionality();
+                    
+                    // 4. Résultat final
+                    setTimeout(() => {
+                        const allTestsPassed = testResults.initialization && 
+                                             testResults.buttonCreation && 
+                                             testResults.buttonFunctionality;
+                        
+                        resultsContainer.appendChild(createTestCard(
+                            'Workflow Complet',
+                            allTestsPassed,
+                            allTestsPassed ? 'Tous les tests du workflow réussis' : 'Certains tests ont échoué'
+                        ));
+
+                        updateStatus(
+                            allTestsPassed ? 
+                            '✅ Validation finale réussie - Le bouton fonctionne parfaitement !' : 
+                            '❌ Validation finale échouée - Des problèmes subsistent',
+                            allTestsPassed ? 'success' : 'error'
+                        );
+
+                    }, 1000);
+                }, 500);
+
+            } catch (error) {
+                log(`❌ Erreur lors du test de workflow: ${error.message}`, 'ERROR');
+            }
+        };
+
+        // Exécuter tous les tests
+        window.runAllTests = async function() {
+            log('🎯 Exécution de tous les tests de validation...', 'TEST');
+            
+            updateStatus('🔄 Exécution de la validation complète...', 'info');
+            
+            // Nettoyer
+            clearNotifications();
+            
+            // Séquence de tests
+            setTimeout(() => runInitializationTests(), 100);
+            setTimeout(() => testButtonCreation(), 1000);
+            setTimeout(() => testButtonFunctionality(), 2000);
+            setTimeout(() => testFullWorkflow(), 3000);
+        };
+
+        // Vérifier les références globales
+        window.checkGlobalReferences = function() {
+            log('🌐 Vérification des références globales...', 'TEST');
+            
+            const checks = [
+                { name: 'window.deviceSetupUI', exists: !!window.deviceSetupUI },
+                { name: 'window.devicesDataJs', exists: !!window.devicesDataJs },
+                { name: 'DeviceAutoDetection', exists: !!window.DeviceAutoDetection },
+                { name: 'DeviceSetupUI', exists: !!window.DeviceSetupUI }
+            ];
+
+            checks.forEach(check => {
+                log(`${check.exists ? '✅' : '❌'} ${check.name}: ${check.exists ? 'DISPONIBLE' : 'MANQUANT'}`);
+            });
+        };
+
+        // Nettoyer les notifications
+        window.clearNotifications = function() {
+            document.querySelectorAll('.device-notification').forEach(notification => {
+                notification.remove();
+            });
+            log('🧹 Notifications nettoyées');
+        };
+
+        // Test d'ouverture du modal
+        window.testModalOpening = function() {
+            log('📋 Test d\'ouverture directe du modal...', 'TEST');
+            
+            if (!setupUI) {
+                log('❌ SetupUI non disponible', 'ERROR');
+                return;
+            }
+
+            try {
+                // Créer un device fictif pour le test
+                const testDeviceKey = 'test_modal_' + Date.now();
+                const fakeDeviceInfo = {
+                    id: 'Test Device Modal',
+                    vendor_id: '0x9999',
+                    product_id: '0x8888',
+                    gamepad: {
+                        id: 'Test Device Modal',
+                        axes: Array(4).fill(0),
+                        buttons: Array(10).fill({ pressed: false, value: 0 })
+                    },
+                    axes: 4,
+                    buttons: 10
+                };
+
+                // Ajouter à la liste des devices inconnus
+                autoDetection.unknownDevices.set(testDeviceKey, fakeDeviceInfo);
+                
+                // Tester startSetup directement
+                setupUI.startSetup(testDeviceKey);
+                
+                // Vérifier que le modal est ouvert
+                const modal = document.getElementById('deviceSetupModal');
+                const isOpen = modal && modal.style.display !== 'none';
+                
+                log(`${isOpen ? '✅' : '❌'} Modal ${isOpen ? 'ouvert' : 'fermé'} après startSetup`);
+                
+                const resultsContainer = document.getElementById('integrationResults');
+                resultsContainer.appendChild(createTestCard(
+                    'Test Direct startSetup',
+                    isOpen,
+                    isOpen ? 'Modal ouvert correctement' : 'Échec d\'ouverture du modal'
+                ));
+
+            } catch (error) {
+                log(`❌ Erreur lors du test modal: ${error.message}`, 'ERROR');
+            }
+        };
+
+        // Initialisation automatique
+        log('🔧 Initialisation du système de validation...');
+        updateStatus('🔧 Système de validation initialisé - Prêt pour les tests', 'info');
+    </script>
+</body>
+</html>

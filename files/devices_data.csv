@@ -1,0 +1,4 @@
+id,vendor_id,product_id,buttons,axes,has_hats,mapping_file
+"Xbox Controller (XInput STANDARD GAMEPAD)",0x045e,0x028e,17,6,true,xbox_controller.json
+"Sony PlayStation 4 Controller",0x054c,0x05c4,17,6,true,ps4_controller.json
+"Logitech Extreme 3D Pro",0x046d,0xc215,12,4,true,logitech_extreme3d.json

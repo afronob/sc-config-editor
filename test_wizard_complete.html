@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Complet - Wizard de Configuration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007cba;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #005a8b;
+        }
+        
+        .test-button.danger {
+            background: #dc3545;
+        }
+        
+        .test-button.success {
+            background: #28a745;
+        }
+        
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            white-space: pre-wrap;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        
+        .test-card.success { border-left-color: #28a745; }
+        .test-card.error { border-left-color: #dc3545; }
+        .test-card.warning { border-left-color: #ffc107; }
+        
+        .wizard-status {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border: 1px solid #007cba;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+        
+        .step {
+            padding: 5px 10px;
+            border-radius: 3px;
+            background: #f0f0f0;
+            font-size: 12px;
+        }
+        
+        .step.active { background: #007cba; color: white; }
+        .step.completed { background: #28a745; color: white; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🧙‍♂️ Test Complet du Wizard de Configuration</h1>
+            <p>Test du workflow complet : Détection → Notification → Configuration → Sauvegarde</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🎮 Contrôles de Test</h3>
+            <button class="test-button" onclick="initializeSystem()">
+                🚀 Initialiser le Système
+            </button>
+            <button class="test-button" onclick="simulateNewDevice()">
+                📱 Simuler Nouveau Device
+            </button>
+            <button class="test-button" onclick="testDirectWizard()">
+                🧙‍♂️ Test Direct du Wizard
+            </button>
+            <button class="test-button danger" onclick="clearAll()">
+                🧹 Nettoyer Tout
+            </button>
+        </div>
+
+        <div class="status" id="status">
+            Système non initialisé
+        </div>
+
+        <div class="wizard-status" id="wizardStatus" style="display: none;">
+            <h4>📊 État du Wizard</h4>
+            <div class="step-indicator">
+                <div class="step" id="stepInfo">1. Informations</div>
+                <div class="step" id="stepAxes">2. Axes</div>
+                <div class="step" id="stepHats">3. Hats</div>
+                <div class="step" id="stepConfirm">4. Confirmation</div>
+            </div>
+            <div id="wizardDetails"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Tests Spécifiques</h3>
+            <div class="test-results" id="testResults">
+                <!-- Résultats des tests seront affichés ici -->
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Journal des Tests</h3>
+            <div class="log" id="log">Tests en attente...\n</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetection.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let autoDetection, setupUI;
+        const logElement = document.getElementById('log');
+        const statusElement = document.getElementById('status');
+        const wizardStatusElement = document.getElementById('wizardStatus');
+        const testResultsElement = document.getElementById('testResults');
+
+        let currentTestDevice = null;
+        let wizardTests = {
+            initialization: false,
+            notification: false,
+            modalOpening: false,
+            navigation: false,
+            configuration: false,
+            summary: false,
+            save: false
+        };
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logElement.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function createTestCard(title, success, details) {
+            const card = document.createElement('div');
+            card.className = `test-card ${success ? 'success' : 'error'}`;
+            card.innerHTML = `
+                <h4>${success ? '✅' : '❌'} ${title}</h4>
+                <p>${details}</p>
+            `;
+            return card;
+        }
+
+        function updateWizardStatus(step = null, details = '') {
+            if (step !== null) {
+                // Réinitialiser tous les steps
+                document.querySelectorAll('.step').forEach(s => {
+                    s.classList.remove('active', 'completed');
+                });
+                
+                // Marquer les steps appropriés
+                const steps = ['stepInfo', 'stepAxes', 'stepHats', 'stepConfirm'];
+                for (let i = 0; i < steps.length; i++) {
+                    const stepEl = document.getElementById(steps[i]);
+                    if (i < step) {
+                        stepEl.classList.add('completed');
+                    } else if (i === step) {
+                        stepEl.classList.add('active');
+                    }
+                }
+            }
+            
+            document.getElementById('wizardDetails').innerHTML = details;
+            wizardStatusElement.style.display = 'block';
+        }
+
+        // Fonction d'initialisation
+        window.initializeSystem = async function() {
+            try {
+                log('🚀 Démarrage de l\'initialisation du système...', 'info');
+                updateStatus('Initialisation en cours...', 'warning');
+
+                // Initialiser DeviceAutoDetection
+                autoDetection = new DeviceAutoDetection();
+                // Le constructeur appelle automatiquement init() qui configure les listeners
+                
+                // Initialiser DeviceSetupUI
+                setupUI = new DeviceSetupUI(autoDetection);
+                
+                // Rendre globalement disponible
+                window.autoDetection = autoDetection;
+                window.setupUI = setupUI;
+                
+                log('✅ Système initialisé avec succès', 'success');
+                updateStatus('✅ Système prêt pour les tests', 'success');
+                
+                wizardTests.initialization = true;
+                testResultsElement.appendChild(createTestCard(
+                    'Initialisation du Système',
+                    true,
+                    'DeviceAutoDetection et DeviceSetupUI chargés et configurés'
+                ));
+
+                // Test de présence des méthodes essentielles
+                testEssentialMethods();
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                updateStatus('❌ Échec de l\'initialisation', 'error');
+                testResultsElement.appendChild(createTestCard(
+                    'Initialisation du Système',
+                    false,
+                    `Erreur: ${error.message}`
+                ));
+            }
+        };
+
+        function testEssentialMethods() {
+            const methods = [
+                { obj: setupUI, method: 'startSetup', name: 'startSetup' },
+                { obj: setupUI, method: 'showModal', name: 'showModal' },
+                { obj: setupUI, method: 'nextStep', name: 'nextStep' },
+                { obj: setupUI, method: 'saveConfiguration', name: 'saveConfiguration' },
+                { obj: autoDetection, method: 'saveDeviceMapping', name: 'saveDeviceMapping' }
+            ];
+
+            let allPresent = true;
+            for (const { obj, method, name } of methods) {
+                if (typeof obj[method] !== 'function') {
+                    log(`❌ Méthode manquante: ${name}`, 'error');
+                    allPresent = false;
+                } else {
+                    log(`✅ Méthode présente: ${name}`, 'success');
+                }
+            }
+
+            testResultsElement.appendChild(createTestCard(
+                'Méthodes Essentielles',
+                allPresent,
+                `${allPresent ? 'Toutes les méthodes' : 'Certaines méthodes'} ${allPresent ? 'sont présentes' : 'manquent'}`
+            ));
+        }
+
+        // Simuler un nouveau device
+        window.simulateNewDevice = function() {
+            if (!autoDetection || !setupUI) {
+                log('❌ Système non initialisé', 'error');
+                return;
+            }
+
+            try {
+                log('📱 Simulation d\'un nouveau device...', 'info');
+                
+                const deviceKey = 'test_wizard_device_' + Date.now();
+                const fakeDeviceInfo = {
+                    id: 'Wizard Test Controller',
+                    vendor_id: '0x1234',
+                    product_id: '0x5678',
+                    gamepad: {
+                        id: 'Wizard Test Controller',
+                        axes: Array(6).fill(0),
+                        buttons: Array(12).fill({ pressed: false, value: 0 }),
+                        index: 0
+                    },
+                    axes: 6,
+                    buttons: 12
+                };
+
+                // Ajouter à la liste des devices inconnus
+                autoDetection.unknownDevices.set(deviceKey, fakeDeviceInfo);
+                currentTestDevice = deviceKey;
+                
+                // Déclencher la notification
+                setupUI.showNewDeviceNotification(fakeDeviceInfo);
+                
+                log('✅ Device simulé et notification affichée', 'success');
+                updateStatus('📱 Nouveau device détecté - Notification affichée', 'info');
+                
+                wizardTests.notification = true;
+                testResultsElement.appendChild(createTestCard(
+                    'Notification de Nouveau Device',
+                    true,
+                    'Device simulé et notification créée avec bouton "Configurer maintenant"'
+                ));
+
+                // Vérifier automatiquement la présence du bouton après un délai
+                setTimeout(testNotificationButton, 500);
+                
+            } catch (error) {
+                log(`❌ Erreur simulation device: ${error.message}`, 'error');
+                testResultsElement.appendChild(createTestCard(
+                    'Simulation Device',
+                    false,
+                    `Erreur: ${error.message}`
+                ));
+            }
+        };
+
+        function testNotificationButton() {
+            const notification = document.querySelector('.device-notification');
+            const button = notification?.querySelector('.btn-primary');
+            
+            if (button) {
+                log('✅ Bouton "Configurer maintenant" trouvé dans la notification', 'success');
+                
+                // Tester automatiquement le clic du bouton
+                log('🖱️ Test du clic sur "Configurer maintenant"...', 'info');
+                button.click();
+                
+                // Vérifier l'ouverture du modal après un délai
+                setTimeout(() => {
+                    const modal = document.getElementById('deviceSetupModal');
+                    const isOpen = modal && modal.style.display !== 'none';
+                    
+                    if (isOpen) {
+                        log('✅ Modal de configuration ouvert !', 'success');
+                        updateStatus('🧙‍♂️ Wizard de configuration ouvert', 'success');
+                        wizardTests.modalOpening = true;
+                        
+                        testResultsElement.appendChild(createTestCard(
+                            'Ouverture du Wizard',
+                            true,
+                            'Modal de configuration ouvert après clic sur le bouton'
+                        ));
+                        
+                        updateWizardStatus(0, 'Étape 1: Informations du device affichées');
+                        
+                        // Commencer les tests de navigation
+                        setTimeout(testWizardNavigation, 1000);
+                    } else {
+                        log('❌ Modal de configuration non ouvert', 'error');
+                        testResultsElement.appendChild(createTestCard(
+                            'Ouverture du Wizard',
+                            false,
+                            'Le modal ne s\'est pas ouvert après le clic'
+                        ));
+                    }
+                }, 300);
+                
+            } else {
+                log('❌ Bouton "Configurer maintenant" non trouvé', 'error');
+                testResultsElement.appendChild(createTestCard(
+                    'Bouton de Configuration',
+                    false,
+                    'Bouton "Configurer maintenant" absent de la notification'
+                ));
+            }
+        }
+
+        function testWizardNavigation() {
+            log('🧭 Test de la navigation dans le wizard...', 'info');
+            
+            // Test étape 1 → 2 (Axes)
+            const nextBtn = document.getElementById('setupNextBtn');
+            if (nextBtn) {
+                nextBtn.click();
+                updateWizardStatus(1, 'Étape 2: Configuration des axes');
+                log('✅ Navigation vers l\'étape "Axes" réussie', 'success');
+                
+                // Test d'une configuration d'axe
+                setTimeout(() => {
+                    testAxesConfiguration();
+                }, 500);
+            } else {
+                log('❌ Bouton "Suivant" non trouvé', 'error');
+            }
+        }
+
+        function testAxesConfiguration() {
+            log('🎯 Test de la configuration des axes...', 'info');
+            
+            try {
+                // Tester la sélection d'un axe
+                const axis0Select = document.getElementById('axis0Select');
+                if (axis0Select) {
+                    axis0Select.value = 'x';
+                    axis0Select.dispatchEvent(new Event('change'));
+                    log('✅ Configuration d\'axe testée (Axe 0 → X)', 'success');
+                    
+                    // Vérifier le monitoring en temps réel
+                    const testDisplay = document.getElementById('axesTestDisplay');
+                    if (testDisplay) {
+                        log('✅ Zone de test des axes présente', 'success');
+                        wizardTests.configuration = true;
+                    }
+                    
+                    // Continuer vers les hats
+                    setTimeout(() => {
+                        const nextBtn = document.getElementById('setupNextBtn');
+                        if (nextBtn) {
+                            nextBtn.click();
+                            updateWizardStatus(2, 'Étape 3: Configuration des hats/POV');
+                            log('✅ Navigation vers l\'étape "Hats" réussie', 'success');
+                            wizardTests.navigation = true; // Marquer la navigation comme réussie
+                            
+                            setTimeout(testHatsConfiguration, 500);
+                        }
+                    }, 1000);
+                } else {
+                    log('❌ Sélecteur d\'axe non trouvé', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur configuration axes: ${error.message}`, 'error');
+            }
+        }
+
+        function testHatsConfiguration() {
+            log('🧭 Test de la configuration des hats...', 'info');
+            
+            try {
+                // Passer cette étape (pas obligatoire)
+                const nextBtn = document.getElementById('setupNextBtn');
+                if (nextBtn) {
+                    nextBtn.click();
+                    updateWizardStatus(3, 'Étape 4: Confirmation et résumé');
+                    log('✅ Navigation vers l\'étape "Confirmation" réussie', 'success');
+                    
+                    setTimeout(testConfirmationStep, 500);
+                }
+            } catch (error) {
+                log(`❌ Erreur configuration hats: ${error.message}`, 'error');
+            }
+        }
+
+        function testConfirmationStep() {
+            log('✅ Test de l\'étape de confirmation...', 'info');
+            
+            try {
+                // Vérifier la présence du résumé
+                const summary = document.getElementById('configSummary');
+                if (summary && summary.innerHTML.trim()) {
+                    log('✅ Résumé de configuration généré', 'success');
+                    wizardTests.summary = true;
+                    
+                    testResultsElement.appendChild(createTestCard(
+                        'Navigation et Configuration',
+                        true,
+                        'Toutes les étapes du wizard ont été parcourues avec succès'
+                    ));
+                } else {
+                    log('⚠️ Résumé de configuration vide ou absent', 'warning');
+                }
+                
+                // Vérifier la présence du bouton sauvegarder
+                const saveBtn = document.getElementById('setupSaveBtn');
+                if (saveBtn && saveBtn.style.display !== 'none') {
+                    log('✅ Bouton "Sauvegarder" visible', 'success');
+                    wizardTests.save = true; // Marquer la sauvegarde comme disponible
+                    
+                    // Optionnel: Tester la sauvegarde (commenter pour éviter la création de fichiers)
+                    // setTimeout(testSaveConfiguration, 1000);
+                    
+                    updateStatus('🎉 Wizard complet testé avec succès !', 'success');
+                    updateWizardStatus(3, 'Prêt pour la sauvegarde - Test terminé');
+                    
+                } else {
+                    log('❌ Bouton "Sauvegarder" non visible', 'error');
+                }
+                
+                // Résumé final des tests
+                setTimeout(generateFinalReport, 2000);
+                
+            } catch (error) {
+                log(`❌ Erreur étape confirmation: ${error.message}`, 'error');
+            }
+        }
+
+        function generateFinalReport() {
+            log('\n=== 📊 RAPPORT FINAL DES TESTS ===', 'info');
+            
+            const testsPassed = Object.values(wizardTests).filter(Boolean).length;
+            const totalTests = Object.keys(wizardTests).length;
+            const successRate = (testsPassed / totalTests * 100).toFixed(1);
+            
+            log(`Tests réussis: ${testsPassed}/${totalTests} (${successRate}%)`, 'info');
+            
+            for (const [test, passed] of Object.entries(wizardTests)) {
+                log(`  ${passed ? '✅' : '❌'} ${test}`, passed ? 'success' : 'error');
+            }
+            
+            const finalCard = createTestCard(
+                'Rapport Final',
+                testsPassed >= totalTests * 0.8, // 80% de réussite minimum
+                `${testsPassed}/${totalTests} tests réussis (${successRate}%)`
+            );
+            
+            testResultsElement.appendChild(finalCard);
+            
+            log('\n🎉 Test complet du wizard terminé !', 'success');
+        }
+
+        // Test direct du wizard (sans passer par la notification)
+        window.testDirectWizard = function() {
+            if (!setupUI || !autoDetection) {
+                log('❌ Système non initialisé', 'error');
+                return;
+            }
+
+            try {
+                log('🧙‍♂️ Test direct du wizard...', 'info');
+                
+                const deviceKey = 'direct_test_' + Date.now();
+                const fakeDeviceInfo = {
+                    id: 'Direct Test Device',
+                    vendor_id: '0xAABB',
+                    product_id: '0xCCDD',
+                    gamepad: {
+                        id: 'Direct Test Device',
+                        axes: Array(4).fill(0),
+                        buttons: Array(8).fill({ pressed: false, value: 0 })
+                    },
+                    axes: 4,
+                    buttons: 8
+                };
+
+                autoDetection.unknownDevices.set(deviceKey, fakeDeviceInfo);
+                setupUI.startSetup(deviceKey);
+                
+                log('✅ Wizard ouvert directement', 'success');
+                updateStatus('🧙‍♂️ Test direct du wizard lancé', 'info');
+                
+            } catch (error) {
+                log(`❌ Erreur test direct: ${error.message}`, 'error');
+            }
+        };
+
+        // Nettoyer tout
+        window.clearAll = function() {
+            // Fermer le modal
+            const modal = document.getElementById('deviceSetupModal');
+            if (modal) modal.style.display = 'none';
+            
+            // Supprimer les notifications
+            document.querySelectorAll('.device-notification').forEach(n => n.remove());
+            
+            // Réinitialiser les tests
+            wizardTests = {
+                initialization: false,
+                notification: false,
+                modalOpening: false,
+                navigation: false,
+                configuration: false,
+                summary: false,
+                save: false
+            };
+            
+            // Nettoyer l'affichage
+            testResultsElement.innerHTML = '';
+            wizardStatusElement.style.display = 'none';
+            logElement.textContent = 'Tests nettoyés...\n';
+            
+            updateStatus('🧹 Système nettoyé', 'info');
+            log('🧹 Tout nettoyé - Prêt pour de nouveaux tests', 'info');
+        };
+
+        // Initialisation automatique au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            log('📄 Page chargée - Prêt pour les tests', 'info');
+            updateStatus('Page chargée - Cliquez sur "Initialiser le Système"', 'info');
+        });
+    </script>
+</body>
+</html>

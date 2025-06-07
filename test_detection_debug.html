@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Détection devices au chargement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .debug-panel {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .log-info { background: #e3f2fd; }
+        .log-success { background: #e8f5e8; }
+        .log-warning { background: #fff3cd; }
+        .log-error { background: #f8d7da; }
+        .device-info {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #007cba;
+        }
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #005a8b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug - Détection des devices au chargement</h1>
+    
+    <div class="debug-panel">
+        <h2>📊 État du système</h2>
+        <div id="systemStatus">Vérification en cours...</div>
+        
+        <h3>🎮 Devices connectés</h3>
+        <div id="connectedDevices">Scanning...</div>
+        
+        <h3>📋 Logs du système</h3>
+        <div id="systemLogs"></div>
+        
+        <div style="margin-top: 20px;">
+            <button class="test-button" onclick="forceDetection()">🔍 Forcer la détection</button>
+            <button class="test-button" onclick="clearLogs()">🗑️ Effacer les logs</button>
+            <button class="test-button" onclick="showDevicesData()">📋 Afficher devicesDataJs</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Variables globales pour debug
+        window.debugLogs = [];
+        window.deviceAutoDetection = null;
+        window.deviceSetupUI = null;
+
+        // Override console.log pour capturer les logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            window.debugLogs.push({ timestamp, message, type });
+            updateLogsDisplay();
+            
+            // Appeler la méthode originale
+            switch(type) {
+                case 'error': originalError(message); break;
+                case 'warn': originalWarn(message); break;
+                default: originalLog(message); break;
+            }
+        }
+
+        console.log = (...args) => addLog(args.join(' '), 'info');
+        console.error = (...args) => addLog(args.join(' '), 'error');
+        console.warn = (...args) => addLog(args.join(' '), 'warning');
+
+        function updateLogsDisplay() {
+            const container = document.getElementById('systemLogs');
+            container.innerHTML = window.debugLogs
+                .slice(-20) // Garder seulement les 20 derniers logs
+                .map(log => `<div class="log-entry log-${log.type}">[${log.timestamp}] ${log.message}</div>`)
+                .join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateDevicesDisplay() {
+            const container = document.getElementById('connectedDevices');
+            const gamepads = navigator.getGamepads();
+            let html = '';
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    const gp = gamepads[i];
+                    html += `
+                        <div class="device-info">
+                            <strong>Device ${i}:</strong> ${gp.id}<br>
+                            <strong>Index:</strong> ${gp.index}<br>
+                            <strong>Boutons:</strong> ${gp.buttons.length}<br>
+                            <strong>Axes:</strong> ${gp.axes.length}<br>
+                            <strong>Connected:</strong> ${gp.connected}
+                        </div>
+                    `;
+                }
+            }
+            
+            if (html === '') {
+                html = '<p>❌ Aucun device détecté</p>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function updateSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            let statusHTML = '';
+            
+            statusHTML += `<p><strong>DeviceAutoDetection:</strong> ${window.deviceAutoDetection ? '✅ Initialisé' : '❌ Non initialisé'}</p>`;
+            statusHTML += `<p><strong>DeviceSetupUI:</strong> ${window.deviceSetupUI ? '✅ Initialisé' : '❌ Non initialisé'}</p>`;
+            statusHTML += `<p><strong>devicesDataJs:</strong> ${window.devicesDataJs ? `✅ Chargé (${window.devicesDataJs.length} devices)` : '❌ Non chargé'}</p>`;
+            statusHTML += `<p><strong>Gamepad API:</strong> ${navigator.getGamepads ? '✅ Supporté' : '❌ Non supporté'}</p>`;
+            
+            status.innerHTML = statusHTML;
+        }
+
+        // Fonctions globales pour les boutons
+        window.forceDetection = function() {
+            addLog('🔍 Forçage de la détection...', 'info');
+            if (window.deviceAutoDetection) {
+                window.deviceAutoDetection.checkExistingGamepads();
+                addLog('✅ checkExistingGamepads() appelé', 'success');
+            } else {
+                addLog('❌ DeviceAutoDetection non disponible', 'error');
+            }
+            updateDevicesDisplay();
+        };
+
+        window.clearLogs = function() {
+            window.debugLogs = [];
+            updateLogsDisplay();
+        };
+
+        window.showDevicesData = function() {
+            if (window.devicesDataJs) {
+                addLog(`📋 devicesDataJs contient ${window.devicesDataJs.length} devices:`, 'info');
+                window.devicesDataJs.slice(0, 5).forEach((device, index) => {
+                    addLog(`  ${index + 1}. ${device.id} (${device.vendor_id}/${device.product_id})`, 'info');
+                });
+                if (window.devicesDataJs.length > 5) {
+                    addLog(`  ... et ${window.devicesDataJs.length - 5} autres`, 'info');
+                }
+            } else {
+                addLog('❌ devicesDataJs non disponible', 'error');
+            }
+        };
+
+        // Initialisation
+        async function init() {
+            addLog('🚀 Initialisation du debug...', 'info');
+            
+            try {
+                // Charger les données des devices
+                addLog('📥 Chargement des données devices...', 'info');
+                const response = await fetch('get_devices_data.php');
+                const devicesData = await response.json();
+                window.devicesDataJs = devicesData;
+                addLog(`✅ ${devicesData.length} devices chargés`, 'success');
+                
+                // Initialiser DeviceAutoDetection
+                addLog('🔧 Initialisation DeviceAutoDetection...', 'info');
+                const { DeviceAutoDetection } = await import('./assets/js/modules/deviceAutoDetection.js');
+                window.deviceAutoDetection = new DeviceAutoDetection();
+                addLog('✅ DeviceAutoDetection initialisé', 'success');
+                
+                // Initialiser DeviceSetupUI
+                addLog('🎨 Initialisation DeviceSetupUI...', 'info');
+                const { DeviceSetupUI } = await import('./assets/js/modules/deviceSetupUI.js');
+                window.deviceSetupUI = new DeviceSetupUI(window.deviceAutoDetection);
+                addLog('✅ DeviceSetupUI initialisé', 'success');
+                
+                addLog('🎉 Initialisation terminée!', 'success');
+                addLog('🔍 Détection automatique des devices existants...', 'info');
+                
+            } catch (error) {
+                addLog(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+            }
+            
+            updateSystemStatus();
+            updateDevicesDisplay();
+        }
+
+        // Démarrer l'initialisation
+        init();
+
+        // Mettre à jour l'affichage toutes les 2 secondes
+        setInterval(() => {
+            updateSystemStatus();
+            updateDevicesDisplay();
+        }, 2000);
+
+        // Écouter les événements gamepad
+        window.addEventListener('gamepadconnected', (e) => {
+            addLog(`🎮 Device connecté: ${e.gamepad.id}`, 'success');
+            updateDevicesDisplay();
+        });
+
+        window.addEventListener('gamepaddisconnected', (e) => {
+            addLog(`🎮 Device déconnecté: ${e.gamepad.id}`, 'warning');
+            updateDevicesDisplay();
+        });
+
+        // Écouter l'événement personnalisé de détection
+        window.addEventListener('unknownDeviceDetected', (e) => {
+            addLog(`🔔 Nouveau device détecté: ${e.detail.id}`, 'success');
+        });
+    </script>
+</body>
+</html>

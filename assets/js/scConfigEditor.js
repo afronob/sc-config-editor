@@ -4,6 +4,7 @@ import { UIHandler } from './modules/uiHandler.js';
 import { BindingsHandler } from './modules/bindingsHandler.js';
 import { SimplifiedBindingsHandler } from './modules/simplifiedBindingsHandler.js';
 import { FilterHandler, BindingsModal } from './modules/filterHandler.js';
+import { DeviceAutoDetection } from './modules/deviceAutoDetection.js';
 
 export class SCConfigEditor {
     constructor(config = {}) {
@@ -17,6 +18,9 @@ export class SCConfigEditor {
         this.filter = new FilterHandler();
         this.modal = new BindingsModal();
         
+        // Système de détection automatique des nouveaux devices
+        this.deviceAutoDetection = new DeviceAutoDetection();
+        
         // Configuration pour activer le mode simplifié
         this.useSimplifiedAnchoring = config.useSimplifiedAnchoring !== false; // Activé par défaut
         
@@ -29,8 +33,14 @@ export class SCConfigEditor {
         
         // Configuration initiale
         this.gamepad.buttonNamesByInstance = config.buttonNamesByInstance || {};
-        this.devicesDataJs = config.devicesDataJs || [];
+        this.devicesDataJs = config.devicesDataJs || config.devicesData || [];
         this.actionNames = config.actionNames || {};
+
+        // S'assurer que les données sont disponibles globalement pour le système de détection
+        if (!window.devicesDataJs && this.devicesDataJs.length > 0) {
+            window.devicesDataJs = this.devicesDataJs;
+            console.log('✅ devicesDataJs assigné globalement:', this.devicesDataJs.length, 'devices');
+        }
 
         this.init();
     }
@@ -39,6 +49,29 @@ export class SCConfigEditor {
         this.setupEventListeners();
         this.gamepad.init();
         this.renderGamepadDevicesList();
+        this.initDeviceAutoDetection();
+    }
+
+    async initDeviceAutoDetection() {
+        try {
+            // D'ABORD initialiser l'interface utilisateur de configuration des devices
+            console.log('🔧 Initialisation DeviceSetupUI...');
+            const module = await import('./modules/deviceSetupUI.js');
+            this.deviceSetupUI = new module.DeviceSetupUI(this.deviceAutoDetection);
+            
+            // Rendre l'interface disponible globalement pour les notifications
+            window.deviceSetupUI = this.deviceSetupUI;
+            
+            console.log('✅ DeviceSetupUI initialisé et disponible globalement');
+            
+            // ENSUITE lancer la détection des devices existants
+            console.log('🔍 Lancement de la détection des devices existants...');
+            this.deviceAutoDetection.checkExistingGamepads();
+            console.log('✅ Détection des devices existants terminée');
+            
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement de l\'interface de configuration des devices:', error);
+        }
     }
 
     setupEventListeners() {

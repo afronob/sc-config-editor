@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bouton Configurer Maintenant</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #005a8b;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Test du Bouton "Configurer Maintenant"</h1>
+        
+        <div class="status info">
+            <strong>Instructions :</strong> Ce test simule la détection d'un device inconnu et vérifie que le bouton "Configurer maintenant" fonctionne correctement.
+        </div>
+
+        <div>
+            <button class="test-button" onclick="simulateUnknownDevice()">
+                🎮 Simuler Détection Device Inconnu
+            </button>
+            <button class="test-button" onclick="clearLog()">
+                🧹 Effacer Log
+            </button>
+        </div>
+
+        <div id="status" class="status info">
+            Système en attente...
+        </div>
+
+        <div id="log" class="log">
+            Logs d'initialisation :\n
+        </div>
+    </div>
+
+    <script type="module">
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetector.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let autoDetection, setupUI;
+        const logElement = document.getElementById('log');
+        const statusElement = document.getElementById('status');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function updateStatus(message, type = 'info') {
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        async function initializeSystem() {
+            try {
+                log('🔧 Initialisation du système de détection...');
+                
+                // Données de test des devices connus
+                window.devicesDataJs = [
+                    {
+                        "id": "VKB-Sim Gladiator NXT EVO R",
+                        "vendor_id": "0x231d",
+                        "product_id": "0x0201",
+                        "xml_instance": "231d_0201"
+                    }
+                ];
+
+                // Initialiser le système de détection
+                autoDetection = new DeviceAutoDetection();
+                log('✅ DeviceAutoDetection initialisé');
+
+                // Initialiser l'interface utilisateur
+                setupUI = new DeviceSetupUI(autoDetection);
+                log('✅ DeviceSetupUI initialisé');
+
+                // Rendre disponible globalement (comme dans l'app principale)
+                window.deviceSetupUI = setupUI;
+                log('✅ Interface rendue disponible globalement');
+
+                updateStatus('✅ Système initialisé avec succès', 'success');
+                
+                // Écouter les détections
+                autoDetection.onNewDeviceDetected((deviceInfo) => {
+                    log(`🎯 Device inconnu détecté: ${deviceInfo.id}`);
+                    updateStatus('🎮 Device inconnu détecté - Notification affichée', 'info');
+                });
+
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`);
+                updateStatus('❌ Erreur d\'initialisation', 'error');
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Fonction globale pour simuler un device inconnu
+        window.simulateUnknownDevice = function() {
+            if (!autoDetection) {
+                updateStatus('❌ Système non initialisé', 'error');
+                return;
+            }
+
+            log('🎭 Simulation d\'un device inconnu...');
+            
+            // Créer un gamepad fictif
+            const fakeGamepad = {
+                id: 'Test Unknown Device (Vendor: 9999 Product: 8888)',
+                index: 99,
+                connected: true,
+                timestamp: Date.now(),
+                mapping: 'standard',
+                axes: [0, 0, 0, 0],
+                buttons: Array(16).fill({ pressed: false, touched: false, value: 0 })
+            };
+
+            // Simuler la détection
+            try {
+                autoDetection.handleGamepadConnected(fakeGamepad);
+                log('✅ Simulation réussie - Device "inconnu" traité');
+                updateStatus('🎮 Device simulé détecté - Vérifiez la notification !', 'success');
+            } catch (error) {
+                log(`❌ Erreur de simulation: ${error.message}`);
+                updateStatus('❌ Erreur de simulation', 'error');
+            }
+        };
+
+        window.clearLog = function() {
+            logElement.textContent = 'Log effacé...\n';
+            updateStatus('Système prêt', 'info');
+        };
+
+        // Test automatique de la fonction startSetup
+        window.testStartSetup = function() {
+            if (!setupUI) {
+                log('❌ SetupUI non disponible');
+                return;
+            }
+
+            log('🧪 Test de la méthode startSetup...');
+            try {
+                // Test avec un device key fictif
+                const testDeviceKey = 'test_unknown_device_99';
+                
+                // D'abord, ajouter un device fictif dans la liste des inconnus
+                const fakeDeviceInfo = {
+                    id: 'Test Device for StartSetup',
+                    vendor_id: '0x9999',
+                    product_id: '0x8888',
+                    gamepad: {
+                        id: 'Test Device for StartSetup',
+                        axes: Array(4).fill(0),
+                        buttons: Array(10).fill({ pressed: false, value: 0 })
+                    },
+                    axes: 4,
+                    buttons: 10
+                };
+                
+                autoDetection.unknownDevices.set(testDeviceKey, fakeDeviceInfo);
+                
+                // Maintenant tester startSetup
+                setupUI.startSetup(testDeviceKey);
+                log('✅ Test startSetup réussi - Modal devrait s\'ouvrir');
+                updateStatus('✅ Test startSetup réussi', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur test startSetup: ${error.message}`);
+                updateStatus('❌ Erreur test startSetup', 'error');
+            }
+        };
+
+        // Initialiser le système au chargement
+        initializeSystem();
+
+        // Ajouter un bouton de test de startSetup
+        setTimeout(() => {
+            const container = document.querySelector('.test-container');
+            const testButton = document.createElement('button');
+            testButton.className = 'test-button';
+            testButton.textContent = '🧪 Test Direct StartSetup';
+            testButton.onclick = window.testStartSetup;
+            container.querySelector('div').appendChild(testButton);
+        }, 1000);
+    </script>
+</body>
+</html>

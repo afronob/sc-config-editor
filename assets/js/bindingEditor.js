@@ -6,9 +6,14 @@ let editorInstance = null;
 
 // Fonction d'initialisation exportée
 export function initialize(config = {}) {
+    console.log('🚀 Initialisation bindingEditor avec config:', config);
+    
     // Exposer les données globalement pour compatibility
     if (config.devicesData) {
         window.devicesDataJs = config.devicesData;
+        console.log('✅ devicesDataJs chargé:', config.devicesData.length, 'devices');
+    } else {
+        console.warn('⚠️ Aucune donnée devicesData fournie');
     }
     
     // Exposer les noms d'actions pour les modales
@@ -16,11 +21,19 @@ export function initialize(config = {}) {
         window.actionNamesJs = config.actionNames;
     }
     
-    // Créer l'instance principale
-    editorInstance = new SCConfigEditor(config);
+    // Créer l'instance principale avec forçage de la détection auto
+    const editorConfig = {
+        ...config,
+        useSimplifiedAnchoring: true,
+        enableAutoDetection: true
+    };
+    
+    editorInstance = new SCConfigEditor(editorConfig);
     
     // Exposer globalement pour debugging
     window.scConfigEditor = editorInstance;
+    
+    console.log('✅ SCConfigEditor initialisé avec détection automatique');
     
     return editorInstance;
 }

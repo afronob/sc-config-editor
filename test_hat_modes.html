@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test HAT Modes - SC Config Editor</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hat-section {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+        }
+        
+        .hat-visual {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 2px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        
+        .hat-direction {
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .hat-direction.active {
+            background: #4CAF50;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .hat-direction.center {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .mode-selector {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .mode-button {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-button.active {
+            background: #2196F3;
+            color: white;
+            border-color: #0b7dda;
+        }
+        
+        .key-mapping {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .key-item {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .key-item.pressed {
+            background: #4CAF50;
+            color: white;
+            border-color: #45a049;
+        }
+        
+        .back-button {
+            display: inline-block;
+            background: #2196F3;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 1rem 0;
+            transition: background 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #0b7dda;
+        }
+        
+        .status-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <a href="index.html" class="back-button">← Retour à l'accueil</a>
+            <h1>🕹️ Test HAT Modes</h1>
+            <p>Testez les différents modes de configuration pour les contrôles HAT/POV</p>
+        </header>
+
+        <div class="status-info">
+            <h3>État de détection</h3>
+            <p id="detection-status">Recherche de contrôleurs...</p>
+        </div>
+
+        <div class="hat-section">
+            <h2>Mode de test HAT</h2>
+            <div class="mode-selector">
+                <button class="mode-button active" onclick="setHatMode('8-way')">8 Directions</button>
+                <button class="mode-button" onclick="setHatMode('4-way')">4 Directions</button>
+                <button class="mode-button" onclick="setHatMode('analog')">Mode Analogique</button>
+            </div>
+            
+            <div class="hat-visual">
+                <div class="hat-direction" id="hat-nw" data-direction="northwest">NW</div>
+                <div class="hat-direction" id="hat-n" data-direction="north">N</div>
+                <div class="hat-direction" id="hat-ne" data-direction="northeast">NE</div>
+                <div class="hat-direction" id="hat-w" data-direction="west">W</div>
+                <div class="hat-direction center" id="hat-center" data-direction="center">⊙</div>
+                <div class="hat-direction" id="hat-e" data-direction="east">E</div>
+                <div class="hat-direction" id="hat-sw" data-direction="southwest">SW</div>
+                <div class="hat-direction" id="hat-s" data-direction="south">S</div>
+                <div class="hat-direction" id="hat-se" data-direction="southeast">SE</div>
+            </div>
+            
+            <div class="status-info">
+                <p><strong>Direction actuelle:</strong> <span id="current-direction">Centre</span></p>
+                <p><strong>Valeur brute:</strong> <span id="raw-value">-1</span></p>
+                <p><strong>Mode actuel:</strong> <span id="current-mode">8 Directions</span></p>
+            </div>
+        </div>
+
+        <div class="hat-section">
+            <h2>Mappage des touches dynamiques</h2>
+            <p>Les touches assignées changent selon la direction du HAT :</p>
+            
+            <div class="key-mapping" id="key-mapping">
+                <!-- Généré dynamiquement par JavaScript -->
+            </div>
+        </div>
+
+        <div class="hat-section">
+            <h2>Log des événements</h2>
+            <div id="event-log" style="background: #fff; border: 1px solid #ddd; border-radius: 5px; padding: 1rem; height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9em;">
+                <!-- Les événements seront ajoutés ici -->
+            </div>
+            <button onclick="clearLog()" style="background: #f44336; color: white; border: none; padding: 0.5rem 1rem; border-radius: 3px; margin-top: 0.5rem; cursor: pointer;">Effacer le log</button>
+        </div>
+    </div>
+
+    <script>
+        let currentHatMode = '8-way';
+        let gamepadIndex = null;
+        let lastHatValue = -1;
+        
+        const hatDirections = {
+            '-1': 'center',
+            '0': 'north',
+            '1': 'northeast', 
+            '2': 'east',
+            '3': 'southeast',
+            '4': 'south',
+            '5': 'southwest',
+            '6': 'west',
+            '7': 'northwest'
+        };
+
+        const keyMappings = {
+            '8-way': {
+                'north': 'W (Avancer)',
+                'northeast': 'W+D (Avancer+Droite)',
+                'east': 'D (Droite)',
+                'southeast': 'S+D (Reculer+Droite)',
+                'south': 'S (Reculer)',
+                'southwest': 'S+A (Reculer+Gauche)',
+                'west': 'A (Gauche)',
+                'northwest': 'W+A (Avancer+Gauche)',
+                'center': 'Aucune touche'
+            },
+            '4-way': {
+                'north': 'W (Avancer)',
+                'east': 'D (Droite)',
+                'south': 'S (Reculer)',
+                'west': 'A (Gauche)',
+                'center': 'Aucune touche'
+            },
+            'analog': {
+                'north': 'Stick Y: -1.0',
+                'northeast': 'Stick X: +0.7, Y: -0.7',
+                'east': 'Stick X: +1.0',
+                'southeast': 'Stick X: +0.7, Y: +0.7',
+                'south': 'Stick Y: +1.0',
+                'southwest': 'Stick X: -0.7, Y: +0.7',
+                'west': 'Stick X: -1.0',
+                'northwest': 'Stick X: -0.7, Y: -0.7',
+                'center': 'Stick X: 0, Y: 0'
+            }
+        };
+
+        function setHatMode(mode) {
+            currentHatMode = mode;
+            document.getElementById('current-mode').textContent = 
+                mode === '8-way' ? '8 Directions' :
+                mode === '4-way' ? '4 Directions' : 'Mode Analogique';
+            
+            // Mettre à jour les boutons de mode
+            document.querySelectorAll('.mode-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            updateKeyMapping();
+            logEvent(`Mode changé vers: ${document.getElementById('current-mode').textContent}`);
+        }
+
+        function updateKeyMapping() {
+            const mappingContainer = document.getElementById('key-mapping');
+            const mappings = keyMappings[currentHatMode];
+            
+            mappingContainer.innerHTML = '';
+            
+            Object.entries(mappings).forEach(([direction, key]) => {
+                if (currentHatMode === '4-way' && 
+                    ['northeast', 'southeast', 'southwest', 'northwest'].includes(direction)) {
+                    return; // Skip diagonal directions in 4-way mode
+                }
+                
+                const keyDiv = document.createElement('div');
+                keyDiv.className = 'key-item';
+                keyDiv.id = `key-${direction}`;
+                keyDiv.innerHTML = `<strong>${direction.toUpperCase()}</strong><br>${key}`;
+                mappingContainer.appendChild(keyDiv);
+            });
+        }
+
+        function updateHatDisplay(hatValue) {
+            // Réinitialiser toutes les directions
+            document.querySelectorAll('.hat-direction:not(.center)').forEach(dir => {
+                dir.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.key-item').forEach(key => {
+                key.classList.remove('pressed');
+            });
+
+            const direction = hatDirections[hatValue.toString()];
+            document.getElementById('current-direction').textContent = 
+                direction.charAt(0).toUpperCase() + direction.slice(1);
+            document.getElementById('raw-value').textContent = hatValue;
+
+            // Activer la direction correspondante
+            if (direction !== 'center') {
+                const hatElement = document.getElementById(`hat-${direction.replace('center', 'c')}`);
+                if (hatElement) {
+                    hatElement.classList.add('active');
+                }
+                
+                // Activer la touche correspondante
+                const keyElement = document.getElementById(`key-${direction}`);
+                if (keyElement) {
+                    keyElement.classList.add('pressed');
+                }
+            }
+
+            // Log des changements
+            if (hatValue !== lastHatValue) {
+                const mapping = keyMappings[currentHatMode][direction];
+                logEvent(`HAT: ${direction} (${hatValue}) → ${mapping}`);
+                lastHatValue = hatValue;
+            }
+        }
+
+        function detectGamepads() {
+            const gamepads = navigator.getGamepads();
+            let connectedGamepad = null;
+
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    connectedGamepad = gamepads[i];
+                    gamepadIndex = i;
+                    break;
+                }
+            }
+
+            const statusElement = document.getElementById('detection-status');
+
+            if (connectedGamepad) {
+                statusElement.innerHTML = `✅ Contrôleur détecté: <strong>${connectedGamepad.id}</strong><br>Utilisez le HAT/POV pour tester les directions`;
+                statusElement.style.color = '#4CAF50';
+                
+                // Surveiller le HAT (généralement les axes 6 et 7, mais peut varier)
+                pollGamepadHat();
+            } else {
+                statusElement.textContent = '❌ Aucun contrôleur détecté - Connectez un contrôleur avec HAT/POV';
+                statusElement.style.color = '#f44336';
+                gamepadIndex = null;
+            }
+        }
+
+        function pollGamepadHat() {
+            if (gamepadIndex !== null) {
+                const gamepads = navigator.getGamepads();
+                const gamepad = gamepads[gamepadIndex];
+
+                if (gamepad) {
+                    // Vérifier différents emplacements possibles pour le HAT
+                    let hatValue = -1;
+                    
+                    // Méthode 1: Vérifier les boutons HAT (boutons 12-19 typiquement)
+                    if (gamepad.buttons.length > 12) {
+                        for (let i = 12; i < Math.min(20, gamepad.buttons.length); i++) {
+                            if (gamepad.buttons[i] && gamepad.buttons[i].pressed) {
+                                hatValue = i - 12; // Convertir index bouton en direction
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Méthode 2: Vérifier les axes (axes 6,7 ou 8,9)
+                    if (hatValue === -1 && gamepad.axes.length > 6) {
+                        const xAxis = gamepad.axes[6];
+                        const yAxis = gamepad.axes[7];
+                        
+                        if (Math.abs(xAxis) > 0.5 || Math.abs(yAxis) > 0.5) {
+                            // Convertir axes en direction HAT
+                            if (yAxis < -0.5) { // Nord
+                                if (xAxis > 0.5) hatValue = 1; // NE
+                                else if (xAxis < -0.5) hatValue = 7; // NW
+                                else hatValue = 0; // N
+                            } else if (yAxis > 0.5) { // Sud
+                                if (xAxis > 0.5) hatValue = 3; // SE
+                                else if (xAxis < -0.5) hatValue = 5; // SW
+                                else hatValue = 4; // S
+                            } else if (xAxis > 0.5) {
+                                hatValue = 2; // E
+                            } else if (xAxis < -0.5) {
+                                hatValue = 6; // W
+                            }
+                        }
+                    }
+                    
+                    updateHatDisplay(hatValue);
+                }
+            }
+            
+            requestAnimationFrame(pollGamepadHat);
+        }
+
+        function logEvent(message) {
+            const logElement = document.getElementById('event-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('event-log').innerHTML = '';
+            logEvent('Log effacé');
+        }
+
+        // Événements gamepad
+        window.addEventListener('gamepadconnected', (e) => {
+            logEvent(`Contrôleur connecté: ${e.gamepad.id}`);
+            detectGamepads();
+        });
+
+        window.addEventListener('gamepaddisconnected', (e) => {
+            logEvent(`Contrôleur déconnecté: ${e.gamepad.id}`);
+            detectGamepads();
+        });
+
+        // Initialisation
+        updateKeyMapping();
+        setInterval(detectGamepads, 1000);
+        detectGamepads();
+        logEvent('Test HAT Modes initialisé');
+    </script>
+</body>
+</html>
