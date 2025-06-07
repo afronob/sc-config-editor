@@ -28,30 +28,23 @@ temp/mappings/*.csv
 *.tmp
 *.temp
 temp_*
-# Dossiers temporaires et de test (ajouté le 2025-06-07)
-temp/
-tests/php/
-tests/xml/
-debug/devices/
+# Scripts de maintenance (ajouté le 2025-06-07)
+scripts/cleanup/
+scripts/cache/
+scripts/organization/
 scripts/analysis/
 scripts/integration/
 scripts/python/
 
-# Fichiers de mapping temporaires
-temp/mappings/*.csv
+# Logs de maintenance
+scripts/*.log
+scripts/*/*.log
 
-# Tests HTML obsolètes
-tests/html/obsolete/
-tests/html/debug/
-
-# Dossiers temporaires et de test (ajouté le 2025-06-07)
+# Dossiers temporaires et de test
 temp/
 tests/php/
 tests/xml/
 debug/devices/
-scripts/analysis/
-scripts/integration/
-scripts/python/
 
 # Fichiers de mapping temporaires
 temp/mappings/*.csv
