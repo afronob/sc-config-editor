@@ -11,6 +11,11 @@ export function initialize(config = {}) {
         window.devicesDataJs = config.devicesData;
     }
     
+    // Exposer les noms d'actions pour les modales
+    if (config.actionNames) {
+        window.actionNamesJs = config.actionNames;
+    }
+    
     // Créer l'instance principale
     editorInstance = new SCConfigEditor(config);
     

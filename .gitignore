@@ -4,3 +4,58 @@ Profiles
 ./*.xml
 *.log
 external/*
+
+# Dossiers d'organisation (ajouté le 7 juin 2025)
+# Tests et fichiers temporaires
+temp/
+tests/php/
+tests/xml/
+tests/html/debug/
+tests/html/obsolete/
+
+# Debug et diagnostic
+debug/devices/
+
+# Scripts temporaires
+scripts/analysis/
+scripts/integration/
+scripts/python/
+
+# Fichiers de mapping temporaires
+temp/mappings/*.csv
+
+# Logs et fichiers temporaires
+*.tmp
+*.temp
+temp_*
+# Dossiers temporaires et de test (ajouté le 2025-06-07)
+temp/
+tests/php/
+tests/xml/
+debug/devices/
+scripts/analysis/
+scripts/integration/
+scripts/python/
+
+# Fichiers de mapping temporaires
+temp/mappings/*.csv
+
+# Tests HTML obsolètes
+tests/html/obsolete/
+tests/html/debug/
+
+# Dossiers temporaires et de test (ajouté le 2025-06-07)
+temp/
+tests/php/
+tests/xml/
+debug/devices/
+scripts/analysis/
+scripts/integration/
+scripts/python/
+
+# Fichiers de mapping temporaires
+temp/mappings/*.csv
+
+# Tests HTML obsolètes
+tests/html/obsolete/
+tests/html/debug/

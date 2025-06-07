@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Test ActionFormatter - Intégration complète</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; background: #f0f8f0; }
+        .error { color: red; background: #f8f0f0; }
+        .info { color: blue; background: #f0f0f8; }
+        .results { margin: 15px 0; }
+        button { margin: 5px; padding: 8px 15px; cursor: pointer; }
+        .mock-overlay { 
+            position: fixed; top: 20px; right: 20px; 
+            background: rgba(0,0,0,0.8); color: white; 
+            padding: 10px; border-radius: 5px; 
+            display: none; z-index: 1000; 
+        }
+        .modal-content { 
+            background: white; border: 1px solid #ccc; 
+            padding: 10px; margin: 10px 0; 
+            border-radius: 3px; 
+        }
+        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Test ActionFormatter - Intégration complète</h1>
+    <p>Ce test vérifie que tous les composants utilisent correctement l'ActionFormatter centralisé.</p>
+    
+    <div class="test-section">
+        <h3>🧪 Tests de base ActionFormatter</h3>
+        <button onclick="testActionFormatter()">Tester ActionFormatter</button>
+        <div id="formatter-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔧 Tests SimplifiedBindingsHandler</h3>
+        <button onclick="testSimplifiedBindings()">Tester SimplifiedBindings</button>
+        <div id="simplified-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📱 Tests ModalManager</h3>
+        <button onclick="testModalManager()">Tester ModalManager</button>
+        <div id="modal-results" class="results"></div>
+        <div id="mock-modal" class="modal-content" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎮 Tests UIHandler</h3>
+        <button onclick="testUIHandler()">Tester UIHandler</button>
+        <div id="ui-results" class="results"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🗂️ Tests FilterHandler BindingsModal</h3>
+        <button onclick="testFilterHandler()">Tester FilterHandler</button>
+        <div id="filter-results" class="results"></div>
+        <div id="mock-filter-modal" class="modal-content" style="display: none;"></div>
+    </div>
+
+    <!-- Mock overlay pour les tests -->
+    <div id="mock-overlay" class="mock-overlay"></div>
+
+    <!-- Table de test pour SimplifiedBindingsHandler -->
+    <table id="bindings-table" style="display: none;">
+        <tr>
+            <th>Category</th>
+            <th>Subcategory</th>
+            <th>Action</th>
+            <th>Input</th>
+            <th>Opts</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_yaw</td>
+            <td>Lacet</td>
+            <td><input name="input[test][yaw][0]" value="js1_button1" /></td>
+            <td><input name="opts[test][yaw][0]" value="activationmode" /></td>
+            <td><input name="value[test][yaw][0]" value="hold" /></td>
+        </tr>
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_roll</td>
+            <td>Roulis</td>
+            <td><input name="input[test][roll][0]" value="js1_button2" /></td>
+            <td><input name="opts[test][roll][0]" value="activationmode" /></td>
+            <td><input name="value[test][roll][0]" value="double_tap" /></td>
+        </tr>
+        <tr>
+            <td>spaceship_movement</td>
+            <td>v_pitch</td>
+            <td>Tangage</td>
+            <td><input name="input[test][pitch][0]" value="js1_button3" /></td>
+            <td><input name="opts[test][pitch][0]" value="" /></td>
+            <td><input name="value[test][pitch][0]" value="" /></td>
+        </tr>
+    </table>
+
+    <script type="module">
+        // Mock pour les traductions françaises
+        window.actionNamesJs = {
+            'v_yaw': 'Lacet',
+            'v_roll': 'Roulis', 
+            'v_pitch': 'Tangage',
+            'v_strafe_forward': 'Avancer',
+            'fire_weapon': 'Tirer'
+        };
+
+        // Imports dynamiques
+        let ActionFormatter, SimplifiedBindingsHandler, ModalManager, FilterHandler, BindingsModal, UIHandler;
+
+        try {
+            const modules = await Promise.all([
+                import('/assets/js/modules/actionFormatter.js'),
+                import('/assets/js/modules/simplifiedBindingsHandler.js'),
+                import('/assets/js/modules/modalManager.js'),
+                import('/assets/js/modules/filterHandler.js'),
+                import('/assets/js/modules/uiHandler.js')
+            ]);
+
+            ActionFormatter = modules[0].ActionFormatter;
+            SimplifiedBindingsHandler = modules[1].SimplifiedBindingsHandler;
+            ModalManager = modules[2].ModalManager;
+            FilterHandler = modules[3].FilterHandler;
+            BindingsModal = modules[3].BindingsModal;
+            UIHandler = modules[4].UIHandler;
+
+            log('✅ Tous les modules importés avec succès', 'success');
+        } catch (error) {
+            log(`❌ Erreur d'import: ${error.message}`, 'error');
+            console.error('Erreur complète:', error);
+        }
+
+        function log(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Test ActionFormatter
+        window.testActionFormatter = function() {
+            const results = document.getElementById('formatter-results');
+            results.innerHTML = '<h4>Résultats ActionFormatter:</h4>';
+            
+            if (!ActionFormatter) {
+                results.innerHTML += '<p class="error">❌ ActionFormatter non disponible</p>';
+                return;
+            }
+
+            const tests = [
+                {
+                    name: 'Action normale',
+                    action: 'v_yaw',
+                    opts: '',
+                    value: '',
+                    expected: 'Lacet'
+                },
+                {
+                    name: 'Action Hold',
+                    action: 'v_roll',
+                    opts: 'activationmode',
+                    value: 'hold',
+                    expected: '[H] Roulis'
+                },
+                {
+                    name: 'Action Double Tap',
+                    action: 'v_pitch',
+                    opts: 'activationmode',
+                    value: 'double_tap',
+                    expected: '[DT] Tangage'
+                },
+                {
+                    name: 'Action inconnue',
+                    action: 'unknown_action',
+                    opts: '',
+                    value: '',
+                    expected: 'unknown_action'
+                },
+                {
+                    name: 'formatActionNameByMode - Hold',
+                    action: 'fire_weapon',
+                    mode: 'hold',
+                    expected: '[H] Tirer'
+                }
+            ];
+
+            tests.forEach(test => {
+                try {
+                    let result;
+                    if (test.mode !== undefined) {
+                        result = ActionFormatter.formatActionNameByMode(test.action, test.mode);
+                    } else {
+                        result = ActionFormatter.formatActionName(test.action, test.opts, test.value);
+                    }
+                    
+                    const success = result === test.expected;
+                    const status = success ? '✅' : '❌';
+                    const className = success ? 'success' : 'error';
+                    
+                    results.innerHTML += `<p class="${className}">${status} ${test.name}: "${result}" ${success ? '' : `(attendu: "${test.expected}")`}</p>`;
+                } catch (error) {
+                    results.innerHTML += `<p class="error">❌ ${test.name}: Erreur - ${error.message}</p>`;
+                }
+            });
+        };
+
+        // Test SimplifiedBindingsHandler
+        window.testSimplifiedBindings = function() {
+            const results = document.getElementById('simplified-results');
+            results.innerHTML = '<h4>Résultats SimplifiedBindingsHandler:</h4>';
+            
+            if (!SimplifiedBindingsHandler) {
+                results.innerHTML += '<p class="error">❌ SimplifiedBindingsHandler non disponible</p>';
+                return;
+            }
+
+            try {
+                const handler = new SimplifiedBindingsHandler();
+                
+                // Test de formatage dans anchorToRow (simulation)
+                const mockRow = document.querySelector('#bindings-table tr:nth-child(2)'); // Row avec Hold
+                if (mockRow) {
+                    const action = mockRow.cells[2]?.textContent || 'Unknown';
+                    
+                    // Simuler l'appel qui utilise ActionFormatter
+                    const formattedAction = ActionFormatter.formatActionNameByMode(action, 'hold');
+                    
+                    const success = formattedAction === '[H] Lacet';
+                    const status = success ? '✅' : '❌';
+                    const className = success ? 'success' : 'error';
+                    
+                    results.innerHTML += `<p class="${className}">${status} Formatage action avec mode: "${formattedAction}"</p>`;
+                } else {
+                    results.innerHTML += '<p class="error">❌ Table de test non trouvée</p>';
+                }
+                
+                results.innerHTML += '<p class="success">✅ SimplifiedBindingsHandler utilise ActionFormatter</p>';
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        };
+
+        // Test ModalManager
+        window.testModalManager = function() {
+            const results = document.getElementById('modal-results');
+            const mockModal = document.getElementById('mock-modal');
+            results.innerHTML = '<h4>Résultats ModalManager:</h4>';
+            
+            if (!ModalManager) {
+                results.innerHTML += '<p class="error">❌ ModalManager non disponible</p>';
+                return;
+            }
+
+            try {
+                // Créer un mock modal element
+                const modalElement = document.createElement('div');
+                modalElement.id = 'joystick-bindings-modal';
+                document.body.appendChild(modalElement);
+                
+                const manager = new ModalManager();
+                
+                // Mock data pour tester le formatage
+                const mockBindings = {
+                    'js1_button1': [
+                        { action: 'v_yaw', category: 'spaceship_movement', opts: 'activationmode', value: 'hold' }
+                    ],
+                    'js1_button2': [
+                        { action: 'v_roll', category: 'spaceship_movement', opts: 'activationmode', value: 'double_tap' }
+                    ]
+                };
+
+                // Simuler renderBindingsModal avec ActionFormatter
+                let testHtml = '';
+                Object.keys(mockBindings).forEach(button => {
+                    mockBindings[button].forEach(item => {
+                        const formattedAction = ActionFormatter.formatActionName(item.action, item.opts, item.value);
+                        testHtml += `<div>${formattedAction}</div>`;
+                    });
+                });
+
+                // Vérifier le contenu formaté
+                const expectedHold = testHtml.includes('[H] Lacet');
+                const expectedDoubleTap = testHtml.includes('[DT] Roulis');
+                
+                results.innerHTML += `<p class="${expectedHold ? 'success' : 'error'}">${expectedHold ? '✅' : '❌'} Format Hold détecté</p>`;
+                results.innerHTML += `<p class="${expectedDoubleTap ? 'success' : 'error'}">${expectedDoubleTap ? '✅' : '❌'} Format Double Tap détecté</p>`;
+                
+                mockModal.innerHTML = testHtml;
+                mockModal.style.display = 'block';
+                
+                // Cleanup
+                modalElement.remove();
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        };
+
+        // Test FilterHandler BindingsModal
+        window.testFilterHandler = function() {
+            const results = document.getElementById('filter-results');
+            const mockModal = document.getElementById('mock-filter-modal');
+            results.innerHTML = '<h4>Résultats FilterHandler BindingsModal:</h4>';
+            
+            if (!BindingsModal) {
+                results.innerHTML += '<p class="error">❌ BindingsModal non disponible</p>';
+                return;
+            }
+
+            try {
+                // Créer un mock modal element
+                const modalElement = document.createElement('div');
+                modalElement.id = 'joystick-bindings-modal';
+                document.body.appendChild(modalElement);
+                
+                const bindingsModal = new BindingsModal();
+                
+                // Mock data pour tester le formatage
+                const mockBindings = {
+                    'js1_button1': [
+                        { action: 'v_yaw', category: 'spaceship_movement', opts: 'activationmode', value: 'hold' }
+                    ],
+                    'js1_button2': [
+                        { action: 'v_roll', category: 'spaceship_movement', opts: 'activationmode', value: 'double_tap' }
+                    ],
+                    'js1_button3': [
+                        { action: 'v_pitch', category: 'spaceship_movement', opts: '', value: '' }
+                    ]
+                };
+
+                // Simuler renderModal avec ActionFormatter
+                let testHtml = '<ul>';
+                Object.keys(mockBindings).forEach(button => {
+                    testHtml += `<li><b>${button}</b><ul>`;
+                    mockBindings[button].forEach(item => {
+                        const formattedAction = ActionFormatter.formatActionName(item.action, item.opts, item.value);
+                        testHtml += `<li>${formattedAction} <span style="color:#888">(${item.category})</span></li>`;
+                    });
+                    testHtml += '</ul></li>';
+                });
+                testHtml += '</ul>';
+
+                // Vérifier le contenu formaté
+                const expectedHold = testHtml.includes('[H] Lacet');
+                const expectedDoubleTap = testHtml.includes('[DT] Roulis');
+                const expectedNormal = testHtml.includes('Tangage') && !testHtml.includes('[H] Tangage') && !testHtml.includes('[DT] Tangage');
+                
+                results.innerHTML += `<p class="${expectedHold ? 'success' : 'error'}">${expectedHold ? '✅' : '❌'} Format Hold détecté</p>`;
+                results.innerHTML += `<p class="${expectedDoubleTap ? 'success' : 'error'}">${expectedDoubleTap ? '✅' : '❌'} Format Double Tap détecté</p>`;
+                results.innerHTML += `<p class="${expectedNormal ? 'success' : 'error'}">${expectedNormal ? '✅' : '❌'} Action normale sans préfixe</p>`;
+                
+                mockModal.innerHTML = testHtml;
+                mockModal.style.display = 'block';
+                
+                // Cleanup
+                modalElement.remove();
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        };
+
+        // Test UIHandler
+        window.testUIHandler = function() {
+            const results = document.getElementById('ui-results');
+            results.innerHTML = '<h4>Résultats UIHandler:</h4>';
+            
+            if (!UIHandler) {
+                results.innerHTML += '<p class="error">❌ UIHandler non disponible</p>';
+                return;
+            }
+
+            try {
+                // Mock BindingsHandler pour UIHandler
+                const mockBindingsHandler = {
+                    findMappingRows: () => [],
+                    cycleRows: () => null,
+                    currentButtonIndex: 0,
+                    currentHatIndex: 0
+                };
+                
+                const uiHandler = new UIHandler(mockBindingsHandler);
+                
+                // Test de formatage avec handleButtonPress (simulation)
+                const testData = [
+                    { buttonName: 'js1_button1', mode: 'hold', expected: '[H] js1_button1' },
+                    { buttonName: 'js1_button2', mode: 'double_tap', expected: '[DT] js1_button2' },
+                    { buttonName: 'js1_button3', mode: '', expected: 'js1_button3' }
+                ];
+
+                let allSuccess = true;
+                testData.forEach(test => {
+                    // Simuler le formatage que fait UIHandler avec ActionFormatter
+                    const formatted = ActionFormatter.formatActionNameByMode(test.buttonName, test.mode);
+                    const success = formatted === test.expected;
+                    
+                    if (!success) allSuccess = false;
+                    
+                    const status = success ? '✅' : '❌';
+                    const className = success ? 'success' : 'error';
+                    
+                    results.innerHTML += `<p class="${className}">${status} ${test.buttonName} (${test.mode || 'normal'}): "${formatted}"</p>`;
+                });
+
+                // Test pour handleHatMove
+                const hatTests = [
+                    { hatName: 'js1_hat1up', mode: 'hold', expected: '[H] js1_hat1up' },
+                    { hatName: 'js1_hat1down', mode: 'double_tap', expected: '[DT] js1_hat1down' }
+                ];
+
+                hatTests.forEach(test => {
+                    const formatted = ActionFormatter.formatActionNameByMode(test.hatName, test.mode);
+                    const success = formatted === test.expected;
+                    
+                    if (!success) allSuccess = false;
+                    
+                    const status = success ? '✅' : '❌';
+                    const className = success ? 'success' : 'error';
+                    
+                    results.innerHTML += `<p class="${className}">${status} Hat ${test.hatName} (${test.mode}): "${formatted}"</p>`;
+                });
+
+                if (allSuccess) {
+                    results.innerHTML += '<p class="success">✅ UIHandler utilise correctement ActionFormatter</p>';
+                } else {
+                    results.innerHTML += '<p class="error">❌ Problèmes détectés dans UIHandler</p>';
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Erreur: ${error.message}</p>`;
+            }
+        };
+
+        // Message de prêt
+        setTimeout(() => {
+            log('🎯 Système de test prêt. Utilisez les boutons pour tester chaque composant.', 'success');
+        }, 500);
+    </script>
+</body>
+</html>

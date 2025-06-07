@@ -1,3 +1,5 @@
+import { ActionFormatter } from './actionFormatter.js';
+
 // Gestion de l'interface utilisateur
 export class UIHandler {
     constructor(bindingsHandler) {
@@ -13,12 +15,8 @@ export class UIHandler {
     }
 
     handleButtonPress({ instance, buttonName, mode }) {
-        let displayText = buttonName;
-        if (mode === 'hold') {
-            displayText = '[H] ' + buttonName;
-        } else if (mode === 'double_tap') {
-            displayText = '[DT] ' + buttonName;
-        }
+        // Utiliser ActionFormatter pour formater avec le mode
+        const displayText = ActionFormatter.formatActionNameByMode(buttonName, mode);
         
         this.showOverlay(displayText);
         if (this.getActiveInput()) {
@@ -52,12 +50,8 @@ export class UIHandler {
     }
 
     handleHatMove({ instance, hatName, direction, mode }) {
-        let displayText = hatName;
-        if (mode === 'hold') {
-            displayText = '[H] ' + hatName;
-        } else if (mode === 'double_tap') {
-            displayText = '[DT] ' + hatName;
-        }
+        // Utiliser ActionFormatter pour formater avec le mode
+        const displayText = ActionFormatter.formatActionNameByMode(hatName, mode);
         
         this.showOverlay(displayText);
         if (this.getActiveInput()) {

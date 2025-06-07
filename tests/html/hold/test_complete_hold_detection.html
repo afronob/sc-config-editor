@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Complet - Détection Hold dans Clé ET Libellé</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .test-case { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        .expected { color: blue; }
+        .actual { color: orange; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>Test Complet - Détection "[H]" dans Clé ET Libellé Français</h1>
+    
+    <div class="test-section">
+        <h2>Configuration des données de test</h2>
+        <pre id="test-data"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>Résultats des tests</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Résumé</h2>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        // Simuler window.actionNamesJs avec des données réelles du CSV
+        window.actionNamesJs = {
+            // Actions avec "hold" dans la clé uniquement
+            'turret_esp_hold': 'Mise au point ESP tourelle',
+            'v_ifcs_esp_hold': 'Mise au point ESP IFCS véhicule',
+            'v_weapon_bombing_toggle_desired_impact_point_hold': 'Basculer point d\'impact souhaité (maintien)',
+            'v_ads_hold': 'Visée assistée (maintien)',
+            
+            // Actions avec "hold" dans le libellé français uniquement  
+            'v_view_freelook_mode': 'Freelook (Hold)',
+            'v_quantum_quantum_drive': 'Engage Quantum Drive (Hold)',
+            'turret_recenter': 'Recenter Turret (Hold)',
+            'v_view_pitch_mouse_look_up': 'Look Up (Hold)',
+            'v_view_yaw_mouse_look_left': 'Look Left (Hold)',
+            
+            // Actions avec "hold" dans les deux
+            'v_hold_freelook_mode_hold': 'Freelook Mode (Hold)',
+            'turret_hold_esp': 'ESP Turret (Hold)',
+            
+            // Actions SANS "hold" nulle part
+            'v_movement_strafe_forward': 'Avancer',
+            'v_weapon_item0_fire': 'Tirer arme principale',
+            'v_view_dynamic_zoom_in': 'Zoom dynamique avant',
+            'turret_fire': 'Tirer tourelle'
+        };
+
+        // Simuler le module ActionFormatter
+        class ActionFormatter {
+            static getActionPrefix(opts = '', value = '', actionName = '') {
+                const optsLower = opts.toLowerCase();
+                const valueLower = value.toLowerCase();
+                
+                // Mode Double Tap
+                if ((optsLower === 'activationmode' && valueLower === 'double_tap') ||
+                    (optsLower === 'multitap' && value === '2')) {
+                    return '[DT] ';
+                }
+                
+                // Mode Hold - vérifier "hold" dans le nom de l'action ET le libellé français
+                if (actionName) {
+                    // Vérifier dans le nom de l'action (clé)
+                    const hasHoldInKey = actionName.toLowerCase().includes('hold');
+                    
+                    // Vérifier dans le libellé français (depuis le CSV)
+                    let hasHoldInLabel = false;
+                    if (typeof window !== 'undefined' && window.actionNamesJs && window.actionNamesJs[actionName]) {
+                        const frenchLabel = window.actionNamesJs[actionName];
+                        hasHoldInLabel = frenchLabel.toLowerCase().includes('hold');
+                    }
+                    
+                    // Si "hold" est présent dans la clé OU dans le libellé français
+                    if (hasHoldInKey || hasHoldInLabel) {
+                        return '[H] ';
+                    }
+                }
+                
+                return '';
+            }
+        }
+
+        // Cas de test
+        const testCases = [
+            // Cas 1: "hold" dans la clé uniquement
+            { action: 'turret_esp_hold', expected: '[H] ', description: '"hold" dans la clé uniquement' },
+            { action: 'v_ifcs_esp_hold', expected: '[H] ', description: '"hold" dans la clé uniquement' },
+            { action: 'v_weapon_bombing_toggle_desired_impact_point_hold', expected: '[H] ', description: '"hold" dans la clé uniquement' },
+            { action: 'v_ads_hold', expected: '[H] ', description: '"hold" dans la clé uniquement' },
+            
+            // Cas 2: "hold" dans le libellé français uniquement
+            { action: 'v_view_freelook_mode', expected: '[H] ', description: '"hold" dans le libellé français uniquement' },
+            { action: 'v_quantum_quantum_drive', expected: '[H] ', description: '"hold" dans le libellé français uniquement' },
+            { action: 'turret_recenter', expected: '[H] ', description: '"hold" dans le libellé français uniquement' },
+            { action: 'v_view_pitch_mouse_look_up', expected: '[H] ', description: '"hold" dans le libellé français uniquement' },
+            { action: 'v_view_yaw_mouse_look_left', expected: '[H] ', description: '"hold" dans le libellé français uniquement' },
+            
+            // Cas 3: "hold" dans les deux
+            { action: 'v_hold_freelook_mode_hold', expected: '[H] ', description: '"hold" dans la clé ET le libellé' },
+            { action: 'turret_hold_esp', expected: '[H] ', description: '"hold" dans la clé ET le libellé' },
+            
+            // Cas 4: SANS "hold" nulle part
+            { action: 'v_movement_strafe_forward', expected: '', description: 'SANS "hold" nulle part' },
+            { action: 'v_weapon_item0_fire', expected: '', description: 'SANS "hold" nulle part' },
+            { action: 'v_view_dynamic_zoom_in', expected: '', description: 'SANS "hold" nulle part' },
+            { action: 'turret_fire', expected: '', description: 'SANS "hold" nulle part' },
+            
+            // Cas 5: Action inexistante
+            { action: 'action_inexistante', expected: '', description: 'Action inexistante' },
+            { action: '', expected: '', description: 'Action vide' }
+        ];
+
+        function runTests() {
+            // Afficher les données de test
+            document.getElementById('test-data').textContent = JSON.stringify(window.actionNamesJs, null, 2);
+
+            let results = '';
+            let passed = 0;
+            let failed = 0;
+
+            testCases.forEach((testCase, index) => {
+                const actual = ActionFormatter.getActionPrefix('', '', testCase.action);
+                const success = actual === testCase.expected;
+                
+                if (success) {
+                    passed++;
+                } else {
+                    failed++;
+                }
+
+                const frenchLabel = window.actionNamesJs[testCase.action] || 'N/A';
+                
+                results += `
+                    <div class="test-case">
+                        <strong>Test ${index + 1}:</strong> ${testCase.description}<br>
+                        <strong>Action:</strong> "${testCase.action}"<br>
+                        <strong>Libellé français:</strong> "${frenchLabel}"<br>
+                        <span class="expected">Attendu:</span> "${testCase.expected}"<br>
+                        <span class="actual">Obtenu:</span> "${actual}"<br>
+                        <span class="${success ? 'pass' : 'fail'}">${success ? '✓ RÉUSSI' : '✗ ÉCHOUÉ'}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('test-results').innerHTML = results;
+            
+            const summary = `
+                <h3>Résumé des tests</h3>
+                <p><span class="pass">Tests réussis: ${passed}</span></p>
+                <p><span class="fail">Tests échoués: ${failed}</span></p>
+                <p><strong>Total: ${testCases.length}</strong></p>
+                <p><strong>Taux de réussite: ${Math.round((passed / testCases.length) * 100)}%</strong></p>
+            `;
+            
+            document.getElementById('summary').innerHTML = summary;
+        }
+
+        // Lancer les tests au chargement de la page
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

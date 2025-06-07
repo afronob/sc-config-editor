@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final - Préfixes [H] avec Actions Réelles</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .failure { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .binding-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .binding-table th, .binding-table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        .binding-table th { background: #f8f9fa; }
+        .modal-content { background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Final - Préfixes [H] avec Actions Réelles</h1>
+        
+        <div class="test-section">
+            <h3>Actions Réelles avec "hold" dans le nom</h3>
+            <table class="binding-table" id="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Catégorie</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Traduction</th>
+                        <th>Opts</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Actions réelles trouvées dans votre configuration -->
+                    <tr>
+                        <td>spaceship_view</td>
+                        <td><input name="input[spaceship_view][v_ads_hold][0]" value="js1_button1" /></td>
+                        <td>v_ads_hold</td>
+                        <td>Visée (Hold)</td>
+                        <td><input name="opts[spaceship_view][v_ads_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_view][v_ads_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_targeting</td>
+                        <td><input name="input[spaceship_targeting][v_target_toggle_pin_index_1_hold][0]" value="js1_button2" /></td>
+                        <td>v_target_toggle_pin_index_1_hold</td>
+                        <td>Épingler Cible 1 (Hold)</td>
+                        <td><input name="opts[spaceship_targeting][v_target_toggle_pin_index_1_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_targeting][v_target_toggle_pin_index_1_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_targeting</td>
+                        <td><input name="input[spaceship_targeting][v_target_toggle_pin_index_2_hold][0]" value="js1_button3" /></td>
+                        <td>v_target_toggle_pin_index_2_hold</td>
+                        <td>Épingler Cible 2 (Hold)</td>
+                        <td><input name="opts[spaceship_targeting][v_target_toggle_pin_index_2_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_targeting][v_target_toggle_pin_index_2_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_targeting</td>
+                        <td><input name="input[spaceship_targeting][v_target_toggle_pin_index_3_hold][0]" value="js1_button4" /></td>
+                        <td>v_target_toggle_pin_index_3_hold</td>
+                        <td>Épingler Cible 3 (Hold)</td>
+                        <td><input name="opts[spaceship_targeting][v_target_toggle_pin_index_3_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_targeting][v_target_toggle_pin_index_3_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_targeting</td>
+                        <td><input name="input[spaceship_targeting][v_target_unpin_selected_hold][0]" value="js1_button5" /></td>
+                        <td>v_target_unpin_selected_hold</td>
+                        <td>Désépingler (Hold)</td>
+                        <td><input name="opts[spaceship_targeting][v_target_unpin_selected_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_targeting][v_target_unpin_selected_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_weapons</td>
+                        <td><input name="input[spaceship_weapons][v_weapon_bombing_toggle_desired_impact_point_hold][0]" value="js1_button6" /></td>
+                        <td>v_weapon_bombing_toggle_desired_impact_point_hold</td>
+                        <td>Point d'Impact (Hold)</td>
+                        <td><input name="opts[spaceship_weapons][v_weapon_bombing_toggle_desired_impact_point_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_weapons][v_weapon_bombing_toggle_desired_impact_point_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>turret_movement</td>
+                        <td><input name="input[turret_movement][turret_esp_hold][0]" value="js1_button7" /></td>
+                        <td>turret_esp_hold</td>
+                        <td>ESP Tourelle (Hold)</td>
+                        <td><input name="opts[turret_movement][turret_esp_hold][0]" value="" /></td>
+                        <td><input name="value[turret_movement][turret_esp_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_movement</td>
+                        <td><input name="input[spaceship_movement][v_ifcs_esp_hold][0]" value="js1_button8" /></td>
+                        <td>v_ifcs_esp_hold</td>
+                        <td>ESP IFCS (Hold)</td>
+                        <td><input name="opts[spaceship_movement][v_ifcs_esp_hold][0]" value="" /></td>
+                        <td><input name="value[spaceship_movement][v_ifcs_esp_hold][0]" value="" /></td>
+                    </tr>
+                    
+                    <!-- Actions sans "hold" pour comparaison -->
+                    <tr>
+                        <td>spaceship_movement</td>
+                        <td><input name="input[spaceship_movement][v_roll][0]" value="js1_button9" /></td>
+                        <td>v_roll</td>
+                        <td>Roulis</td>
+                        <td><input name="opts[spaceship_movement][v_roll][0]" value="" /></td>
+                        <td><input name="value[spaceship_movement][v_roll][0]" value="" /></td>
+                    </tr>
+                    
+                    <tr>
+                        <td>spaceship_movement</td>
+                        <td><input name="input[spaceship_movement][v_pitch][0]" value="js1_button10" /></td>
+                        <td>v_pitch</td>
+                        <td>Tangage</td>
+                        <td><input name="opts[spaceship_movement][v_pitch][0]" value="activationmode" /></td>
+                        <td><input name="value[spaceship_movement][v_pitch][0]" value="hold" /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h3>Tests Automatiques</h3>
+            <button onclick="runAllTests()">Lancer Tous les Tests</button>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Modal en Action</h3>
+            <button onclick="testModalWithRealData()">Tester Modal JS1</button>
+            <div id="modal-results"></div>
+        </div>
+
+        <!-- Modal pour bindings -->
+        <div id="joystick-bindings-modal" style="display: none; position: fixed; top: 10%; left: 10%; width: 80%; height: 70%; transform: none; background: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px; z-index: 1000; overflow-y: auto;">
+            <h3>Bindings Joystick</h3>
+            <div id="modal-content"></div>
+            <button onclick="closeModal()" style="position: absolute; top: 10px; right: 10px;">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Inclure les modules -->
+    <script type="module">
+        import { ActionFormatter } from '../../assets/js/modules/actionFormatter.js';
+        import { ModalManager } from '../../assets/js/modules/modalManager.js';
+
+        // Traductions simulées pour les actions réelles
+        window.actionNamesJs = {
+            'v_ads_hold': 'Visée (Hold)',
+            'v_target_toggle_pin_index_1_hold': 'Épingler Cible 1 (Hold)',
+            'v_target_toggle_pin_index_2_hold': 'Épingler Cible 2 (Hold)',
+            'v_target_toggle_pin_index_3_hold': 'Épingler Cible 3 (Hold)',
+            'v_target_unpin_selected_hold': 'Désépingler (Hold)',
+            'v_weapon_bombing_toggle_desired_impact_point_hold': 'Point d\'Impact (Hold)',
+            'turret_esp_hold': 'ESP Tourelle (Hold)',
+            'v_ifcs_esp_hold': 'ESP IFCS (Hold)',
+            'v_roll': 'Roulis',
+            'v_pitch': 'Tangage'
+        };
+
+        // Tests automatiques
+        window.runAllTests = function() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<h4>Résultats des Tests:</h4>';
+            
+            const actionsWithHold = [
+                'v_ads_hold',
+                'v_target_toggle_pin_index_1_hold',
+                'v_target_toggle_pin_index_2_hold',
+                'v_target_toggle_pin_index_3_hold',
+                'v_target_unpin_selected_hold',
+                'v_weapon_bombing_toggle_desired_impact_point_hold',
+                'turret_esp_hold',
+                'v_ifcs_esp_hold'
+            ];
+            
+            const actionsWithoutHold = [
+                'v_roll',
+                'v_pitch'  // Même avec activationmode=hold, ne devrait pas avoir [H] car pas de "hold" dans le nom
+            ];
+
+            let passedTests = 0;
+            let totalTests = 0;
+
+            // Test des actions avec "hold" dans le nom
+            actionsWithHold.forEach(action => {
+                totalTests++;
+                const formatted = ActionFormatter.formatActionName(action, '', '');
+                const hasPrefix = formatted.startsWith('[H] ');
+                
+                const div = document.createElement('div');
+                div.className = `test-result ${hasPrefix ? 'success' : 'failure'}`;
+                div.innerHTML = `
+                    <strong>Action avec "hold":</strong> ${action}<br>
+                    <strong>Résultat:</strong> "${formatted}"<br>
+                    <strong>Status:</strong> ${hasPrefix ? '✅ PRÉFIXE [H] PRÉSENT' : '❌ PRÉFIXE [H] MANQUANT'}
+                `;
+                results.appendChild(div);
+                
+                if (hasPrefix) passedTests++;
+            });
+
+            // Test des actions sans "hold" dans le nom
+            actionsWithoutHold.forEach(action => {
+                totalTests++;
+                const opts = action === 'v_pitch' ? 'activationmode' : '';
+                const value = action === 'v_pitch' ? 'hold' : '';
+                const formatted = ActionFormatter.formatActionName(action, opts, value);
+                const hasPrefix = formatted.startsWith('[H] ');
+                const shouldHavePrefix = action === 'v_pitch'; // v_pitch avec activationmode=hold devrait avoir le préfixe
+                
+                const div = document.createElement('div');
+                div.className = `test-result ${hasPrefix === shouldHavePrefix ? 'success' : 'failure'}`;
+                div.innerHTML = `
+                    <strong>Action sans "hold":</strong> ${action} (opts: "${opts}", value: "${value}")<br>
+                    <strong>Résultat:</strong> "${formatted}"<br>
+                    <strong>Status:</strong> ${hasPrefix === shouldHavePrefix ? '✅ CORRECT' : '❌ INCORRECT'}
+                `;
+                results.appendChild(div);
+                
+                if (hasPrefix === shouldHavePrefix) passedTests++;
+            });
+
+            // Résumé
+            const summary = document.createElement('div');
+            summary.className = `test-result ${passedTests === totalTests ? 'success' : 'failure'}`;
+            summary.innerHTML = `
+                <strong>RÉSUMÉ:</strong> ${passedTests}/${totalTests} tests réussis<br>
+                <strong>Status Global:</strong> ${passedTests === totalTests ? '✅ TOUS LES TESTS RÉUSSIS' : '❌ CERTAINS TESTS ONT ÉCHOUÉ'}
+            `;
+            results.appendChild(summary);
+        };
+
+        // Test avec ModalManager
+        window.testModalWithRealData = function() {
+            const modalManager = new ModalManager();
+            modalManager.showBindingsForInstance('1');
+            
+            setTimeout(() => {
+                const modalElement = document.querySelector('#joystick-bindings-modal');
+                const results = document.getElementById('modal-results');
+                
+                if (modalElement && modalElement.style.display !== 'none') {
+                    const content = modalElement.innerHTML;
+                    const holdMatches = content.match(/\[H\]/g);
+                    const holdCount = holdMatches ? holdMatches.length : 0;
+                    
+                    results.innerHTML = `
+                        <div class="test-result ${holdCount > 0 ? 'success' : 'failure'}">
+                            <strong>Résultat Modal:</strong><br>
+                            <strong>Préfixes [H] trouvés:</strong> ${holdCount}<br>
+                            <strong>Status:</strong> ${holdCount > 0 ? '✅ PRÉFIXES [H] DÉTECTÉS' : '❌ AUCUN PRÉFIXE [H]'}<br>
+                            <br>
+                            <strong>Extrait du contenu modal:</strong><br>
+                            <div class="modal-content" style="max-height: 300px; overflow-y: auto;">
+                                ${content.substring(0, 1000)}${content.length > 1000 ? '...' : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = `
+                        <div class="test-result failure">
+                            ❌ Modal ne s'est pas ouverte correctement
+                        </div>
+                    `;
+                }
+            }, 100);
+        };
+
+        window.closeModal = function() {
+            const modal = document.getElementById('joystick-bindings-modal');
+            if (modal) modal.style.display = 'none';
+        };
+
+        // Exposer pour debug
+        window.ActionFormatter = ActionFormatter;
+        window.ModalManager = ModalManager;
+
+        // Lancer les tests au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Tests de préfixes [H] chargés');
+        });
+    </script>
+</body>
+</html>

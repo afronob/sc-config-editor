@@ -113,6 +113,18 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
+// Affichage des joysticks du XML
+if (!empty($xmlJoysticks)) {
+    echo '<div style="margin-bottom:1em;"><b>Joysticks configurés dans le XML :</b><br>';
+    foreach ($xmlJoysticks as $joystick) {
+        echo '<div style="padding-left:1em; margin-bottom:0.5em;">';
+        echo '<b>' . htmlspecialchars($joystick['product']) . '</b> (instance XML: js' . htmlspecialchars($joystick['instance']) . ')';
+        echo ' <a href="#" class="show-bindings" data-instance="' . htmlspecialchars($joystick['instance']) . '">[Voir bindings]</a><br>';
+        echo '</div>';
+    }
+    echo '</div>';
+}
+
 // Préparation des données JavaScript
 $buttonNamesByInstance = [];
 if (!empty($devicesData)) {
@@ -126,6 +138,7 @@ if (!empty($devicesData)) {
 // JavaScript spécifique à la page
 $devicesDataJson = json_encode($devicesData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 $buttonNamesByInstanceJson = json_encode($buttonNamesByInstance, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+$actionNamesJson = json_encode($actionNames, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
 $scripts = <<<HTML
     <script type="module">
@@ -135,7 +148,8 @@ $scripts = <<<HTML
         document.addEventListener('DOMContentLoaded', function() {
             initialize({
                 devicesData: {$devicesDataJson},
-                buttonNamesByInstance: {$buttonNamesByInstanceJson}
+                buttonNamesByInstance: {$buttonNamesByInstanceJson},
+                actionNames: {$actionNamesJson}
             });
         });
     </script>

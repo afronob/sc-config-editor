@@ -63,7 +63,8 @@ class Application {
                 "actionmaps_root" => $this->xmlProcessor->getActionmapsRoot(),
                 "devicesData" => $devices,
                 "xmlName" => $xmlName,
-                "buttonNamesByInstance" => $this->getButtonNamesByInstance($devices)
+                "buttonNamesByInstance" => $this->getButtonNamesByInstance($devices),
+                "xmlJoysticks" => $joysticks  // Ajouter les joysticks du XML
             ];
             
             return render_template("edit_form", $data);

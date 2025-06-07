@@ -1,6 +1,8 @@
 // Système d'ancrage simplifié pour SC Config Editor
 // Version sans cycling, focus sur l'ancrage direct par modes
 
+import { ActionFormatter } from './actionFormatter.js';
+
 export class SimplifiedBindingsHandler {
     constructor() {
         this.lastCallTime = {}; // Protection anti-spam
@@ -144,18 +146,17 @@ export class SimplifiedBindingsHandler {
         
         // Afficher l'information dans l'overlay
         const action = row.cells[2]?.textContent || 'Unknown';
-        let modeDisplay = '';
-        if (mode === 'hold') {
-            modeDisplay = '[H]';
-        } else if (mode === 'double_tap') {
-            modeDisplay = '[DT]';
-        }
-        const displayText = `${inputName} ${modeDisplay}`;
         
-        console.log(`[Anchor] Ancré sur: ${displayText} -> ${action}`);
+        // Utiliser ActionFormatter pour formater l'action avec traduction et préfixe
+        const formattedAction = ActionFormatter.formatActionNameByMode(action, mode);
+        
+        // Utiliser ActionFormatter pour formater également le nom de l'input avec préfixe
+        const displayText = ActionFormatter.formatActionNameByMode(inputName, mode);
+        
+        console.log(`[Anchor] Ancré sur: ${displayText} -> ${formattedAction}`);
         
         // Afficher l'overlay directement
-        this.showOverlay(displayText, action);
+        this.showOverlay(displayText, formattedAction);
     }
 
     /**
@@ -246,18 +247,13 @@ export class SimplifiedBindingsHandler {
             document.body.appendChild(overlay);
         }
         
-        // Formatage du mode pour l'affichage
-        let modeDisplay = '';
-        if (mode === 'hold') {
-            modeDisplay = ' [H]';
-        } else if (mode === 'double_tap') {
-            modeDisplay = ' [DT]';
-        }
+        // Formatage du mode pour l'affichage en utilisant ActionFormatter
+        const formattedInput = ActionFormatter.formatActionNameByMode(inputName, mode);
         
         // Mettre à jour le contenu
         overlay.innerHTML = `
             <div style="color: #FFE6E6; margin-bottom: 5px; font-size: 14px;">
-                <strong>${inputName}${modeDisplay}</strong>
+                <strong>${formattedInput}</strong>
             </div>
             <div style="color: #FFF; font-size: 12px;">
                 ⚠️ Bouton non mappé dans la configuration

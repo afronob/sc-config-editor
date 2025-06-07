@@ -1,4 +1,5 @@
 // Module pour gérer les modals de l'interface
+import { ActionFormatter } from './actionFormatter.js';
 export class ModalManager {
     constructor() {
         this.setupOverlay();
@@ -95,12 +96,9 @@ export class ModalManager {
                 .forEach(button => {
                     html += `<li><b>${button}</b><ul>`;
                     bindingsByButton[button].forEach(item => {
-                        let prefix = '';
-                        if ((item.opts.toLowerCase() === 'activationmode' && item.value.toLowerCase() === 'double_tap') ||
-                            (item.opts.toLowerCase() === 'multitap' && item.value === '2')) {
-                            prefix = '[DT] ';
-                        }
-                        html += `<li>${prefix}${item.action} <span style="color:#888">(${item.category})</span></li>`;
+                        // Utiliser ActionFormatter pour formater l'action avec traduction et préfixe
+                        const formattedAction = ActionFormatter.formatActionName(item.action, item.opts, item.value);
+                        html += `<li>${formattedAction} <span style="color:#888">(${item.category})</span></li>`;
                     });
                     html += '</ul></li>';
                 });

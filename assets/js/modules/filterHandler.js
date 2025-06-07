@@ -1,3 +1,5 @@
+import { ActionFormatter } from './actionFormatter.js';
+
 export class FilterHandler {
     constructor() {
         this.initialized = false;
@@ -168,8 +170,9 @@ export class BindingsModal {
                 .forEach(button => {
                     html += '<li><b>' + button + '</b><ul>';
                     bindingsByButton[button].forEach(item => {
-                        const prefix = this.getPrefix(item);
-                        html += `<li>${prefix}${item.action} <span style="color:#888">(${item.category})</span></li>`;
+                        // Utiliser ActionFormatter pour formater l'action avec traduction et préfixe
+                        const formattedAction = ActionFormatter.formatActionName(item.action, item.opts, item.value);
+                        html += `<li>${formattedAction} <span style="color:#888">(${item.category})</span></li>`;
                     });
                     html += '</ul></li>';
                 });
@@ -190,13 +193,5 @@ export class BindingsModal {
             return parseInt(ma[2], 10) - parseInt(mb[2], 10);
         }
         return a.localeCompare(b);
-    }
-
-    getPrefix(item) {
-        if (item.opts.toLowerCase() === 'activationmode' && item.value.toLowerCase() === 'double_tap' ||
-            item.opts.toLowerCase() === 'multitap' && item.value === '2') {
-            return '[DT] ';
-        }
-        return '';
     }
 }

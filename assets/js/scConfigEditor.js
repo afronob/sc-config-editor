@@ -30,6 +30,7 @@ export class SCConfigEditor {
         // Configuration initiale
         this.gamepad.buttonNamesByInstance = config.buttonNamesByInstance || {};
         this.devicesDataJs = config.devicesDataJs || [];
+        this.actionNames = config.actionNames || {};
 
         this.init();
     }

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final Complet - Formatage Actions avec [H]</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .test-case { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
+        .pass { color: green; font-weight: bold; }
+        .fail { color: red; font-weight: bold; }
+        .expected { color: blue; }
+        .actual { color: orange; }
+        .method { color: purple; font-weight: bold; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Test Final Complet - Formatage Actions avec Préfixe [H]</h1>
+    
+    <div class="test-section">
+        <h2>Configuration - Actions Réelles du CSV</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Clé d'Action</th>
+                    <th>Libellé Français</th>
+                    <th>"hold" dans Clé</th>
+                    <th>"hold" dans Libellé</th>
+                    <th>Préfixe Attendu</th>
+                </tr>
+            </thead>
+            <tbody id="action-table"></tbody>
+        </table>
+    </div>
+
+    <div class="test-section">
+        <h2>Tests - getActionPrefix()</h2>
+        <div id="prefix-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Tests - formatActionName()</h2>
+        <div id="format-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Tests - formatActionNameByMode()</h2>
+        <div id="mode-tests"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Résumé Final</h2>
+        <div id="final-summary"></div>
+    </div>
+
+    <script>
+        // Données réelles du CSV
+        window.actionNamesJs = {
+            // "hold" dans la clé uniquement
+            'turret_esp_hold': 'Mise au point ESP tourelle',
+            'v_ifcs_esp_hold': 'Mise au point ESP IFCS véhicule', 
+            'v_ads_hold': 'Visée assistée (maintien)',
+            
+            // "hold" dans le libellé français uniquement
+            'v_view_freelook_mode': 'Freelook (Hold)',
+            'v_quantum_quantum_drive': 'Engage Quantum Drive (Hold)',
+            'turret_recenter': 'Recenter Turret (Hold)',
+            'v_view_pitch_mouse_look_up': 'Look Up (Hold)',
+            
+            // "hold" dans les deux
+            'v_hold_mode_test': 'Test Hold Mode (Hold)',
+            'turret_hold_fire': 'Hold Fire Turret (Hold)',
+            
+            // SANS "hold" nulle part 
+            'v_movement_strafe_forward': 'Avancer',
+            'v_weapon_item0_fire': 'Tirer arme principale',
+            'turret_fire': 'Tirer tourelle',
+            'v_view_dynamic_zoom_in': 'Zoom dynamique avant'
+        };
+
+        // Module ActionFormatter complet
+        class ActionFormatter {
+            static getActionPrefix(opts = '', value = '', actionName = '') {
+                const optsLower = opts.toLowerCase();
+                const valueLower = value.toLowerCase();
+                
+                // Mode Double Tap
+                if ((optsLower === 'activationmode' && valueLower === 'double_tap') ||
+                    (optsLower === 'multitap' && value === '2')) {
+                    return '[DT] ';
+                }
+                
+                // Mode Hold - vérifier "hold" dans le nom de l'action ET le libellé français
+                if (actionName) {
+                    // Vérifier dans le nom de l'action (clé)
+                    const hasHoldInKey = actionName.toLowerCase().includes('hold');
+                    
+                    // Vérifier dans le libellé français (depuis le CSV)
+                    let hasHoldInLabel = false;
+                    if (typeof window !== 'undefined' && window.actionNamesJs && window.actionNamesJs[actionName]) {
+                        const frenchLabel = window.actionNamesJs[actionName];
+                        hasHoldInLabel = frenchLabel.toLowerCase().includes('hold');
+                    }
+                    
+                    // Si "hold" est présent dans la clé OU dans le libellé français
+                    if (hasHoldInKey || hasHoldInLabel) {
+                        return '[H] ';
+                    }
+                }
+                
+                return '';
+            }
+
+            static formatActionName(opts = '', value = '', actionName = '') {
+                // Obtenir le nom français si disponible
+                const frenchName = (window.actionNamesJs && window.actionNamesJs[actionName]) || actionName;
+                
+                // Obtenir le préfixe
+                const prefix = this.getActionPrefix(opts, value, actionName);
+                
+                return prefix + frenchName;
+            }
+
+            static formatActionNameByMode(actionName, mode = '') {
+                // Obtenir le nom français si disponible
+                const frenchName = (window.actionNamesJs && window.actionNamesJs[actionName]) || actionName;
+                
+                // Ajouter le préfixe selon le mode ou la détection de "hold"
+                let prefix = '';
+                if (mode === 'double_tap') {
+                    prefix = '[DT] ';
+                } else if (mode === 'hold') {
+                    // Mode explicite hold
+                    prefix = '[H] ';
+                } else if (actionName) {
+                    // Vérifier "hold" dans le nom de l'action ET le libellé français
+                    const hasHoldInKey = actionName.toLowerCase().includes('hold');
+                    
+                    let hasHoldInLabel = false;
+                    if (typeof window !== 'undefined' && window.actionNamesJs && window.actionNamesJs[actionName]) {
+                        const frenchLabel = window.actionNamesJs[actionName];
+                        hasHoldInLabel = frenchLabel.toLowerCase().includes('hold');
+                    }
+                    
+                    if (hasHoldInKey || hasHoldInLabel) {
+                        prefix = '[H] ';
+                    }
+                }
+                
+                return prefix + frenchName;
+            }
+        }
+
+        function runAllTests() {
+            let totalPassed = 0;
+            let totalFailed = 0;
+
+            // Créer le tableau des actions
+            createActionTable();
+
+            // Test 1: getActionPrefix()
+            const prefixResults = testGetActionPrefix();
+            totalPassed += prefixResults.passed;
+            totalFailed += prefixResults.failed;
+
+            // Test 2: formatActionName()
+            const formatResults = testFormatActionName();
+            totalPassed += formatResults.passed;
+            totalFailed += formatResults.failed;
+
+            // Test 3: formatActionNameByMode()
+            const modeResults = testFormatActionNameByMode();
+            totalPassed += modeResults.passed;
+            totalFailed += modeResults.failed;
+
+            // Résumé final
+            const summary = `
+                <h3>Résultats Globaux</h3>
+                <p><span class="pass">✓ Tests réussis: ${totalPassed}</span></p>
+                <p><span class="fail">✗ Tests échoués: ${totalFailed}</span></p>
+                <p><strong>Total: ${totalPassed + totalFailed}</strong></p>
+                <p><strong>Taux de réussite: ${Math.round((totalPassed / (totalPassed + totalFailed)) * 100)}%</strong></p>
+                ${totalFailed === 0 ? '<p style="color: green; font-size: 18px;">🎉 TOUS LES TESTS SONT RÉUSSIS !</p>' : ''}
+            `;
+            
+            document.getElementById('final-summary').innerHTML = summary;
+        }
+
+        function createActionTable() {
+            let tableContent = '';
+            
+            Object.entries(window.actionNamesJs).forEach(([actionKey, frenchLabel]) => {
+                const hasHoldInKey = actionKey.toLowerCase().includes('hold');
+                const hasHoldInLabel = frenchLabel.toLowerCase().includes('hold');
+                const expectedPrefix = (hasHoldInKey || hasHoldInLabel) ? '[H]' : 'Aucun';
+                
+                tableContent += `
+                    <tr>
+                        <td><code>${actionKey}</code></td>
+                        <td>${frenchLabel}</td>
+                        <td>${hasHoldInKey ? '✓' : '✗'}</td>
+                        <td>${hasHoldInLabel ? '✓' : '✗'}</td>
+                        <td><strong>${expectedPrefix}</strong></td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('action-table').innerHTML = tableContent;
+        }
+
+        function testGetActionPrefix() {
+            const testCases = Object.keys(window.actionNamesJs);
+            let results = '';
+            let passed = 0;
+            let failed = 0;
+
+            testCases.forEach(actionName => {
+                const frenchLabel = window.actionNamesJs[actionName];
+                const hasHoldInKey = actionName.toLowerCase().includes('hold');
+                const hasHoldInLabel = frenchLabel.toLowerCase().includes('hold');
+                const expectedPrefix = (hasHoldInKey || hasHoldInLabel) ? '[H] ' : '';
+                
+                const actualPrefix = ActionFormatter.getActionPrefix('', '', actionName);
+                const success = actualPrefix === expectedPrefix;
+                
+                if (success) passed++; else failed++;
+
+                results += `
+                    <div class="test-case">
+                        <strong>Action:</strong> <code>${actionName}</code><br>
+                        <strong>Libellé:</strong> "${frenchLabel}"<br>
+                        <span class="expected">Attendu:</span> "${expectedPrefix}"<br>
+                        <span class="actual">Obtenu:</span> "${actualPrefix}"<br>
+                        <span class="${success ? 'pass' : 'fail'}">${success ? '✓ RÉUSSI' : '✗ ÉCHOUÉ'}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('prefix-tests').innerHTML = `
+                <h3>Résultats: ${passed} réussis, ${failed} échoués</h3>
+                ${results}
+            `;
+
+            return { passed, failed };
+        }
+
+        function testFormatActionName() {
+            const testCases = Object.keys(window.actionNamesJs);
+            let results = '';
+            let passed = 0;
+            let failed = 0;
+
+            testCases.forEach(actionName => {
+                const frenchLabel = window.actionNamesJs[actionName];
+                const hasHoldInKey = actionName.toLowerCase().includes('hold');
+                const hasHoldInLabel = frenchLabel.toLowerCase().includes('hold');
+                const expectedResult = (hasHoldInKey || hasHoldInLabel) ? '[H] ' + frenchLabel : frenchLabel;
+                
+                const actualResult = ActionFormatter.formatActionName('', '', actionName);
+                const success = actualResult === expectedResult;
+                
+                if (success) passed++; else failed++;
+
+                results += `
+                    <div class="test-case">
+                        <strong>Action:</strong> <code>${actionName}</code><br>
+                        <span class="expected">Attendu:</span> "${expectedResult}"<br>
+                        <span class="actual">Obtenu:</span> "${actualResult}"<br>
+                        <span class="${success ? 'pass' : 'fail'}">${success ? '✓ RÉUSSI' : '✗ ÉCHOUÉ'}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('format-tests').innerHTML = `
+                <h3>Résultats: ${passed} réussis, ${failed} échoués</h3>
+                ${results}
+            `;
+
+            return { passed, failed };
+        }
+
+        function testFormatActionNameByMode() {
+            const testCases = [
+                // Tests avec mode explicite
+                { action: 'v_movement_strafe_forward', mode: 'hold', expected: '[H] Avancer' },
+                { action: 'v_weapon_item0_fire', mode: 'double_tap', expected: '[DT] Tirer arme principale' },
+                
+                // Tests avec détection automatique
+                { action: 'turret_esp_hold', mode: '', expected: '[H] Mise au point ESP tourelle' },
+                { action: 'v_view_freelook_mode', mode: '', expected: '[H] Freelook (Hold)' },
+                { action: 'v_movement_strafe_forward', mode: '', expected: 'Avancer' }
+            ];
+
+            let results = '';
+            let passed = 0;
+            let failed = 0;
+
+            testCases.forEach(testCase => {
+                const actualResult = ActionFormatter.formatActionNameByMode(testCase.action, testCase.mode);
+                const success = actualResult === testCase.expected;
+                
+                if (success) passed++; else failed++;
+
+                results += `
+                    <div class="test-case">
+                        <strong>Action:</strong> <code>${testCase.action}</code><br>
+                        <strong>Mode:</strong> "${testCase.mode}"<br>
+                        <span class="expected">Attendu:</span> "${testCase.expected}"<br>
+                        <span class="actual">Obtenu:</span> "${actualResult}"<br>
+                        <span class="${success ? 'pass' : 'fail'}">${success ? '✓ RÉUSSI' : '✗ ÉCHOUÉ'}</span>
+                    </div>
+                `;
+            });
+
+            document.getElementById('mode-tests').innerHTML = `
+                <h3>Résultats: ${passed} réussis, ${failed} échoués</h3>
+                ${results}
+            `;
+
+            return { passed, failed };
+        }
+
+        // Lancer tous les tests au chargement
+        document.addEventListener('DOMContentLoaded', runAllTests);
+    </script>
+</body>
+</html>
