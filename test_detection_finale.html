@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final - Détection Saitek X-56</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .test-success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .test-error { background: #f8d7da; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Test Final - Détection Saitek X-56</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(title, success, message, data = null) {
+            const div = document.createElement('div');
+            div.className = `test-result ${success ? 'test-success' : 'test-error'}`;
+            div.innerHTML = `
+                <h3>${success ? '✅' : '❌'} ${title}</h3>
+                <p>${message}</p>
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            results.appendChild(div);
+        }
+        
+        // Simuler un périphérique Saitek X-56
+        const saitekDevice = {
+            vendorId: 0x0738,  // 1848 en décimal
+            productId: 0xa221  // 41505 en décimal
+        };
+        
+        // Fonction isDeviceKnown simplifiée (basée sur le code original)
+        function isDeviceKnown(device, devicesData) {
+            if (!devicesData || !Array.isArray(devicesData)) {
+                return false;
+            }
+            
+            const vendorHex = '0x' + device.vendorId.toString(16).padStart(4, '0');
+            const productHex = '0x' + device.productId.toString(16).padStart(4, '0');
+            
+            return devicesData.some(d => 
+                d.vendor_id === vendorHex && d.product_id === productHex
+            );
+        }
+        
+        // Test de l'endpoint
+        fetch('/get_devices_data.php')
+            .then(response => response.json())
+            .then(data => {
+                addResult(
+                    'Chargement des données de périphériques',
+                    true,
+                    `${data.length} périphériques chargés avec succès`,
+                    data.slice(0, 2) // Montrer seulement les 2 premiers
+                );
+                
+                // Vérifier la présence du Saitek
+                const saitekInData = data.find(d => 
+                    d.vendor_id === '0x0738' && d.product_id === '0xa221'
+                );
+                
+                if (saitekInData) {
+                    addResult(
+                        'Présence des données Saitek X-56',
+                        true,
+                        'Le Saitek X-56 est présent dans les données',
+                        saitekInData
+                    );
+                    
+                    // Test de détection
+                    const isKnown = isDeviceKnown(saitekDevice, data);
+                    
+                    addResult(
+                        'Test de détection du Saitek X-56',
+                        isKnown,
+                        isKnown ? 
+                            'Le Saitek X-56 est correctement détecté comme CONNU !' :
+                            'ERREUR: Le Saitek X-56 est encore détecté comme inconnu',
+                        {
+                            device: saitekDevice,
+                            deviceVendorHex: '0x' + saitekDevice.vendorId.toString(16).padStart(4, '0'),
+                            deviceProductHex: '0x' + saitekDevice.productId.toString(16).padStart(4, '0'),
+                            matchFound: isKnown
+                        }
+                    );
+                    
+                } else {
+                    addResult(
+                        'Présence des données Saitek X-56',
+                        false,
+                        'Le Saitek X-56 est ABSENT des données chargées'
+                    );
+                }
+                
+                // Test avec un périphérique inconnu pour valider la logique
+                const unknownDevice = { vendorId: 0x9999, productId: 0x9999 };
+                const unknownIsKnown = isDeviceKnown(unknownDevice, data);
+                
+                addResult(
+                    'Test de contrôle (périphérique inconnu)',
+                    !unknownIsKnown,
+                    unknownIsKnown ? 
+                        'ERREUR: Un périphérique inconnu est détecté comme connu' :
+                        'OK: Un périphérique inconnu est correctement détecté comme inconnu'
+                );
+                
+            })
+            .catch(error => {
+                addResult(
+                    'Chargement des données de périphériques',
+                    false,
+                    'Erreur lors du chargement: ' + error.message
+                );
+            });
+    </script>
+</body>
+</html>

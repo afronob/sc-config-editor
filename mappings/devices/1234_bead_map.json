@@ -1,0 +1,9 @@
+{
+  "id": "vJoy (Vendor: 1234 Product: bead)",
+  "product": "vJoy Device",
+  "vendor_id": "0x1234",
+  "product_id": "0xbead",
+  "xml_instance": "1234_bead",
+  "axes_map": {},
+  "hats": {}
+}

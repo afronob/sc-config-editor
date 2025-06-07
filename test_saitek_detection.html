@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Détection Saitek</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .device-info {
+            background: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .success { border-left-color: #28a745; }
+        .warning { border-left-color: #ffc107; }
+        .error { border-left-color: #dc3545; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Test de Détection Saitek</h1>
+    <p>Test spécifique pour vérifier que le "Saitek Pro Flight X-56 Rhino Throttle" est maintenant détecté comme device connu.</p>
+
+    <div class="test-section">
+        <h3>État du Système</h3>
+        <div id="systemStatus">Chargement...</div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test de Données</h3>
+        <button onclick="testDevicesData()">Tester Chargement des Données</button>
+        <button onclick="testSaitekDetection()">Test Détection Saitek</button>
+        <div id="testResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Simulation Saitek</h3>
+        <button onclick="simulateSaitek()">Simuler Connexion Saitek</button>
+        <div id="simulationResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Log</h3>
+        <div id="logOutput" class="log">Initialisation...\n</div>
+        <button onclick="clearLog()">Effacer Log</button>
+    </div>
+
+    <script type="module">
+        let deviceAutoDetection;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('logOutput');
+            
+            const prefix = {
+                'info': '🔍',
+                'success': '✅',
+                'warning': '⚠️',
+                'error': '❌'
+            }[type] || '🔍';
+            
+            logElement.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        // Fonctions globales
+        window.testDevicesData = async function() {
+            log('Test de chargement des données devices...', 'info');
+            try {
+                const response = await fetch('/get_devices_data.php');
+                const devicesData = await response.json();
+                
+                log(`✅ ${devicesData.length} devices chargés`, 'success');
+                
+                // Chercher spécifiquement le Saitek
+                const saitekDevice = devicesData.find(dev => 
+                    dev.id.includes('Saitek') && dev.id.includes('X-56')
+                );
+                
+                if (saitekDevice) {
+                    log(`✅ Saitek trouvé: ${saitekDevice.id}`, 'success');
+                    log(`   Vendor: ${saitekDevice.vendor_id}, Product: ${saitekDevice.product_id}`, 'info');
+                } else {
+                    log('❌ Saitek NON trouvé dans les données', 'error');
+                }
+                
+                // Mettre à jour window.devicesDataJs
+                window.devicesDataJs = devicesData;
+                log('✅ window.devicesDataJs mis à jour', 'success');
+                
+                document.getElementById('testResults').innerHTML = `
+                    <div class="device-info success">
+                        <strong>Données chargées:</strong> ${devicesData.length} devices<br>
+                        <strong>Saitek trouvé:</strong> ${saitekDevice ? '✅ OUI' : '❌ NON'}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                document.getElementById('testResults').innerHTML = `
+                    <div class="device-info error">
+                        <strong>Erreur:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        };
+
+        window.testSaitekDetection = function() {
+            log('Test de la fonction isDeviceKnown pour Saitek...', 'info');
+            
+            if (!deviceAutoDetection) {
+                log('❌ DeviceAutoDetection non initialisé', 'error');
+                return;
+            }
+            
+            // Simuler un gamepad Saitek
+            const mockSaitekGamepad = {
+                id: 'Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)',
+                buttons: Array(20).fill({ pressed: false, value: 0 }),
+                axes: Array(8).fill(0),
+                index: 0,
+                connected: true
+            };
+            
+            const isKnown = deviceAutoDetection.isDeviceKnown(mockSaitekGamepad);
+            
+            log(`Test isDeviceKnown: ${isKnown ? '✅ CONNU' : '❌ INCONNU'}`, isKnown ? 'success' : 'error');
+            
+            // Test détaillé
+            const ids = deviceAutoDetection.extractVendorProductIdFromGamepad(mockSaitekGamepad);
+            log(`IDs extraits: vendor=${ids.vendor}, product=${ids.product}`, 'info');
+            
+            document.getElementById('testResults').innerHTML += `
+                <div class="device-info ${isKnown ? 'success' : 'error'}">
+                    <strong>Test isDeviceKnown:</strong> ${isKnown ? '✅ CONNU' : '❌ INCONNU'}<br>
+                    <strong>Vendor ID:</strong> ${ids.vendor}<br>
+                    <strong>Product ID:</strong> ${ids.product}
+                </div>
+            `;
+        };
+
+        window.simulateSaitek = function() {
+            log('Simulation connexion Saitek...', 'info');
+            
+            if (!deviceAutoDetection) {
+                log('❌ DeviceAutoDetection non initialisé', 'error');
+                return;
+            }
+            
+            const mockSaitekGamepad = {
+                id: 'Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)',
+                buttons: Array(20).fill({ pressed: false, value: 0 }),
+                axes: Array(8).fill(0),
+                index: 0,
+                connected: true
+            };
+            
+            log('🎮 Simulation handleGamepadConnected...', 'info');
+            deviceAutoDetection.handleGamepadConnected(mockSaitekGamepad);
+            
+            // Vérifier si le device a été ajouté aux unknownDevices
+            const unknownDevices = deviceAutoDetection.getUnknownDevices();
+            const foundUnknown = unknownDevices.find(dev => dev.id.includes('Saitek'));
+            
+            if (foundUnknown) {
+                log('❌ Saitek détecté comme INCONNU', 'error');
+                document.getElementById('simulationResults').innerHTML = `
+                    <div class="device-info error">
+                        <strong>❌ PROBLÈME:</strong> Saitek encore détecté comme inconnu
+                    </div>
+                `;
+            } else {
+                log('✅ Saitek correctement détecté comme CONNU', 'success');
+                document.getElementById('simulationResults').innerHTML = `
+                    <div class="device-info success">
+                        <strong>✅ SUCCÈS:</strong> Saitek détecté comme device connu
+                    </div>
+                `;
+            }
+        };
+
+        window.clearLog = function() {
+            document.getElementById('logOutput').textContent = '';
+        };
+
+        // Initialisation
+        async function init() {
+            try {
+                log('🔧 Chargement des données devices...', 'info');
+                await window.testDevicesData();
+                
+                log('🔧 Initialisation DeviceAutoDetection...', 'info');
+                const { DeviceAutoDetection } = await import('./assets/js/modules/deviceAutoDetection.js');
+                deviceAutoDetection = new DeviceAutoDetection();
+                window.deviceAutoDetection = deviceAutoDetection;
+                log('✅ DeviceAutoDetection initialisé', 'success');
+                
+                document.getElementById('systemStatus').innerHTML = `
+                    <div class="device-info success">
+                        <strong>✅ Système initialisé</strong><br>
+                        Devices chargés: ${window.devicesDataJs ? window.devicesDataJs.length : 0}<br>
+                        DeviceAutoDetection: ✅ Prêt
+                    </div>
+                `;
+                
+                log('🎉 Initialisation terminée! Prêt pour les tests.', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                document.getElementById('systemStatus').innerHTML = `
+                    <div class="device-info error">
+                        <strong>❌ Erreur d'initialisation:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Lancer l'initialisation
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "info": {
+    "template_name": "thrustmaster_base",
+    "description": "Template de base pour dispositifs Thrustmaster",
+    "manufacturer": "Thrustmaster",
+    "version": "1.0",
+    "created": "2025-06-07"
+  },
+  "common_features": {
+    "hall_effect_sensors": true,
+    "twist_axis": true,
+    "hat_switches": true,
+    "trigger_modes": ["analog", "digital"]
+  },
+  "default_mapping": {
+    "axes": {
+      "0": {"name": "X", "precision": "high", "deadzone": 0.03},
+      "1": {"name": "Y", "precision": "high", "deadzone": 0.03},
+      "2": {"name": "Twist", "precision": "medium", "deadzone": 0.05},
+      "3": {"name": "Throttle", "precision": "high", "deadzone": 0.01}
+    },
+    "buttons": {
+      "trigger": {"index": 0, "type": "primary", "modes": ["analog", "digital"]},
+      "button_2": {"index": 1, "type": "secondary"},
+      "button_3": {"index": 2, "type": "modifier"},
+      "button_4": {"index": 3, "type": "utility"}
+    },
+    "hats": {
+      "primary_hat": {"index": 0, "type": "8way", "precision": "digital"}
+    }
+  },
+  "variants": {
+    "t16000m": {
+      "axes_count": 4,
+      "buttons_count": 16,
+      "hats_count": 1
+    },
+    "warthog": {
+      "axes_count": 5,
+      "buttons_count": 19,
+      "hats_count": 1
+    }
+  }
+}

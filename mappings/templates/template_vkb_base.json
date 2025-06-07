@@ -1,0 +1,30 @@
+{
+  "info": {
+    "template_name": "vkb_base",
+    "description": "Template de base pour dispositifs VKB",
+    "manufacturer": "VKB",
+    "version": "1.0",
+    "created": "2025-06-07"
+  },
+  "common_features": {
+    "high_precision_axes": true,
+    "multiple_hat_switches": true,
+    "programmable_buttons": true,
+    "twist_axis_available": true
+  },
+  "default_mapping": {
+    "axes": {
+      "0": {"name": "X", "precision": "high", "deadzone": 0.02},
+      "1": {"name": "Y", "precision": "high", "deadzone": 0.02},
+      "2": {"name": "Twist", "precision": "medium", "deadzone": 0.05}
+    },
+    "buttons": {
+      "trigger_primary": {"index": 0, "type": "primary"},
+      "trigger_secondary": {"index": 1, "type": "secondary"}
+    },
+    "hats": {
+      "primary_hat": {"index": 0, "type": "4way"},
+      "secondary_hat": {"index": 1, "type": "8way"}
+    }
+  }
+}

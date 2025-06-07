@@ -1,0 +1,24 @@
+{
+  "id": "VKB Gladiator EVO R (Vendor: 231d Product: 0200)",
+  "product": "VKBSim Gladiator EVO R",
+  "vendor_id": "0x231d",
+  "product_id": "0x0200",
+  "xml_instance": "231d_0200",
+  "axes_map": {
+    "0": "x",
+    "1": "y",
+    "2": "z",
+    "5": "rotz"
+  },
+  "hats": {
+    "1": {
+      "directions": {
+        "up":    { "axis": 9, "value": -1,    "value_min": -1.05, "value_max": -0.95 },
+        "down":  { "axis": 9, "value": 0.13,  "value_min": 0.08,  "value_max": 0.18 },
+        "left":  { "axis": 9, "value": 0.71,  "value_min": 0.66,  "value_max": 0.76 },
+        "right": { "axis": 9, "value": -0.43, "value_min": -0.48, "value_max": -0.38 }
+      },
+      "rest": { "axis": 9, "value": 1.28, "value_min": 1.23, "value_max": 1.33 }
+    }
+  }
+}

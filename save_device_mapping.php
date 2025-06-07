@@ -41,7 +41,7 @@ function validateMappingData($mappingData) {
     }
     
     // Vérifier que xml_instance est unique (pas déjà utilisé)
-    $existingMappings = glob(__DIR__ . '/files/*_map.json');
+    $existingMappings = glob(__DIR__ . '/mappings/devices/*_map.json');
     foreach ($existingMappings as $file) {
         $content = file_get_contents($file);
         if ($content) {
@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Vérifier que le fichier n'existe pas déjà
-        $filePath = __DIR__ . '/files/' . $fileName;
+        $filePath = __DIR__ . '/mappings/devices/' . $fileName;
         if (file_exists($filePath)) {
             throw new Exception('Le fichier existe déjà');
         }

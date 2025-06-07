@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Timing Fix - Simple</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { padding: 15px; margin: 10px 0; border-radius: 5px; font-weight: bold; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Timing Fix - Saitek X-56</h1>
+    <p>Test de la correction du problème de timing pour la détection du Saitek X-56</p>
+    
+    <div id="status" class="result info">⏳ Test en cours...</div>
+    <div id="console-logs" style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; height: 300px; overflow-y: scroll;"></div>
+
+    <script type="module">
+        // Capturer les logs pour l'affichage
+        const logsDiv = document.getElementById('console-logs');
+        const statusDiv = document.getElementById('status');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logsDiv.textContent += `[${timestamp}] ${message}\n`;
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        // Test simple du timing fix
+        addLog('🧪 Test Timing Fix - Début');
+
+        async function testTimingFix() {
+            try {
+                // 1. Charger les données comme le fait bindingEditor.js
+                addLog('📥 Chargement des données...');
+                const response = await fetch('/get_devices_data.php');
+                const devicesData = await response.json();
+                
+                window.devicesDataJs = devicesData;
+                addLog(`✅ devicesDataJs chargé: ${devicesData.length} devices`);
+                
+                // Vérifier si le Saitek est dans les données
+                const saitekInData = devicesData.find(dev => 
+                    dev.vendor_id === '0x0738' && dev.product_id === '0xa221'
+                );
+                addLog(`📋 Saitek X-56 dans les données: ${saitekInData ? 'OUI' : 'NON'}`);
+                
+                // 2. Importer SCConfigEditor
+                const { SCConfigEditor } = await import('/assets/js/scConfigEditor.js');
+                
+                // 3. Créer l'instance
+                addLog('🚀 Création SCConfigEditor...');
+                const editor = new SCConfigEditor({
+                    devicesData: devicesData,
+                    useSimplifiedAnchoring: true,
+                    enableAutoDetection: true
+                });
+                
+                // 4. Attendre 4 secondes pour laisser le waitForDevicesData() se terminer
+                addLog('⏱️ Attente de 4 secondes pour l\'initialisation complète...');
+                
+                setTimeout(() => {
+                    addLog('🧪 Test de détection du Saitek X-56...');
+                    
+                    const mockSaitekGamepad = {
+                        id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)",
+                        index: 0,
+                        connected: true
+                    };
+                    
+                    addLog(`🔍 Test avec gamepad ID: ${mockSaitekGamepad.id}`);
+                    addLog(`🔍 window.devicesDataJs disponible: ${!!window.devicesDataJs}`);
+                    addLog(`🔍 Nombre de devices: ${window.devicesDataJs?.length || 0}`);
+                    
+                    const isKnown = editor.deviceAutoDetection.isDeviceKnown(mockSaitekGamepad);
+                    addLog(`📋 Résultat isDeviceKnown: ${isKnown}`);
+                    
+                    if (isKnown) {
+                        addLog('✅ SUCCÈS: Saitek X-56 détecté comme CONNU');
+                        statusDiv.className = 'result success';
+                        statusDiv.textContent = '✅ SUCCÈS: Le timing fix fonctionne ! Le Saitek X-56 est maintenant détecté comme device CONNU.';
+                    } else {
+                        addLog('❌ ÉCHEC: Saitek X-56 encore détecté comme INCONNU');
+                        statusDiv.className = 'result error';
+                        statusDiv.textContent = '❌ ÉCHEC: Le timing fix ne fonctionne pas encore. Le Saitek est toujours détecté comme INCONNU.';
+                        
+                        // Debug supplémentaire
+                        addLog('🔍 DEBUG: Extraction des IDs du gamepad...');
+                        const ids = editor.deviceAutoDetection.extractVendorProductIdFromGamepad(mockSaitekGamepad);
+                        addLog(`🔍 DEBUG: IDs extraits - vendor: ${ids.vendor}, product: ${ids.product}`);
+                        
+                        // Vérifier manuellement dans les données
+                        const manualFind = window.devicesDataJs.find(dev => {
+                            const devVendor = dev.vendor_id?.replace(/^0x/, '').toLowerCase();
+                            const devProduct = dev.product_id?.replace(/^0x/, '').toLowerCase();
+                            addLog(`🔍 DEBUG: Comparaison avec ${dev.id} - vendor: ${devVendor}, product: ${devProduct}`);
+                            return devVendor === ids.vendor && devProduct === ids.product;
+                        });
+                        addLog(`🔍 DEBUG: Recherche manuelle trouvée: ${!!manualFind}`);
+                    }
+                }, 4000);
+                
+            } catch (error) {
+                addLog(`❌ Erreur: ${error.message}`);
+                statusDiv.className = 'result error';
+                statusDiv.textContent = `❌ ERREUR: ${error.message}`;
+            }
+        }
+
+        // Lancer le test
+        testTimingFix();
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Rapport de Correspondance - Normalisation des Noms
+# Date: Sam  7 jui 2025 18:40:01 CEST
+# Backup: backups/mapping_normalization_20250607_184001
+
+device_0738_a221_map.json -> 0738_a221_map.json
+vjoy_1234_bead_map.json -> 1234_bead_map.json
+vkb_231d_0120_map.json -> 231d_0200_map.json
+vkb_231d_0201_map.json -> 231d_0201_map.json

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction Timing - Saitek X-56</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        #console-output { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Correction Timing - Saitek X-56</h1>
+    
+    <div id="status-container">
+        <div class="status info">
+            <strong>Test en cours...</strong> Vérification du timing de chargement des données devices
+        </div>
+    </div>
+    
+    <h2>📋 Logs Console</h2>
+    <div id="console-output"></div>
+    
+    <h2>📊 État des Données</h2>
+    <div id="data-status"></div>
+    
+    <h2>🎮 Test Détection Saitek</h2>
+    <div id="detection-results"></div>
+
+    <script type="module">
+        // Capturer les logs console
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function addToConsoleOutput(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ');
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'black';
+            div.textContent = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+            consoleOutput.appendChild(div);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = (...args) => {
+            originalLog.apply(console, args);
+            addToConsoleOutput('log', ...args);
+        };
+        
+        console.warn = (...args) => {
+            originalWarn.apply(console, args);
+            addToConsoleOutput('warn', ...args);
+        };
+        
+        console.error = (...args) => {
+            originalError.apply(console, args);
+            addToConsoleOutput('error', ...args);
+        };
+
+        // Simuler les données devices comme sur la vraie page
+        console.log('🔄 Chargement des données devices...');
+        
+        try {
+            const response = await fetch('/get_devices_data.php');
+            const devicesData = await response.json();
+            
+            // Assigner globalement
+            window.devicesDataJs = devicesData;
+            console.log('✅ devicesDataJs chargé:', devicesData.length, 'devices');
+            
+            // Mettre à jour l'affichage des données
+            updateDataStatus();
+            
+            // Simuler le gamepad Saitek
+            const mockSaitekGamepad = {
+                id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)",
+                index: 0,
+                connected: true,
+                buttons: new Array(32).fill(null).map((_, i) => ({ pressed: false, touched: false, value: 0 })),
+                axes: new Array(6).fill(0)
+            };
+            
+            // Importer et initialiser SCConfigEditor
+            const { SCConfigEditor } = await import('./assets/js/scConfigEditor.js');
+            
+            console.log('🚀 Initialisation SCConfigEditor avec timing fix...');
+            const editor = new SCConfigEditor({
+                devicesData: devicesData,
+                useSimplifiedAnchoring: true,
+                enableAutoDetection: true
+            });
+            
+            // Attendre un peu puis tester la détection
+            setTimeout(() => {
+                console.log('🧪 Test de détection du Saitek X-56...');
+                testSaitekDetection(editor.deviceAutoDetection, mockSaitekGamepad);
+            }, 2000);
+            
+        } catch (error) {
+            console.error('❌ Erreur lors du chargement:', error);
+            updateStatus('error', 'Erreur lors du chargement des données: ' + error.message);
+        }
+        
+        function updateDataStatus() {
+            const dataStatus = document.getElementById('data-status');
+            if (window.devicesDataJs && Array.isArray(window.devicesDataJs)) {
+                dataStatus.innerHTML = `
+                    <div class="status success">
+                        <strong>✅ Données chargées:</strong> ${window.devicesDataJs.length} devices disponibles
+                        <details>
+                            <summary>Voir les devices</summary>
+                            <pre>${JSON.stringify(window.devicesDataJs.map(d => ({
+                                id: d.id,
+                                vendor_id: d.vendor_id,
+                                product_id: d.product_id
+                            })), null, 2)}</pre>
+                        </details>
+                    </div>
+                `;
+            } else {
+                dataStatus.innerHTML = `
+                    <div class="status error">
+                        <strong>❌ Données non disponibles</strong>
+                    </div>
+                `;
+            }
+        }
+        
+        function testSaitekDetection(deviceAutoDetection, mockGamepad) {
+            const detectionResults = document.getElementById('detection-results');
+            
+            console.log('🔍 Test isDeviceKnown pour Saitek X-56...');
+            
+            // Tester la détection
+            const isKnown = deviceAutoDetection.isDeviceKnown(mockGamepad);
+            
+            const saitekDevice = window.devicesDataJs?.find(dev => 
+                dev.vendor_id === '0x0738' && dev.product_id === '0xa221'
+            );
+            
+            console.log('📋 Résultat isDeviceKnown:', isKnown);
+            console.log('📋 Device Saitek trouvé dans les données:', !!saitekDevice);
+            
+            if (isKnown) {
+                detectionResults.innerHTML = `
+                    <div class="status success">
+                        <strong>✅ SUCCÈS</strong> - Le Saitek X-56 est correctement détecté comme device CONNU
+                        <br>• Device trouvé dans les données: ${saitekDevice ? 'Oui' : 'Non'}
+                        <br>• Timing fix fonctionne: Les données sont disponibles avant la détection
+                    </div>
+                `;
+                updateStatus('success', 'Correction du timing réussie ! Le Saitek X-56 n\'est plus détecté comme "nouveau device"');
+            } else {
+                detectionResults.innerHTML = `
+                    <div class="status error">
+                        <strong>❌ ÉCHEC</strong> - Le Saitek X-56 est encore détecté comme device INCONNU
+                        <br>• Device trouvé dans les données: ${saitekDevice ? 'Oui' : 'Non'}
+                        <br>• window.devicesDataJs disponible: ${!!window.devicesDataJs}
+                        <br>• Nombre de devices: ${window.devicesDataJs?.length || 0}
+                    </div>
+                `;
+                updateStatus('error', 'La correction du timing n\'a pas résolu le problème');
+            }
+        }
+        
+        function updateStatus(type, message) {
+            const container = document.getElementById('status-container');
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            container.innerHTML = `
+                <div class="status ${statusClass}">
+                    <strong>${message}</strong>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

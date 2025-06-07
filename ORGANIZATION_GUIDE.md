@@ -99,7 +99,13 @@ sc-config-editor/
 - `debug_devices_data.php`
 - `debug_devices_transmission.php`
 
-### CSV Temporaires → `temp/mappings/`
+### Mappings de Joystick → `mappings/`
+- **Devices** (`mappings/devices/`) : Mappings finalisés `*_map.json`
+- **Generated** (`mappings/generated/`) : CSV auto-générés avec niveaux de confiance
+- **Templates** (`mappings/templates/`) : Modèles réutilisables par fabricant/type
+- **Validation** (`mappings/validation/`) : Tests et validations temporaires
+
+### CSV Temporaires → `temp/mappings/` (DÉPRÉCIÉ - utiliser `mappings/generated/`)
 - `high_confidence_mappings.csv`
 - `mapping_suggestions.csv`
 - `*_confidence_*.csv`

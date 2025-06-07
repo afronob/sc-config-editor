@@ -65,10 +65,10 @@ response=$(curl -s -X POST \
 echo "📤 Réponse du serveur: $response"
 
 # Vérifier si le fichier a été créé
-if [[ -f "files/test_auto_device_map.json" ]]; then
+if [[ -f "mappings/validation/test_auto_device_map.json" ]]; then
     echo "✅ Fichier de mapping créé avec succès"
     echo "📄 Contenu du fichier:"
-    cat files/test_auto_device_map.json | python3 -m json.tool 2>/dev/null || cat files/test_auto_device_map.json
+    cat mappings/validation/test_auto_device_map.json | python3 -m json.tool 2>/dev/null || cat mappings/validation/test_auto_device_map.json
 else
     echo "❌ Échec de la création du fichier"
 fi
@@ -77,11 +77,11 @@ fi
 echo ""
 echo "🔍 Test 4: Vérification de la structure du mapping..."
 
-if [[ -f "files/test_auto_device_map.json" ]]; then
+if [[ -f "mappings/validation/test_auto_device_map.json" ]]; then
     # Vérifier les champs requis
     required_fields=("id" "xml_instance" "axes_map")
     for field in "${required_fields[@]}"; do
-        if grep -q "\"$field\"" files/test_auto_device_map.json; then
+        if grep -q "\"$field\"" mappings/validation/test_auto_device_map.json; then
             echo "✅ Champ '$field' présent"
         else
             echo "❌ Champ '$field' manquant"
@@ -89,7 +89,7 @@ if [[ -f "files/test_auto_device_map.json" ]]; then
     done
     
     # Vérifier le format JSON
-    if python3 -m json.tool files/test_auto_device_map.json > /dev/null 2>&1; then
+    if python3 -m json.tool mappings/validation/test_auto_device_map.json > /dev/null 2>&1; then
         echo "✅ Format JSON valide"
     else
         echo "❌ Format JSON invalide"
@@ -156,8 +156,8 @@ fi
 # Nettoyage
 echo ""
 echo "🧹 Nettoyage..."
-rm -f files/test_auto_device_map.json
-rm -f files/invalid_test.json
+rm -f mappings/validation/test_auto_device_map.json
+rm -f mappings/validation/invalid_test.json
 
 # Arrêter le serveur s'il a été démarré par le script
 if [[ -n "$SERVER_PID" ]]; then

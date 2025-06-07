@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✅ Test Final - Saitek X-56 Fix Validation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .test-success { background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .test-error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .test-info { background: #d1ecf1; color: #0c5460; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+        .device-data { border: 1px solid #dee2e6; border-radius: 5px; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>✅ VALIDATION FINALE - Correctif Détection Saitek X-56</h1>
+    
+    <div id="results"></div>
+    
+    <script type="module">
+        const results = document.getElementById('results');
+        
+        function addResult(type, title, message, details = null) {
+            const div = document.createElement('div');
+            div.className = `test-${type}`;
+            div.innerHTML = `
+                <h3>${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'} ${title}</h3>
+                <p>${message}</p>
+                ${details ? `<div class="device-data"><pre>${JSON.stringify(details, null, 2)}</pre></div>` : ''}
+            `;
+            results.appendChild(div);
+        }
+        
+        // Test de la correction
+        async function runFinalTest() {
+            try {
+                // 1. Test endpoint
+                addResult('info', 'Étape 1/4', 'Test de l\'endpoint get_devices_data.php...');
+                
+                const response = await fetch('/get_devices_data.php');
+                const devicesData = await response.json();
+                
+                addResult('success', 'Endpoint OK', `${devicesData.length} périphériques chargés`);
+                console.log('Données chargées:', devicesData);
+                
+                // 2. Vérifier présence Saitek
+                addResult('info', 'Étape 2/4', 'Recherche du Saitek X-56 dans les données...');
+                
+                const saitekDevice = devicesData.find(d => 
+                    d.vendor_id === '0x0738' && d.product_id === '0xa221'
+                );
+                
+                if (saitekDevice) {
+                    addResult('success', 'Saitek Trouvé', 'Le Saitek X-56 est présent dans les données', saitekDevice);
+                } else {
+                    addResult('error', 'Saitek Manquant', 'Le Saitek X-56 est ABSENT des données');
+                    return;
+                }
+                
+                // 3. Test fonction de détection
+                addResult('info', 'Étape 3/4', 'Test de la fonction de détection...');
+                
+                // Charger le module de détection
+                const { DeviceAutoDetection } = await import('./assets/js/modules/deviceAutoDetection.js');
+                
+                // Initialiser les données globales (simule le comportement réel de l'app)
+                window.devicesDataJs = devicesData;
+                
+                // Créer une instance
+                const detector = new DeviceAutoDetection();
+                
+                // Simuler un gamepad Saitek
+                const mockSaitekGamepad = {
+                    id: 'Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)',
+                    buttons: Array(20).fill({ pressed: false, value: 0 }),
+                    axes: Array(8).fill(0),
+                    index: 0,
+                    connected: true
+                };
+                
+                // TESTER LA DÉTECTION
+                const isKnown = detector.isDeviceKnown(mockSaitekGamepad);
+                
+                if (isKnown) {
+                    addResult('success', 'DÉTECTION RÉUSSIE', 'Le Saitek X-56 est maintenant correctement détecté comme CONNU !');
+                } else {
+                    addResult('error', 'DÉTECTION ÉCHOUÉE', 'Le Saitek X-56 est encore détecté comme INCONNU', {
+                        gamepadId: mockSaitekGamepad.id,
+                        extractedIds: detector.extractVendorProductIdFromGamepad(mockSaitekGamepad),
+                        searchedData: devicesData.filter(d => d.vendor_id === '0x0738' || d.product_id === '0xa221')
+                    });
+                }
+                
+                // 4. Test de contrôle avec device inconnu
+                addResult('info', 'Étape 4/4', 'Test de contrôle avec un périphérique inconnu...');
+                
+                const mockUnknownGamepad = {
+                    id: 'Unknown Device Test (Vendor: 9999 Product: 9999)',
+                    buttons: Array(10).fill({ pressed: false, value: 0 }),
+                    axes: Array(4).fill(0),
+                    index: 1,
+                    connected: true
+                };
+                
+                const unknownIsKnown = detector.isDeviceKnown(mockUnknownGamepad);
+                
+                if (!unknownIsKnown) {
+                    addResult('success', 'Test de Contrôle OK', 'Un périphérique inconnu est correctement détecté comme INCONNU');
+                } else {
+                    addResult('error', 'Test de Contrôle ÉCHEC', 'Un périphérique inconnu est incorrectement détecté comme CONNU');
+                }
+                
+                // Résultat final
+                if (isKnown && !unknownIsKnown) {
+                    addResult('success', '🎉 SUCCÈS COMPLET', 'Le correctif fonctionne parfaitement ! Le système de détection Saitek X-56 est maintenant opérationnel.');
+                } else {
+                    addResult('error', '❌ PROBLÈME PERSISTANT', 'Le correctif ne fonctionne pas complètement. Investigation supplémentaire nécessaire.');
+                }
+                
+            } catch (error) {
+                addResult('error', 'Erreur du Test', `Une erreur s'est produite: ${error.message}`);
+                console.error('Erreur complète:', error);
+            }
+        }
+        
+        // Lancer le test
+        runFinalTest();
+    </script>
+</body>
+</html>

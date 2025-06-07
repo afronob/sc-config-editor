@@ -64,6 +64,9 @@ export class SCConfigEditor {
             
             console.log('✅ DeviceSetupUI initialisé et disponible globalement');
             
+            // ATTENDRE que les données soient disponibles avant de lancer la détection
+            await this.waitForDevicesData();
+            
             // ENSUITE lancer la détection des devices existants
             console.log('🔍 Lancement de la détection des devices existants...');
             this.deviceAutoDetection.checkExistingGamepads();
@@ -71,6 +74,43 @@ export class SCConfigEditor {
             
         } catch (error) {
             console.error('❌ Erreur lors du chargement de l\'interface de configuration des devices:', error);
+        }
+    }
+
+    async waitForDevicesData() {
+        const maxWait = 5000; // Maximum 5 secondes
+        const interval = 100;  // Vérifier toutes les 100ms
+        let waited = 0;
+        
+        // D'abord attendre les données fournies par PHP
+        while (!window.devicesDataJs || !Array.isArray(window.devicesDataJs) || window.devicesDataJs.length === 0) {
+            if (waited >= maxWait) {
+                console.warn('⚠️ Timeout: devicesDataJs non disponible via PHP après', maxWait, 'ms');
+                break;
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, interval));
+            waited += interval;
+        }
+        
+        // Si les données ne sont toujours pas disponibles, les charger depuis l'endpoint
+        if (!window.devicesDataJs || !Array.isArray(window.devicesDataJs) || window.devicesDataJs.length === 0) {
+            console.log('📡 Chargement des données devices depuis l\'endpoint...');
+            try {
+                const response = await fetch('/get_devices_data.php');
+                const devicesData = await response.json();
+                
+                if (Array.isArray(devicesData) && devicesData.length > 0) {
+                    window.devicesDataJs = devicesData;
+                    console.log('✅ devicesDataJs chargé depuis endpoint:', devicesData.length, 'devices');
+                } else {
+                    console.warn('⚠️ Endpoint retourné des données vides ou invalides');
+                }
+            } catch (error) {
+                console.error('❌ Erreur lors du chargement des données devices:', error);
+            }
+        } else {
+            console.log('✅ devicesDataJs disponible via PHP:', window.devicesDataJs.length, 'devices');
         }
     }
 
