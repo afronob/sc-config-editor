@@ -1,0 +1,668 @@
+
+categories,actions
+Vehicles - Seats and Operator Modes,Emergency Exit Seat
+Vehicles - Seats and Operator Modes,Eject
+Vehicles - Seats and Operator Modes,Look behind
+Vehicles - Seats and Operator Modes,Toggle Mining Operator Mode
+Vehicles - Seats and Operator Modes,Toggle Salvage Operator Mode
+Vehicles - Seats and Operator Modes,Toggle Scanning Operator Mode
+Vehicles - Seats and Operator Modes,Toggle Quantum Operator Mode
+Vehicles - Seats and Operator Modes,Toggle Missile Operator Mode
+Vehicles - Seats and Operator Modes,Toggle Guns Operator Mode
+Vehicles - Seats and Operator Modes,Toggle Flight Operator Mode
+Vehicles - Seats and Operator Modes,Set Mining Operator Mode
+Vehicles - Seats and Operator Modes,Set Salvage Operator Mode
+Vehicles - Seats and Operator Modes,Set Scanning Operator Mode
+Vehicles - Seats and Operator Modes,Set Quantum Operator Mode
+Vehicles - Seats and Operator Modes,Set Missile Operator Mode
+Vehicles - Seats and Operator Modes,Set Guns Operator Mode
+Vehicles - Seats and Operator Modes,Set Flight Operator Mode
+Vehicles - Seats and Operator Modes,Enter Remote Turret 1
+Vehicles - Seats and Operator Modes,Enter Remote Turret 2
+Vehicles - Seats and Operator Modes,Enter Remote Turret 3
+Vehicles - Seats and Operator Modes,Next Operator Mode
+Vehicles - Seats and Operator Modes,Previous Operator Mode
+Vehicles Cockpit,Self Destruct
+Vehicles Cockpit,Increase Cooler Rate
+Vehicles Cockpit,Decrease Cooler Rate
+Vehicles Cockpit,Flight / Systems Ready
+Vehicles Cockpit,Open/Close Doors (Toggle)
+Vehicles Cockpit,Open All Doors
+Vehicles Cockpit,Close All Doors
+Vehicles Cockpit,Lock/Unlock Doors (Toggle)
+Vehicles Cockpit,Lock All Doors
+Vehicles Cockpit,Unlock All Doors
+Vehicles Cockpit,Port Lock Toggle All
+Vehicles Cockpit,Port Lock All
+Vehicles Cockpit,Port Unlock All
+Vehicles - Multi Function Displays,MFD - Cycle Page - Forwards (Short Press)
+Vehicles - Multi Function Displays,MFD - Cycle Page - Forwards (Long Press)
+Vehicles - Multi Function Displays,MFD - Cycle Page - Backwards (Short Press)
+Vehicles - Multi Function Displays,MFD - Cycle Page - Backwards (Long Press)
+Vehicles - Multi Function Displays,MFD - Movement - Up (Short Press)
+Vehicles - Multi Function Displays,MFD - Movement - Up (Long Press)
+Vehicles - Multi Function Displays,MFD - Movement - Down (Short Press)
+Vehicles - Multi Function Displays,MFD - Movement - Down (Long Press)
+Vehicles - Multi Function Displays,MFD - Movement - Left (Short Press)
+Vehicles - Multi Function Displays,MFD - Movement - Left (Long Press)
+Vehicles - Multi Function Displays,MFD - Movement - Right (Short Press)
+Vehicles - Multi Function Displays,MFD - Movement - Right (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - Primary (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - Primary (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - Left Cast (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - Left Cast (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - Right Cast (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - Right Cast (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 1 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 1 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 2 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 2 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 3 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 3 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 4 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 4 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 5 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 5 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 6 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 6 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 7 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 7 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 8 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 8 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 9 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 9 (Long Press)
+Vehicles - Multi Function Displays,MFD - Select - MFD 10 (Short Press)
+Vehicles - Multi Function Displays,MFD - Select - MDF 10 (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Self Status (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Self Status (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Target Status (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Target Status (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Scanning (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Scanning (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Vehicle Configuration (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Vehicle Configuration (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Communications (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Communications (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - IFCS (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - IFCS (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Diagnostics (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Diagnostics (Long Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Resource Network (Short Press)
+Vehicles - Multi Function Displays,MFD - Set Page - Resource Network (Long Press)
+Vehicles View,Look left
+Vehicles View,Look right
+Vehicles View,Look left / right
+Vehicles View,Look up
+Vehicles View,Look down
+Vehicles View,Look up / down
+Vehicles View,Cycle camera view
+Vehicles View,Cycle camera orbit mode
+Vehicles View,Zoom in (3rd person view)
+Vehicles View,Zoom out (3rd person view)
+Vehicles View,Freelook (Hold)
+Vehicles View,Dynamic Zoom In and Out (rel.)
+Vehicles View,Dynamic Zoom In (rel.)
+Vehicles View,Dynamic Zoom Out (rel.)
+Vehicles View,Dynamic Zoom In and Out (abs.)
+Vehicles View,Dynamic Zoom Toggle (abs.)
+Vehicles View,@ui_v_ads_hold
+Vehicles View,@ui_v_ads_toggle
+Vehicles View,@ui_v_ads_stable_max_zoom_hold
+Vehicles View,@ui_v_ads_cycle_tracking
+Flight Movements,Pitch up
+Flight Movements,Pitch down
+Flight Movements,Pitch
+Flight Movements,Yaw left
+Flight Movements,Yaw right
+Flight Movements,Yaw
+Flight Movements,Roll left
+Flight Movements,Roll right
+Flight Movements,Roll
+Flight Movements,Swap Yaw / Roll (Toggle)
+Flight Movements,Strafe up (abs.)
+Flight Movements,Strafe down (abs.)
+Flight Movements,Strafe up / down (abs.)
+Flight Movements,Strafe left (abs.)
+Flight Movements,Strafe right (abs.)
+Flight Movements,Strafe left / right (abs.)
+Flight Movements,Throttle - Increase
+Flight Movements,Throttle - Decrease
+Flight Movements,Throttle - Forward / Back
+Flight Movements,Throttle - Forward / Back Invert
+Flight Movements,Throttle - Cruise Mode - Toggle
+Flight Movements,Throttle - Cruise Mode - Enable
+Flight Movements,Throttle - Cruise Mode - Disable
+Flight Movements,Throttle - Trim - Set (Long Press)
+Flight Movements,Throttle - Trim - Set (Short Press)
+Flight Movements,Throttle - Trim - Set To 100% (Long Press)
+Flight Movements,Throttle - Trim - Set To 100% (Short Press)
+Flight Movements,Throttle - Trim - Set To 50% (Long Press)
+Flight Movements,Throttle - Trim - Set To 50% (Short Press)
+Flight Movements,Throttle - Trim - Release (Long Press)
+Flight Movements,Throttle - Trim - Release (Short Press)
+Flight Movements,"Decoupled Mode (Toggle, Hold)"
+Flight Movements,Boost
+Flight Movements,Speed Limiter - Increase (hold)
+Flight Movements,Speed Limiter - Decrease (hold)
+Flight Movements,Speed Limiter - Step Up (tap)
+Flight Movements,Speed Limiter - Step Down (tap)
+Flight Movements,Speed Limiter (rel)
+Flight Movements,Speed Limiter (abs)
+Flight Movements,Speed Limiter - Enable / Disable
+Flight Movements,Speed Limiter - Enable
+Flight Movements,Speed Limiter - Disable
+Flight Movements,Acceleration Limiter - Increase (hold)
+Flight Movements,Acceleration Limiter - Decrease (hold)
+Flight Movements,Acceleration Limiter - Step Up (tap)
+Flight Movements,Acceleration Limiter - Step Down (tap)
+Flight Movements,Acceleration Limiter (rel)
+Flight Movements,Acceleration Limiter (abs)
+Flight Movements,Spacebrake
+Flight Movements,Lock Pitch / Yaw Movement (Toggle / Hold)
+Flight Movements,G-Force safety on
+Flight Movements,G-Force safety off
+Flight Movements,G-Force Safety On/Off (Toggle / Hold)
+Flight Movements,E.S.P. - Toggle On / Off (Press)
+Flight Movements,E.S.P. - Enable Temporarily (Hold)
+Flight Movements,Landing System (Toggle)
+Flight Movements,Landing System (Deploy)
+Flight Movements,Landing System (Retract)
+Flight Movements,Toggle VTOL
+Flight Movements,Expand Configuration
+Flight Movements,Retract Configuration
+Flight Movements,Cycle Configuration
+Flight Movements,Autoland
+Flight Movements,Request Landing
+Flight Movements,Request Cargo Loading
+Flight Movements,Cycle Master Mode (Short Press)
+Flight Movements,Cycle Master Mode (Long Press)
+Flight Movements,Set Master Mode to Nav
+Flight Movements,Set Master Mode to SCM
+Flight Movements,Jump Drive - Request Jump
+Flight Movements,Gravity Compensation - Toggle
+Flight Movements,Gravity Compensation - Enable
+Flight Movements,Gravity Compensation - Disable
+Flight Movements,Automatic Precision Mode - Toggle
+Flight Movements,Automatic Precision Mode - Enable
+Flight Movements,Automatic Precision Mode - Disable
+Flight Movements,@ui_v_ifcs_proximity_assist_toggle
+Flight Movements,@ui_v_ifcs_proximity_assist_on
+Flight Movements,@ui_v_ifcs_proximity_assist_off
+Flight Movements,Reset Flight Accelerometer
+Flight Movements,Advanced HUD - Toggle
+Flight Movements,Advanced HUD - Enable
+Flight Movements,Advanced HUD - Disable
+Flight Quantum Travel,Engage Quantum Drive (Hold)
+Flight - Docking,Toggle Docking Mode
+Flight - Docking,Invoke Docking
+Flight - Docking,Toggle Docking Camera
+Vehicles Targeting,Auto Targeting - Toggle On/Off (Long Press)
+Vehicles Targeting,Auto Targeting - Toggle On/Off (Short Press)
+Vehicles Targeting,Auto Targeting - Toggle On (Short Press)
+Vehicles Targeting,Auto Targeting - Toggle On (Long Press)
+Vehicles Targeting,Auto Targeting - Toggle Off (Short Press)
+Vehicles Targeting,Auto Targeting - Toggle Off (Long Press)
+Vehicles Targeting,Pin Index 1 - Lock / Unlock Pinned Target
+Vehicles Targeting,Pin Index 2 - Lock / Unlock Pinned Target
+Vehicles Targeting,Pin Index 3 - Lock / Unlock Pinned Target
+Vehicles Targeting,Pin Index 1 - Pin / Unpin Selected Target
+Vehicles Targeting,Pin Index 2 - Pin / Unpin Selected Target
+Vehicles Targeting,Pin Index 3 - Pin / Unpin Selected Target
+Vehicles Targeting,Pin Index 1 - Pin / Unpin Selected Target (Hold)
+Vehicles Targeting,Pin Index 2 - Pin / Unpin Selected Target (Hold)
+Vehicles Targeting,Pin Index 3 - Pin / Unpin Selected Target (Hold)
+Vehicles Targeting,Pin Selected Target
+Vehicles Targeting,Unpin Selected Target
+Vehicles Targeting,Pin Selected Target (Hold)
+Vehicles Targeting,Unpin Selected Target (Hold)
+Vehicles Targeting,Remove All Pinned Targets
+Vehicles Targeting,Lock Selected Target
+Vehicles Targeting,Unlock Current Target
+Vehicles Targeting,Enable / Disable Look Ahead
+Vehicles Targeting,"Enable / Disable Target Padlock (Toggle, Hold)"
+Vehicles Targeting,"Auto Zoom On Selected Target On / Off (Toggle, Hold)"
+Vehicle Target Cycling,Lock Target Under Reticle
+Vehicle Target Cycling,Cycle Lock - In View - Back
+Vehicle Target Cycling,Cycle Lock - In View - Forward
+Vehicle Target Cycling,Cycle Lock - In View - Under Reticle
+Vehicle Target Cycling,Cycle Lock - Pinned - Back
+Vehicle Target Cycling,Cycle Lock - Pinned - Forward
+Vehicle Target Cycling,Cycle Lock - Pinned - Reset to First
+Vehicle Target Cycling,Cycle Lock - Attackers - Back
+Vehicle Target Cycling,Cycle Lock - Attackers - Forward
+Vehicle Target Cycling,Cycle Lock - Attackers - Reset to Closest
+Vehicle Target Cycling,Cycle Lock - Hostiles - Back
+Vehicle Target Cycling,Cycle Lock - Hostiles - Forward
+Vehicle Target Cycling,Cycle Lock - Hostiles - Reset to Closest
+Vehicle Target Cycling,Cycle Lock - Friendlies - Back
+Vehicle Target Cycling,Cycle Lock - Friendlies - Forward
+Vehicle Target Cycling,Cycle Lock - Friendlies - Reset to Closest
+Vehicle Target Cycling,Cycle Lock - All - Back
+Vehicle Target Cycling,Cycle Lock - All - Forward
+Vehicle Target Cycling,Cycle Lock - All - Reset to Closest
+Vehicle Target Cycling,Cycle Lock - Sub-Target - Back
+Vehicle Target Cycling,Cycle Lock - Sub-Target - Forward
+Vehicle Target Cycling,Cycle Lock - Sub-Target - Reset to Main Target
+Flight - Target Hailing,Hail Target
+Flight - Radar,Activate Ping (Hold & Release)
+Vehicles - Scanning,Activate Scanning
+Vehicles - Scanning,Increase Scanning Angle
+Vehicles - Scanning,Decrease Scanning Angle
+Vehicles - Mining,Fire Mining Laser (Toggle)
+Vehicles - Mining,Switch Mining Laser (Toggle)
+Vehicles - Mining,Increase Mining Laser Power
+Vehicles - Mining,Decrease Mining Laser Power
+Vehicles - Mining,Increase / Decrease Mining Laser Power
+Vehicles - Mining,Activate Mining Module (Slot 1)
+Vehicles - Mining,Activate Mining Module (Slot 2)
+Vehicles - Mining,Activate Mining Module (Slot 3)
+Vehicles - Mining,Activate Mining Module (Slot 1)
+Vehicles - Mining,Jettison Cargo
+Vehicles Salvage,Tractor Beam Vehicle Increase Distance
+Vehicles Salvage,Tractor Beam Vehicle Decrease Distance
+Vehicles Salvage,Toggle Fire Focused
+Vehicles Salvage,Toggle Fire Left
+Vehicles Salvage,Toggle Fire Right
+Vehicles Salvage,Toggle Fire Fracture
+Vehicles Salvage,Toggle Fire Disintegrate
+Vehicles Salvage,Salvage Mode Gimbal (Toggle)
+Vehicles Salvage,Salvage Mode Gimbal Reset
+Vehicles Salvage,Increase Beam Spacing
+Vehicles Salvage,Decrease Beam Spacing
+Vehicles Salvage,Relative Beam Spacing
+Vehicles Salvage,Absolute Beam Spacing
+Vehicles Salvage,Salvage Beam Axis (Toggle)
+Vehicles Salvage,Cycle Focused Salvage Modifiers
+Vehicles Salvage,Cycle Left Salvage Modifiers
+Vehicles Salvage,Cycle Right Salvage Modifiers
+Vehicles Salvage,Cycle Structural Salvage Modes
+Vehicles Salvage,Focus all salvage heads
+Vehicles Salvage,Focus left salvage head
+Vehicles Salvage,Focus right salvage head
+Vehicles Salvage,Focus Fracture tool
+Vehicles Salvage,Focus Disintegration tool
+Vehicles Salvage,Nudge left salvage tool up
+Vehicles Salvage,Nudge left salvage tool down
+Vehicles Salvage,Nudge left salvage tool left
+Vehicles Salvage,Nudge left salvage tool right
+Vehicles Salvage,Nudge right salvage tool up
+Vehicles Salvage,Nudge right salvage tool down
+Vehicles Salvage,Nudge right salvage tool left
+Vehicles Salvage,Nudge right salvage tool right
+Turret Movement,Pitch up
+Turret Movement,Pitch down
+Turret Movement,Pitch
+Turret Movement,Yaw left
+Turret Movement,Yaw right
+Turret Movement,Yaw
+Turret Advanced,"Toggle Turret Mouse Movement (VJoy, FPS style)"
+Turret Advanced,Exit Remote Turret
+Turret Advanced,Turret Gyro Stabilization (Toggle)
+Turret Advanced,Next Remote Turret
+Turret Advanced,Previous Remote Turret
+Turret Advanced,Turret E.S.P. Toggle On / Off
+Turret Advanced,Turret E.S.P. Enable Temporarily (Hold)
+Turret Advanced,Recenter Turret (Hold)
+Turret Advanced,Turret Speed Limiter On/Off (Hold/Toggle)
+Turret Advanced,Turret Speed Limiter (rel)
+Turret Advanced,Turret Speed Limiter Increase (rel)
+Turret Advanced,Turret Speed Limiter Decrease (rel)
+Turret Advanced,Turret Speed Limiter (abs)
+Turret Advanced,Cycle fire mode (staggered / combined)
+Turret Advanced,Change turret Position
+Vehicles Weapons,"Manual Gimbal Mode Swap VJoy / Look Direction (Toggle, Hold)"
+Vehicles Weapons,Cycle Gimbal Assist / Standard Gimbal / Gimbal Lock modes
+Vehicles Weapons,Cycle Fixed / Auto Gimbal Modes
+Vehicles Weapons,Set Fixed Gimbal Mode (Long Press)
+Vehicles Weapons,Set Auto Gimbal Mode (Long Press)
+Vehicles Weapons,Set Manual Gimbal Mode (Long Press)
+Vehicles Weapons,Set Fixed Gimbal Mode (Short Press)
+Vehicles Weapons,Set Auto Gimbal Mode (Short Press)
+Vehicles Weapons,Set Manual Gimbal Mode (Short Press)
+Vehicles Weapons,Suppress Aim Assists (Hold)
+Vehicles Weapons,Cycle Fire Mode (Staggered / Combined)
+Vehicles Weapons,Toggle Lead / Lag PIPs
+Vehicles Weapons,Set Lag PIPs
+Vehicles Weapons,Set Lead PIPs
+Vehicles Weapons,PIP Combination Type: Toggle
+Vehicles Weapons,PIP Combination Type: Set One PIP Per Weapon
+Vehicles Weapons,PIP Combination Type: Set One PIP Per Weapon Type
+Vehicles Weapons,PIP Precision Lines Toggle
+Vehicles Weapons,PIP Precision Lines On
+Vehicles Weapons,PIP Precision Lines Off
+Vehicles Weapons,PIP Fading Toggle
+Vehicles Weapons,PIP Fading On
+Vehicles Weapons,PIP Fading Off
+Vehicles Weapons,Gunnery UI Magnification Toggle
+Vehicles Weapons,Gunnery UI Magnification On
+Vehicles Weapons,Gunnery UI Magnification Off
+Vehicles Weapons,Manual Convergence Distance (rel.)
+Vehicles Weapons,Manual Convergence Distance Increase
+Vehicles Weapons,Manual Convergence Distance Decrease
+Vehicles Weapons,Manual Convergence Distance (abs.)
+Vehicles Weapons,Manual Convergence Distance Reset
+Vehicles Weapons,Weapon Preset Fire
+Vehicles Weapons,Weapon Presets Fire Guns Group 1
+Vehicles Weapons,Weapon Presets Fire Guns Group 2
+Vehicles Weapons,Weapon Presets Fire Guns Group 3
+Vehicles Weapons,Weapon Presets Fire Guns Group 4
+Vehicles Weapons,Weapon Presets Next
+Vehicles Weapons,Weapon Presets Previous
+Vehicles Weapons,Weapon Presets Next (Overflow)
+Vehicles Weapons,Weapon Presets Previous (Overflow)
+Vehicles Weapons,Weapon Presets Set Guns Group 1
+Vehicles Weapons,Weapon Presets Set Guns Group 2
+Vehicles Weapons,Weapon Presets Set Guns Group 3
+Vehicles Weapons,Weapon Presets Set Guns Group 4
+Vehicles Weapons,Weapon Presets Set EMPs
+Vehicles Weapons,Weapon Presets Set Quantum Jammers (short range)
+Vehicles Weapons,Weapon Presets Set Quantum Snares / Pulse (long range)
+Vehicles Weapons,Weapon Presets Set QIDs
+Vehicles - Missiles,Launch Missiles (Tap)
+Vehicles - Missiles,Launch Missiles (Hold)
+Vehicles - Missiles,Cycle Next Missile Type
+Vehicles - Missiles,Cycle Previous Missile Type
+Vehicles - Missiles,Increase Number of Armed Missiles
+Vehicles - Missiles,Decrease Number of Armed Missiles
+Vehicles - Missiles,Reset Number of Armed Missiles
+Vehicles - Missiles,Bombs - Toggle Desired Impact Point (Tap)
+Vehicles - Missiles,Bombs - Toggle Desired Impact Point (Hold)
+Vehicles - Missiles,Bombs - Increase HUD Range
+Vehicles - Missiles,Bombs - Decrease HUD Range
+Vehicles - Missiles,Bombs - Reset HUD Range
+Vehicles - Missiles,Enable Cinematic Camera (Toggle)
+Vehicles - Missiles,Enable Cinematic Camera (Hold)
+Vehicles Shields and Countermeasures,"Decoy Launch Burst (tap), Set and Launch Burst (hold)"
+Vehicles Shields and Countermeasures,Decoy Increase Burst Size (tap)
+Vehicles Shields and Countermeasures,Decoy Decrease Burst Size (tap)
+Vehicles Shields and Countermeasures,Decoy Panic Launch (tap)
+Vehicles Shields and Countermeasures,Noise Deploy (Tap)
+Vehicles Shields and Countermeasures,Shield raise level front
+Vehicles Shields and Countermeasures,Shield raise level back
+Vehicles Shields and Countermeasures,Shield raise level left
+Vehicles Shields and Countermeasures,Shield raise level right
+Vehicles Shields and Countermeasures,Shield raise level top
+Vehicles Shields and Countermeasures,Shield raise level bottom
+Vehicles Shields and Countermeasures,Shield reset levels
+Flight Power,Toggle Power All
+Flight Power,Set Power On
+Flight Power,Set Power Off
+Flight Power,Toggle Power Thrusters
+Flight Power,Set Thrusters Power On
+Flight Power,Set Thrusters Power Off
+Flight Power,Toggle Power Shields
+Flight Power,Set Shields Power On
+Flight Power,Set Shields Power Off
+Flight Power,Toggle Power Weapons
+Flight Power,Set Weapons Power On
+Flight Power,Set Weapons Power Off
+Flight Power,Decrease Throttle
+Flight Power,Decrease Throttle to Min
+Flight Power,Increase Throttle
+Flight Power,Increase Throttle to Max
+Flight Power,Engines Increase (Tap)
+Flight Power,Engines Decrease (Tap)
+Flight Power,Engines Set to Max (Hold)
+Flight Power,Engines Set to Min (Hold)
+Flight Power,Shields Increase (Tap)
+Flight Power,Shields Decrease (Tap)
+Flight Power,Shields Set to Max (Hold)
+Flight Power,Shields Set to Min (Hold)
+Flight Power,Weapons Increase (Tap)
+Flight Power,Weapons Decrease (Tap)
+Flight Power,Weapons Set to Max (Hold)
+Flight Power,Weapons Set to Min (Hold)
+Flight Power,Reset Assignments
+Flight HUD,Cycle Pitch Ladder Mode
+Flight HUD,Scoreboard
+Flight HUD,Map
+Flight HUD,Wipe Helmet Visor
+Lights,Headlights (Toggle)
+Lights,Headlights
+Lights,Headlights
+Vehicle - Mobiclass,-
+Stop Watch,Reset (Long Press)
+Stop Watch,Start / Pause (Short Press)
+On Foot All,Move Left
+On Foot All,Move Right
+On Foot All,Move Forward
+On Foot All,Move Backwards
+On Foot All,Move Left / Right
+On Foot All,Move Forward / Backward
+On Foot All,Look (Yaw)
+On Foot All,Look (Pitch)
+On Foot All,Jump
+On Foot All,@ui_CIFPSMoveJumpHold
+On Foot All,@ui_CIFPSMoveJumpRelease
+On Foot All,Crouch
+On Foot All,Prone
+On Foot All,Sprint
+On Foot All,Walk
+On Foot All,Lean Left
+On Foot All,Lean Right
+On Foot All,@ui_CIFPSMoveLedgeGrab
+On Foot All,Firearm Attack
+On Foot All,@ui_CIFPSAttack2
+On Foot All,Melee Attack Light Left
+On Foot All,Melee Attack Light Right
+On Foot All,Melee Attack Heavy Left (Hold)
+On Foot All,Melee Attack Heavy Right (Hold)
+On Foot All,Melee Block (Hold)
+On Foot All,Medical Pen Inject Other
+On Foot All,Melee Attack (Ranged Weapon + Takedowns)
+On Foot All,Throw Overarm & Two-Handed
+On Foot All,Throw Underarm
+On Foot All,Aim Down Sight
+On Foot All,Interact With Scope (ADS)
+On Foot All,Select Primary Weapon
+On Foot All,Select Secondary Weapon
+On Foot All,Select Sidearm
+On Foot All,Select Melee
+On Foot All,Select Gadget
+On Foot All,Unarmed Combat
+On Foot All,Next Weapon
+On Foot All,Previous Weapon
+On Foot All,Reload
+On Foot All,@ui_CIFPSReloadSecondary
+On Foot All,@ui_CIFPSAmmoRepooi
+On Foot All,Holster Weapon
+On Foot All,Drop Item
+On Foot All,Inspect Item
+On Foot All,Customize Weapon
+On Foot All,Hold Breath (ADS)
+On Foot All,FPS Underbarrel Attachment Action
+On Foot All,Change Fire Mode
+On Foot All,Weapon Zeroing Decrease
+On Foot All,Weapon Zeroing Increase / Auto
+On Foot All,Default Movement Speed Increase
+On Foot All,Default Movement Speed Decrease
+On Foot All,Flashlight (Toggle)
+On Foot All,Toggle Equip Helmet
+On Foot All,Helmet
+On Foot All,Default Movement Speed Increase
+On Foot All,Wipe Helmet Visor
+On Foot All,Third Person View (Toggle)
+On Foot All,Free View Camera (Hold)
+On Foot All,Zoom Out
+On Foot All,Zoom In
+On Foot All,Recall Last Vehicle
+On Foot All,Scoreboard
+On Foot All,Firearm Attack
+On Foot All,Port Modification Interact
+On Foot All,Map
+On Foot All,Force Re-spawn (E.V.A. / On Foot)
+On Foot All,Roll Left (while Prone)
+On Foot All,Roll Right (while Prone)
+On Foot All,Tractor Beam Increase Distance
+On Foot All,Tractor Beam Decrease Distance
+E.V.A All,View Left
+E.V.A All,View Right
+E.V.A All,View Left/Right
+E.V.A All,View Up
+E.V.A All,View Down
+E.V.A All,View Up/Down
+E.V.A All,Roll Left
+E.V.A All,Roll Right
+E.V.A All,Roll Left/Right
+E.V.A All,Strafe Up
+E.V.A All,Strafe Down
+E.V.A All,Strafe Up/Down
+E.V.A All,Strafe Left
+E.V.A All,Strafe Right
+E.V.A All,Strafe Left/Right
+E.V.A All,Strafe Forward
+E.V.A All,Strafe Backward
+E.V.A All,Strafe Forward/Backward
+E.V.A All,Brake
+E.V.A All,Boost
+E.V.A All,Freelook (Hold)
+E.V.A Zero-G Traversal,Launch from Surface
+E.V.A Zero-G Traversal,Detach from Surface
+E.V.A Zero-G Traversal,Roll Left
+E.V.A Zero-G Traversal,Roll Right
+Ground Vehicle General ,Horn
+Ground Vehicle General ,Cycle camera view
+Ground Vehicle General ,Zoom in (3rd person view)
+Ground Vehicle General ,Zoom out (3rd person view)
+Ground Vehicle General ,Look left / right
+Ground Vehicle General ,Look up / down
+Ground Vehicle General ,Freelook (Hold)
+Ground Vehicle General ,Flight / Systems Ready
+Ground Vehicle General ,Open/Close Doors (Toggle)
+Ground Vehicle General ,Open All Doors
+Ground Vehicle General ,Close All Doors
+Ground Vehicle General ,Lock/Unlock Doors (Toggle)
+Ground Vehicle General ,Lock All Doors
+Ground Vehicle General ,Unlock All Doors
+Ground Vehicle General ,Port Lock Toggle All
+Ground Vehicle General ,Port Lock All
+Ground Vehicle General ,Port Unlock All
+Ground Vehicle General ,Map
+Ground Vehicle General ,Wipe Helmet Visor
+Ground Vehicle Movement,Drive Forward
+Ground Vehicle Movement,Drive Backward
+Ground Vehicle Movement,Drive Forward / Backward
+Ground Vehicle Movement,Turn Left
+Ground Vehicle Movement,Turn Right
+Ground Vehicle Movement,Yaw Left / Right (Axis / HOTAS)
+Ground Vehicle Movement,@ui_CI_MGV_Pitch_Up
+Ground Vehicle Movement,@ui_CI_MGV_Pitch_Down
+Ground Vehicle Movement,Pitch Up / Down (Axis / HOTAS)
+Ground Vehicle Movement,Brake
+Ground Vehicle Movement,Dynamic Zoom In and Out (rel.)
+Ground Vehicle Movement,Dynamic Zoom In (rel.)
+Ground Vehicle Movement,Dynamic Zoom Out (rel.)
+Ground Vehicle Movement,Dynamic Zoom In and Out (abs.)
+Ground Vehicle Movement,Dynamic Zoom Toggle (abs.)
+Ground Vehicle Movement,Boost
+Ground Vehicle Movement,Lock Pitch / Yaw Movement (Toggle / Hold)
+Ground Vehicle Movement,@ui_CI_MGV_ToggleBreakOnIdle
+Electronic Access Spectator,Spectator Camera Target (Next)
+Electronic Access Spectator,Spectator Camera Target (Previous)
+Electronic Access Spectator,Spectator Camera Lock Target
+Electronic Access Spectator,Spectator Camera Zoom
+Electronic Access Spectator,Spectator Camera Zoom In
+Electronic Access Spectator,Spectator Camera Zoom Out
+Electronic Access Spectator,Spectator Camera Rotate Yaw
+Electronic Access Spectator,Spectator Camera Rotate Pitch
+Electronic Access Spectator,Spectator Camera HUD (Toggle)
+Electronic Access Spectator,Spectator Camera Mode (Next)
+Electronic Access Spectator,Spectator Camera Mode (Previous)
+Social General,Re-spawn
+Social General,Exit seat
+Social General,@ui_CIUINotificationAccept
+Social General,@ui_CIUINotificationDecline
+Social General,CommLink App (Toggle)
+Social General,Chat Window (Toggle)
+Social General,@ui_CIUIChatCycleLobby
+Social General,Chat Window Focus
+Social - Invites,-
+Social - Emotes,Forward
+Social - Emotes,Left
+Social - Emotes,Right
+Social - Emotes,Stop
+Social - Emotes,Yes
+Social - Emotes,No
+Social - Emotes,Agree
+Social - Emotes,Angry
+Social - Emotes,At Ease
+Social - Emotes,Attention
+Social - Emotes,Blah
+Social - Emotes,Bored
+Social - Emotes,Bow
+Social - Emotes,Burp
+Social - Emotes,Cheer
+Social - Emotes,Chicken
+Social - Emotes,Clap
+Social - Emotes,Come
+Social - Emotes,Cry
+Social - Emotes,Dance
+Social - Emotes,Disagree
+Social - Emotes,Failure
+Social - Emotes,Flex
+Social - Emotes,Flirt
+Social - Emotes,Gasp
+Social - Emotes,Gloat
+Social - Emotes,Greet
+Social - Emotes,Laugh
+Social - Emotes,Confirm Launch
+Social - Emotes,Point
+Social - Emotes,Rude
+Social - Emotes,Salute
+Social - Emotes,Sit
+Social - Emotes,Sleep
+Social - Emotes,Smell
+Social - Emotes,Taunt
+Social - Emotes,Threaten
+Social - Emotes,Wait
+Social - Emotes,Wave
+Social - Emotes,Whistle
+"VOIP, FOIP and Head Tracking",Enable Head Tracking (Toggle)
+"VOIP, FOIP and Head Tracking",Head Tracking (Hold)
+"VOIP, FOIP and Head Tracking",Recenter Head Tracking Device (except TrackIR)
+"VOIP, FOIP and Head Tracking",Enable / Disable Head Tracking for 3rd Person Camera (Toggle)
+"VOIP, FOIP and Head Tracking",VOIP Push To Talk
+"VOIP, FOIP and Head Tracking",VOIP Push To Talk (Proximity only)
+"VOIP, FOIP and Head Tracking",FOIP Selfie Cam
+"VOIP, FOIP and Head Tracking",FOIP Recalibrate
+"VOIP, FOIP and Head Tracking",Cycle through audio channels
+"Quick Keys, Interactions, and Inner Thought",Interaction Mode
+"Quick Keys, Interactions, and Inner Thought",Activate Inner Thought
+"Quick Keys, Interactions, and Inner Thought",Activate Inner Thought
+"Quick Keys, Interactions, and Inner Thought",Focus
+"Quick Keys, Interactions, and Inner Thought",Interaction Mode Zoom In
+"Quick Keys, Interactions, and Inner Thought",Interaction Mode Zoom Out
+"Quick Keys, Interactions, and Inner Thought",MFD Left
+"Quick Keys, Interactions, and Inner Thought",MFD Right
+"Quick Keys, Interactions, and Inner Thought",MFD Up
+"Quick Keys, Interactions, and Inner Thought",MFD Down
+"Quick Keys, Interactions, and Inner Thought",Personal Inner Thought (PIT)
+"Quick Keys, Interactions, and Inner Thought",@ui_CICameraOrbit
+"Quick Keys, Interactions, and Inner Thought",Exit
+"Quick Keys, Interactions, and Inner Thought",Personal Commodity Inventory (Toggle)
+"Quick Keys, Interactions, and Inner Thought",Personal Commodity Inventory (Toggle)
+"Quick Keys, Interactions, and Inner Thought",@ui_CIInteractionLootingToggleView
+"Quick Keys, Interactions, and Inner Thought",Looting - Toggle Weapon Attachments
+"Quick Keys, Interactions, and Inner Thought",Drop Item
+"Quick Keys, Interactions, and Inner Thought",Store All Commodities
+"Quick Keys, Interactions, and Inner Thought",Player Actions - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Emotes - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Ship Systems - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Flight Systems - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Vehicle Actions - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Weapon Systems - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Remote Turret - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Item Actions - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Weapon Selection - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Mobiglas Actions - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Mining Mode Actions - PIT Category
+"Quick Keys, Interactions, and Inner Thought",Weapon Select Radial Menu
+"Quick Keys, Interactions, and Inner Thought",Weapon Select Radial Menu
+"Quick Keys, Interactions, and Inner Thought",Weapon Select Radial Menu
+"Quick Keys, Interactions, and Inner Thought",Throwable Select Radial Menu
+"Quick Keys, Interactions, and Inner Thought",@ui_Consumable_QuickSelectRadialMenu
+Camera - Advanced Camera Controls,Increase FoV
+Camera - Advanced Camera Controls,Decrease FoV
+Camera - Advanced Camera Controls,Increase DoF
+Camera - Advanced Camera Controls,Decrease DoF
+Camera - Advanced Camera Controls,Reset Current View

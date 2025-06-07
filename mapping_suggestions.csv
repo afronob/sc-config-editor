@@ -1,0 +1,151 @@
+action_key,suggested_label,category,confidence
+nextweapon,"Next Weapon","On Foot All",100
+reload,Reload,"On Foot All",100
+walk,Walk,"On Foot All",100
+zoom_in,"Zoom In","On Foot All",100
+zoom_out,"Zoom Out","On Foot All",100
+v_move_forward,"Move Forward","On Foot All",95.7
+v_pitch_down,"Pitch down","Flight Movements",94.7
+v_roll_right,"Roll right","Flight Movements",94.7
+v_roll_left,"Roll left","Flight Movements",94.1
+v_weapon_preset_next,"Weapon Presets Next","Vehicles Weapons",94.1
+v_yaw_right,"Yaw right","Flight Movements",94.1
+pc_interaction_mode,"Interaction Mode","Quick Keys, Interactions, and Inner Thought",93.8
+v_yaw_left,"Yaw left","Flight Movements",93.3
+eva_strafe_forward,"Strafe Forward","E.V.A All",89.7
+v_shield_raise_level_up,"Shield raise level top","Vehicles Shields and Countermeasures",89.5
+eva_strafe_right,"Strafe Right","E.V.A All",88
+pc_zoom_out,"Zoom Out","On Foot All",87.5
+eva_strafe_down,"Strafe Down","E.V.A All",87
+eva_strafe_left,"Strafe Left","E.V.A All",87
+eva_roll_right,"Roll right","Flight Movements",85.7
+pc_zoom_in,"Zoom In","On Foot All",85.7
+v_shield_raise_level_down,"Shield raise level front","Vehicles Shields and Countermeasures",85.7
+zgt_roll_right,"Roll right","Flight Movements",85.7
+v_weapon_preset_prev,"Weapon Preset Fire","Vehicles Weapons",84.8
+spectate_rotatepitch,"Spectator Camera Rotate Pitch","Electronic Access Spectator",84.4
+eva_roll_left,"Roll left","Flight Movements",84.2
+eva_strafe_up,"Strafe Up","E.V.A All",84.2
+zgt_roll_left,"Roll left","Flight Movements",84.2
+pc_focus,Focus,"Quick Keys, Interactions, and Inner Thought",83.3
+prevweapon,"Previous Weapon","On Foot All",83.3
+v_mfd_movement_right_long,"MFD - Movement - Right (Long Press)","Vehicles - Multi Function Displays",83.3
+spectate_rotateyaw,"Spectator Camera Rotate Yaw","Electronic Access Spectator",82.9
+v_unlock_all_ports,"Unlock All Doors","Vehicles Cockpit",82.8
+port_modification_select,"Port Modification Interact","On Foot All",82.6
+v_mfd_movement_down_long,"MFD - Movement - Down (Long Press)","Vehicles - Multi Function Displays",82.6
+v_mfd_movement_left_long,"MFD - Movement - Left (Long Press)","Vehicles - Multi Function Displays",82.6
+v_auto_targeting_toggle_long,"Auto Targeting - Toggle On (Long Press)","Vehicles Targeting",82.1
+v_view_yaw_right,"View Right","E.V.A All",81.8
+spectate_zoom_out,"Spectator Camera Zoom Out","Electronic Access Spectator",81.1
+v_mfd_movement_up_long,"MFD - Movement - Up (Long Press)","Vehicles - Multi Function Displays",81
+spectate_zoom_in,"Spectator Camera Zoom In","Electronic Access Spectator",80
+v_lock_all_ports,"Lock All Doors","Vehicles Cockpit",80
+v_view_yaw_left,"View Left","E.V.A All",80
+zoom,"Zoom In","On Foot All",80
+prone_rollright,"Roll right","Flight Movements",78.3
+v_view_pitch_down,"Pitch down","Flight Movements",78.3
+spectate_zoom,"Spectator Camera Zoom","Electronic Access Spectator",77.4
+prone_rollleft,"Roll left","Flight Movements",76.2
+spectate_rotatepitch_mouse,"Spectator Camera Rotate Pitch","Electronic Access Spectator",76
+v_toggle_guns_mode,"Toggle Guns Operator Mode","Vehicles - Seats and Operator Modes",75.7
+eva_view_yaw_right,"View Right","E.V.A All",75
+eva_strafe_back,"Strafe Backward","E.V.A All",74.1
+spectate_rotateyaw_mouse,"Spectator Camera Rotate Yaw","Electronic Access Spectator",73.9
+v_target_cycle_attacker_back,"Cycle Lock - Attackers - Back","Vehicle Target Cycling",73.9
+force_respawn,Re-spawn,"Social General",73.7
+nextitem,"Inspect Item","On Foot All",73.7
+v_view_dynamic_zoom_rel,"Dynamic Zoom In (rel.)","Vehicles View",73.7
+v_view_pitch_up,"Pitch up","Flight Movements",73.7
+v_view_zoom_out,"Zoom Out","On Foot All",73.7
+eva_view_yaw_left,"View Left","E.V.A All",72.7
+v_move_back,"Move Backwards","On Foot All",72.7
+v_target_cycle_hostile_back,"Cycle Lock - Hostiles - Back","Vehicle Target Cycling",72.7
+eva_view_pitch_down,"Pitch down","Flight Movements",72
+pc_personal_thought,"Personal Inner Thought (PIT)","Quick Keys, Interactions, and Inner Thought",71.4
+v_hud_open_scoreboard,Scoreboard,"Flight HUD",71.4
+v_view_zoom_in,"Zoom In","On Foot All",70.6
+view_fov_in,"View Down","E.V.A All",70.6
+holster,"Holster Weapon","On Foot All",70
+toggle_chat,"Toggle VTOL","Flight Movements",70
+v_view_dynamic_zoom_rel_in,"Dynamic Zoom In (rel.)","Vehicles View",70
+spectate_prev_target,"Spectator Camera Lock Target","Electronic Access Spectator",69.8
+v_target_unpin_selected_hold,"Unpin Selected Target (Hold)","Vehicles Targeting",69.4
+pl_hud_open_scoreboard,Scoreboard,"Flight HUD",69
+v_mfd_interact_cycle_backwards_short,"MFD - Cycle Page - Backwards (Short Press)","Vehicles - Multi Function Displays",68.8
+v_target_cycle_all_back,"Cycle Lock - All - Back","Vehicle Target Cycling",68.6
+v_power_throttle_min,"Decrease Throttle to Min","Flight Power",68.4
+v_view_dynamic_zoom_rel_out,"Dynamic Zoom In (rel.)","Vehicles View",68.3
+v_target_cycle_friendly_back,"Cycle Lock - Friendlies - Back","Vehicle Target Cycling",68.1
+v_mfd_interact_cycle_forwards_short,"MFD - Cycle Page - Forwards (Short Press)","Vehicles - Multi Function Displays",67.7
+eva_view_pitch_up,"Pitch up","Flight Movements",66.7
+v_hud_cancel,Dance,"Social - Emotes",66.7
+v_hud_left_panel_right,"Lean Right","On Foot All",66.7
+v_pitch_mouse,"Pitch up","Flight Movements",66.7
+v_toggle_cabin_lights,"Toggle Fire Right","Vehicles Salvage",66.7
+v_view_dynamic_zoom_abs,"Dynamic Zoom Toggle (abs.)","Vehicles View",66.7
+v_weapon_launch_missile,"Launch Missiles (Tap)","Vehicles - Missiles",66.7
+view_fov_out,"View Left","E.V.A All",66.7
+weapon_melee,"Weapon Preset Fire","Vehicles Weapons",66.7
+spectate_next_target,"Spectator Camera Lock Target","Electronic Access Spectator",65.1
+v_target_toggle_lock_index_1,"Toggle Docking Mode","Flight - Docking",65
+v_target_toggle_lock_index_2,"Toggle Docking Mode","Flight - Docking",65
+v_target_toggle_lock_index_3,"Toggle Docking Mode","Flight - Docking",65
+v_strafe_trim_set_50_short,"Throttle - Trim - Set To 50% (Short Press)","Flight Movements",64.2
+v_hud_left_panel_down,"Nudge left salvage tool down","Vehicles Salvage",63.4
+v_hud_left_panel_left,"Nudge left salvage tool left","Vehicles Salvage",63.4
+pc_select,"Select Melee","On Foot All",63.2
+prevItem,"Inspect Item","On Foot All",63.2
+v_power_throttle_max,"Increase Throttle to Max","Flight Power",63.2
+v_view_option,"View Down","E.V.A All",63.2
+view_fstop_in,"View Left","E.V.A All",63.2
+spectate_free_look,"Spectator Camera Zoom","Electronic Access Spectator",62.9
+v_toggle_running_lights,"Toggle Fire Right","Vehicles Salvage",62.9
+v_strafe_trim_set_50_long,"Throttle - Trim - Set To 50% (Long Press)","Flight Movements",62.7
+v_power_throttle_up,"Decrease Throttle","Flight Power",62.5
+combathealtarget,"Hail Target","Flight - Target Hailing",61.5
+v_power_throttle_down,"Decrease Throttle to Min","Flight Power",61.5
+v_toggle_yaw_roll_swap,"Toggle Power Weapons","Flight Power",61.1
+toggle_contact,"Toggle VTOL","Flight Movements",60.9
+v_cooler_throttle_up,"Decrease Throttle","Flight Power",60.6
+v_hud_interact_toggle,"Interaction Mode","Quick Keys, Interactions, and Inner Thought",60.6
+v_look_ahead_enable,"Advanced HUD - Enable","Flight Movements",60.6
+attack1,"Firearm Attack","On Foot All",60
+pc_personal_back,"Cycle Lock - All - Back","Vehicle Target Cycling",60
+v_cooler_throttle_down,"Decrease Throttle to Min","Flight Power",60
+view_fstop_out,"View Left","E.V.A All",60
+v_hud_left_panel_up,"Nudge left salvage tool up","Vehicles Salvage",59.5
+pc_screen_focus_right,"Strafe Left/Right","E.V.A All",58.8
+v_view_mode,"View Left","E.V.A All",58.8
+v_target_cycle_friendly_reset,"Cycle Lock - Friendlies - Reset to Closest","Vehicle Target Cycling",58.6
+free_thirdperson_camera,"Free View Camera (Hold)","On Foot All",58.5
+v_hud_confirm,"Confirm Launch","Social - Emotes",58.3
+v_speed_range_abs,"Speed Limiter (abs)","Flight Movements",58.1
+spectate_speed_increment,"Reset Assignments","Flight Power",57.9
+use,Rude,"Social - Emotes",57.1
+v_view_interact,"Interaction Mode","Quick Keys, Interactions, and Inner Thought",57.1
+zgt_launch,Laugh,"Social - Emotes",57.1
+spectate_toggle_thirdperson,"Spectator Camera Zoom In","Electronic Access Spectator",56.5
+fixed_speed_decrement,"Shields Decrease (Tap)","Flight Power",56.4
+fixed_speed_increment,"Shields Increase (Tap)","Flight Power",56.4
+spectate_speed_decrement,"Default Movement Speed Decrease","On Foot All",56
+v_weapon_ui_scale_toggle,"Weapon Preset Fire","Vehicles Weapons",55.6
+v_starmap,Map,"Flight HUD",54.5
+v_look_ahead_start_target_tracking,@ui_v_ads_cycle_tracking,"Vehicles View",53.1
+v_target_match_vel,Threaten,"Social - Emotes",52.2
+v_target_toggle_pin_index_1,"Toggle Mining Operator Mode","Vehicles - Seats and Operator Modes",52.2
+v_target_toggle_pin_index_2,"Toggle Mining Operator Mode","Vehicles - Seats and Operator Modes",52.2
+v_target_toggle_pin_index_3,"Toggle Mining Operator Mode","Vehicles - Seats and Operator Modes",52.2
+pc_screen_focus_down,"Strafe Down","E.V.A All",51.9
+pc_screen_focus_left,"Strafe Left","E.V.A All",51.9
+v_hud_focused_cycle_mode_back,"Cycle Lock - In View - Back","Vehicle Target Cycling",51.2
+v_view_cycle_internal_fwd,"Cycle Lock - In View - Forward","Vehicle Target Cycling",51.2
+v_hud_focused_cycle_mode_fwd,"Cycle Focused Salvage Modifiers","Vehicles Salvage",51
+v_target_toggle_pin_index_1_hold,"Auto Targeting - Toggle On (Short Press)","Vehicles Targeting",50.8
+v_target_toggle_pin_index_2_hold,"Auto Targeting - Toggle On (Short Press)","Vehicles Targeting",50.8
+v_target_toggle_pin_index_3_hold,"Auto Targeting - Toggle On (Short Press)","Vehicles Targeting",50.8
+pc_screen_focus_up,Focus,"Quick Keys, Interactions, and Inner Thought",50
+v_yaw_mouse,"Yaw left","Flight Movements",50
+focus_on_chat_textinput,Attention,"Social - Emotes",48.3
+zgt_detach,"Detach from Surface","E.V.A Zero-G Traversal",46.2
+v_strafe_longitudinal_invert,"Strafe Down","E.V.A All",45.7

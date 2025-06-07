@@ -1,0 +1,13 @@
+action_key,suggested_label,category,confidence
+nextweapon,"Next Weapon","On Foot All",100
+reload,Reload,"On Foot All",100
+walk,Walk,"On Foot All",100
+zoom_in,"Zoom In","On Foot All",100
+zoom_out,"Zoom Out","On Foot All",100
+v_move_forward,"Move Forward","On Foot All",95.7
+v_pitch_down,"Pitch down","Flight Movements",94.7
+v_roll_right,"Roll right","Flight Movements",94.7
+v_roll_left,"Roll left","Flight Movements",94.1
+v_weapon_preset_next,"Weapon Presets Next","Vehicles Weapons",94.1
+v_yaw_right,"Yaw right","Flight Movements",94.1
+v_yaw_left,"Yaw left","Flight Movements",93.3
