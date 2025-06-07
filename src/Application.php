@@ -31,11 +31,7 @@ class Application {
         } elseif (isset($_POST["save"])) {
             return $this->handleSave();
         }
-        return $this->showError("Invalid request");
-    }
-
-    private function showError($message) {
-        return render_template("error", ["message" => $message]);
+        return show_error("Invalid request");
     }
 
     private function getButtonNamesByInstance($devices) {
@@ -72,7 +68,7 @@ class Application {
             
             return render_template("edit_form", $data);
         } catch (\Exception $e) {
-            return $this->showError($e->getMessage());
+            return show_error($e->getMessage());
         }
     }
     
@@ -97,7 +93,7 @@ class Application {
                 "downloadName" => $downloadName
             ]);
         } catch (\Exception $e) {
-            return $this->showError($e->getMessage());
+            return show_error($e->getMessage());
         }
     }
     
@@ -113,10 +109,13 @@ class Application {
         $csvPath = $this->config["files_dir"] . "/actions_keybind.csv";
         
         if (file_exists($csvPath) && ($handle = fopen($csvPath, "r")) !== false) {
-            // Skip header
-            fgetcsv($handle, 1000, ",");
+            // Skip header - paramètre escape ajouté pour PHP 8.4+ compatibilité
+            $separator = ",";
+            $enclosure = '"';
+            $escape = "\\";
+            $header = fgetcsv($handle, 1000, $separator, $enclosure, $escape);
             
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
+            while (($data = fgetcsv($handle, 1000, $separator, $enclosure, $escape)) !== false) {
                 if (count($data) >= 2) {
                     $actionNames[$data[0]] = $data[1];
                 }

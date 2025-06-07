@@ -8,12 +8,14 @@
 - **test_direct.js** - Tests directs de la logique métier
 - **test_regex_fix.js** - Tests de correction des expressions régulières
 
-### Tests HTML (tests/html/) - 25 fichiers
+### Tests HTML (tests/html/) - 28 fichiers
 - **debug_hold_filter.html** - Debug et diagnostic du filtre hold
 - **test_hold_*.html** - Suite complète de tests pour le filtre hold
 - **test_gamepad.html** - Tests de détection et gestion gamepad
 - **test_cycling_*.html** - Tests de navigation cyclique
 - **diagnostic_filtres.html** - Diagnostic complet des filtres
+- **debug_overlay_test.html** - Tests de débogage d'overlay
+- **test_unmapped_overlay.html** - Tests des éléments d'overlay non mappés
 
 ### Scripts de Test (tests/scripts/) - 5 scripts
 - **final_test.sh** - Script de test final complet
@@ -21,10 +23,11 @@
 - **final_anchor_test.sh** - Tests d'ancrage des regex
 - Autres scripts de validation spécialisés
 
-### Tests de Validation (tests/validation/) - 5 fichiers
+### Tests de Validation (tests/validation/) - 6 fichiers
 - Fichiers de validation système
 - Scripts de contrôle qualité
 - Outils de diagnostic
+- **test_hold_filter.xml** - Fichier de configuration de test pour le filtre hold
 
 ## 🚀 Guide d'Utilisation
 
@@ -66,6 +69,8 @@ chmod +x *.sh
 
 ### 🎯 Organisation Complète
 - ✅ **Tous les fichiers de test JS déplacés** de la racine vers `tests/js/`
+- ✅ **Tous les fichiers de test HTML déplacés** de la racine vers `tests/html/`
+- ✅ **Tous les fichiers de test XML déplacés** de la racine vers `tests/validation/`
 - ✅ **Structure claire** : JS, HTML, Scripts, Validation séparés
 - ✅ **Documentation complète** : README dans chaque dossier
 - ✅ **Aucun fichier temporaire** à la racine du projet
