@@ -200,13 +200,19 @@ export class GamepadHandler {
 
             // Gestion des hats - vérifier avec l'index comme chaîne ET comme nombre
             let hatConfig = null;
+            let hatKey = null;
             if (deviceMap.hats) {
-                // Essayer d'abord avec l'index comme chaîne
-                hatConfig = deviceMap.hats[a.toString()] || deviceMap.hats[a];
+                // Essayer d'abord avec l'index comme chaîne, puis comme nombre
+                hatKey = a.toString();
+                hatConfig = deviceMap.hats[hatKey];
+                if (!hatConfig) {
+                    hatKey = a;
+                    hatConfig = deviceMap.hats[hatKey];
+                }
             }
             
             if (hatConfig) {
-                hatDetected = this.processHat(hatConfig, val, instance, a);
+                hatDetected = this.processHat(hatConfig, val, instance, a, hatKey);
             }
 
             // Gestion des axes classiques
@@ -218,7 +224,7 @@ export class GamepadHandler {
         }
     }
 
-    processHat(hat, val, instance, axisIndex) {
+    processHat(hat, val, instance, axisIndex, hatKey) {
         if (!this.lastHatStates[instance]) {
             this.lastHatStates[instance] = {};
             this.hatPressTime[instance] = {};
@@ -231,7 +237,7 @@ export class GamepadHandler {
         // Vérifier chaque direction du hat
         for (const dir in hat.directions) {
             const d = hat.directions[dir];
-            const hatName = `js${instance}_hat1_${dir}`;
+            const hatName = `js${instance}_hat${hatKey}_${dir}`;
             
             // Vérifier si cette direction est actuellement active
             let isActive = (parseInt(d.axis) === axisIndex && val >= d.value_min && val <= d.value_max);

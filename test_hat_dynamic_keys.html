@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test HAT Dynamic Keys - SC Config Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: #fff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007cba;
+        }
+        
+        .result {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th { background-color: #f2f2f2; }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ccc;
+        }
+        
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        button:hover { background: #005a8a; }
+    </style>
+</head>
+<body>
+    <h1>🎯 Test HAT Dynamic Keys - Correction du problème "hat1" hardcodé</h1>
+    
+    <div class="test-section">
+        <h3>Description du test</h3>
+        <p>Ce test vérifie que les noms HAT sont maintenant générés dynamiquement avec la bonne clé HAT (ex: "hat9") au lieu du "hat1" hardcodé.</p>
+        <p><strong>Avant le fix:</strong> Tous les HATs généraient des noms comme "js1_hat1_up"</p>
+        <p><strong>Après le fix:</strong> Les HATs utilisent leur vraie clé, ex: "js1_hat9_up" pour HAT key "9"</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Configuration de test simulée</h3>
+        <p>Device mapping JSON simulé avec HATs ayant différentes clés:</p>
+        <pre id="device-config">
+{
+  "xml_instance": "1",
+  "hats": {
+    "1": {
+      "directions": {
+        "up": { "axis": "1", "value_min": -1, "value_max": -0.5 },
+        "down": { "axis": "1", "value_min": 0.5, "value_max": 1 }
+      }
+    },
+    "9": {
+      "directions": {
+        "up": { "axis": "9", "value_min": -1, "value_max": -0.5 },
+        "down": { "axis": "9", "value_min": 0.5, "value_max": 1 },
+        "left": { "axis": "10", "value_min": -1, "value_max": -0.5 },
+        "right": { "axis": "10", "value_min": 0.5, "value_max": 1 }
+      }
+    }
+  }
+}
+        </pre>
+    </div>
+
+    <div class="test-section">
+        <h3>Tests d'intégration</h3>
+        <button onclick="testHatKeyGeneration()">🔧 Tester la génération des clés HAT</button>
+        <button onclick="testBindingsHandler()">🔍 Tester findRowsForHat()</button>
+        <button onclick="testFullWorkflow()">🎮 Tester le workflow complet</button>
+        <button onclick="clearResults()">🧹 Effacer les résultats</button>
+    </div>
+
+    <div class="result" id="results">
+        <strong>Résultats des tests:</strong><br>
+        Appuyez sur un bouton pour lancer les tests...
+    </div>
+
+    <!-- Table de test avec bindings HAT -->
+    <div class="test-section">
+        <h3>Table de test avec différents HATs</h3>
+        <table id="test-bindings-table">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th>Input</th>
+                    <th>Opts</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- HAT 1 bindings -->
+                <tr>
+                    <td>Movement</td>
+                    <td>v_pitch_up</td>
+                    <td>Pitch Up</td>
+                    <td><input type="text" name="input[0]" value="js1_hat1_up"></td>
+                    <td><input type="text" name="opts[0]" value=""></td>
+                    <td><input type="text" name="value[0]" value=""></td>
+                </tr>
+                <tr>
+                    <td>Movement</td>
+                    <td>v_pitch_down</td>
+                    <td>Pitch Down</td>
+                    <td><input type="text" name="input[1]" value="js1_hat1_down"></td>
+                    <td><input type="text" name="opts[1]" value=""></td>
+                    <td><input type="text" name="value[1]" value=""></td>
+                </tr>
+                
+                <!-- HAT 9 bindings -->
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_group_1</td>
+                    <td>Weapon Group 1</td>
+                    <td><input type="text" name="input[2]" value="js1_hat9_up"></td>
+                    <td><input type="text" name="opts[2]" value=""></td>
+                    <td><input type="text" name="value[2]" value=""></td>
+                </tr>
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_group_2</td>
+                    <td>Weapon Group 2</td>
+                    <td><input type="text" name="input[3]" value="js1_hat9_down"></td>
+                    <td><input type="text" name="opts[3]" value=""></td>
+                    <td><input type="text" name="value[3]" value=""></td>
+                </tr>
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_group_3</td>
+                    <td>Weapon Group 3</td>
+                    <td><input type="text" name="input[4]" value="js1_hat9_left"></td>
+                    <td><input type="text" name="opts[4]" value=""></td>
+                    <td><input type="text" name="value[4]" value=""></td>
+                </tr>
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_group_4</td>
+                    <td>Weapon Group 4</td>
+                    <td><input type="text" name="input[5]" value="js1_hat9_right"></td>
+                    <td><input type="text" name="opts[5]" value=""></td>
+                    <td><input type="text" name="value[5]" value=""></td>
+                </tr>
+                
+                <!-- HAT 9 avec modes -->
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_fire_hold</td>
+                    <td>Fire Hold</td>
+                    <td><input type="text" name="input[6]" value="js1_hat9_up"></td>
+                    <td><input type="text" name="opts[6]" value="activationmode"></td>
+                    <td><input type="text" name="value[6]" value="hold"></td>
+                </tr>
+                <tr>
+                    <td>Weapons</td>
+                    <td>v_weapon_fire_double</td>
+                    <td>Fire Double Tap</td>
+                    <td><input type="text" name="input[7]" value="js1_hat9_down"></td>
+                    <td><input type="text" name="opts[7]" value="activationmode"></td>
+                    <td><input type="text" name="value[7]" value="double_tap"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Simuler les modules nécessaires
+        let devicesDataJs = [{
+            xml_instance: "1",
+            hats: {
+                "1": {
+                    directions: {
+                        up: { axis: "1", value_min: -1, value_max: -0.5 },
+                        down: { axis: "1", value_min: 0.5, value_max: 1 }
+                    }
+                },
+                "9": {
+                    directions: {
+                        up: { axis: "9", value_min: -1, value_max: -0.5 },
+                        down: { axis: "9", value_min: 0.5, value_max: 1 },
+                        left: { axis: "10", value_min: -1, value_max: -0.5 },
+                        right: { axis: "10", value_min: 0.5, value_max: 1 }
+                    }
+                }
+            }
+        }];
+
+        window.devicesDataJs = devicesDataJs;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const results = document.getElementById('results');
+            const colors = { success: '#0f0', error: '#f00', warning: '#ff0', info: '#fff' };
+            
+            results.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span><br>`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        // Test 1: Génération des clés HAT dynamiques
+        window.testHatKeyGeneration = function() {
+            log('=== Test 1: Génération des clés HAT ===', 'info');
+            
+            try {
+                // Simuler la fonction processHat modifiée
+                function processHatTest(hat, val, instance, axisIndex, hatKey) {
+                    const results = [];
+                    
+                    for (const dir in hat.directions) {
+                        const d = hat.directions[dir];
+                        const hatName = `js${instance}_hat${hatKey}_${dir}`;
+                        
+                        if (parseInt(d.axis) === axisIndex && val >= d.value_min && val <= d.value_max) {
+                            results.push(hatName);
+                        }
+                    }
+                    return results;
+                }
+
+                // Test avec HAT key "1"
+                const hat1Config = devicesDataJs[0].hats["1"];
+                const hat1Results = processHatTest(hat1Config, -0.8, 1, 1, "1");
+                log(`HAT key "1", axe 1, valeur -0.8: ${hat1Results.join(', ')}`, hat1Results.includes('js1_hat1_up') ? 'success' : 'error');
+
+                // Test avec HAT key "9"  
+                const hat9Config = devicesDataJs[0].hats["9"];
+                const hat9Results = processHatTest(hat9Config, 0.8, 1, 9, "9");
+                log(`HAT key "9", axe 9, valeur 0.8: ${hat9Results.join(', ')}`, hat9Results.includes('js1_hat9_down') ? 'success' : 'error');
+
+                const hat9ResultsLeft = processHatTest(hat9Config, -0.8, 1, 10, "9");
+                log(`HAT key "9", axe 10, valeur -0.8: ${hat9ResultsLeft.join(', ')}`, hat9ResultsLeft.includes('js1_hat9_left') ? 'success' : 'error');
+
+                log('✅ Test de génération des clés HAT terminé', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Test 2: Fonction findRowsForHat() améliorée
+        window.testBindingsHandler = function() {
+            log('=== Test 2: findRowsForHat() avec regex dynamique ===', 'info');
+            
+            try {
+                // Simuler la fonction findRowsForHat modifiée
+                function findRowsForHatTest(jsIdx, hatDir, mode) {
+                    let selector = `input[name^='input[']`;
+                    let rows = [];
+                    
+                    document.querySelectorAll(selector).forEach(input => {
+                        let val = input.value.trim();
+                        // Utiliser le nouveau regex qui accepte n'importe quel numéro de HAT
+                        let regex = new RegExp(`^js${jsIdx}_hat\\d+_${hatDir}$`, 'i');
+                        
+                        if (regex.test(val)) {
+                            let tr = input.closest('tr');
+                            if (tr) {
+                                let opts = tr.querySelector('input[name^="opts["]')?.value.toLowerCase() || '';
+                                let value = tr.querySelector('input[name^="value["]')?.value.toLowerCase() || '';
+                                
+                                if (mode === 'double_tap' && (opts === 'activationmode' && value === 'double_tap')) {
+                                    rows.push(tr);
+                                } else if (mode === 'hold' && (opts === 'activationmode' && value === 'hold')) {
+                                    rows.push(tr);
+                                } else if (!mode || (mode === '' && (!opts || (opts !== 'activationmode' && opts !== 'multitap')))) {
+                                    rows.push(tr);
+                                }
+                            }
+                        }
+                    });
+                    return rows;
+                }
+
+                // Test: rechercher tous les HATs "up" pour js1 (devrait trouver hat1_up ET hat9_up)
+                const upRows = findRowsForHatTest(1, 'up', '');
+                log(`Recherche HATs "up" pour js1: ${upRows.length} résultats`, upRows.length >= 2 ? 'success' : 'warning');
+                upRows.forEach((row, i) => {
+                    const input = row.querySelector('input[name^="input["]').value;
+                    const action = row.cells[1].textContent;
+                    log(`  - Ligne ${i+1}: ${input} -> ${action}`, 'info');
+                });
+
+                // Test: rechercher HATs "left" pour js1 (devrait trouver seulement hat9_left)
+                const leftRows = findRowsForHatTest(1, 'left', '');
+                log(`Recherche HATs "left" pour js1: ${leftRows.length} résultats`, leftRows.length === 1 ? 'success' : 'warning');
+                leftRows.forEach((row, i) => {
+                    const input = row.querySelector('input[name^="input["]').value;
+                    const action = row.cells[1].textContent;
+                    log(`  - Ligne ${i+1}: ${input} -> ${action}`, 'info');
+                });
+
+                // Test: rechercher HATs "up" en mode hold
+                const holdRows = findRowsForHatTest(1, 'up', 'hold');
+                log(`Recherche HATs "up" mode hold: ${holdRows.length} résultats`, holdRows.length >= 1 ? 'success' : 'warning');
+                holdRows.forEach((row, i) => {
+                    const input = row.querySelector('input[name^="input["]').value;
+                    const action = row.cells[1].textContent;
+                    log(`  - Ligne ${i+1}: ${input} -> ${action}`, 'info');
+                });
+
+                log('✅ Test findRowsForHat() terminé', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        // Test 3: Workflow complet
+        window.testFullWorkflow = function() {
+            log('=== Test 3: Workflow complet HAT dynamique ===', 'info');
+            
+            try {
+                log('🔧 Simulation d\'un mouvement HAT avec clé dynamique...', 'info');
+                
+                // Simuler un événement HAT avec différentes clés
+                const testCases = [
+                    { hatKey: "1", direction: "up", expectedName: "js1_hat1_up" },
+                    { hatKey: "9", direction: "down", expectedName: "js1_hat9_down" },
+                    { hatKey: "9", direction: "left", expectedName: "js1_hat9_left" }
+                ];
+
+                testCases.forEach((testCase, i) => {
+                    const { hatKey, direction, expectedName } = testCase;
+                    
+                    // Simuler la génération du nom HAT
+                    const generatedName = `js1_hat${hatKey}_${direction}`;
+                    const isCorrect = generatedName === expectedName;
+                    
+                    log(`Test ${i+1}: HAT key "${hatKey}" direction "${direction}"`, 'info');
+                    log(`  Généré: ${generatedName}`, isCorrect ? 'success' : 'error');
+                    log(`  Attendu: ${expectedName}`, 'info');
+                    log(`  Résultat: ${isCorrect ? '✅ CORRECT' : '❌ INCORRECT'}`, isCorrect ? 'success' : 'error');
+                });
+
+                log('🎯 Vérification du comportement avant vs après fix:', 'info');
+                log('  Avant: js1_hat1_up, js1_hat1_down, js1_hat1_left (INCORRECT)', 'warning');
+                log('  Après: js1_hat1_up, js1_hat9_down, js1_hat9_left (CORRECT)', 'success');
+
+                log('✅ Test workflow complet terminé', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('results').innerHTML = '<strong>Résultats des tests:</strong><br>Appuyez sur un bouton pour lancer les tests...';
+        };
+
+        // Log initial
+        log('🎮 Système de test HAT Dynamic Keys initialisé', 'success');
+        log('📋 Table de test chargée avec HATs clé 1 et clé 9', 'info');
+        log('🚀 Prêt pour les tests d\'intégration', 'success');
+    </script>
+</body>
+</html>

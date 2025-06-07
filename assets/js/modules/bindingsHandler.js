@@ -131,7 +131,8 @@ export class BindingsHandler {
         let rows = [];
         document.querySelectorAll(selector).forEach(input => {
             let val = input.value.trim();
-            let regex = new RegExp(`^js${jsIdx}_hat1_${hatDir}$`, 'i');
+            // Utiliser un regex qui accepte n'importe quel numéro de HAT, pas seulement "hat1"
+            let regex = new RegExp(`^js${jsIdx}_hat\\d+_${hatDir}$`, 'i');
             if (regex.test(val)) {
                 let tr = input.closest('tr');
                 if (tr) {
