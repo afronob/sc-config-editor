@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final - Validation XML Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .scenario {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .scenario.no-xml {
+            border-color: #dc3545;
+            background: #fff5f5;
+        }
+        .scenario.with-xml {
+            border-color: #28a745;
+            background: #f8fff8;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn.danger {
+            background: #dc3545;
+        }
+        .btn.success {
+            background: #28a745;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.ok {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 4px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .gamepad-highlight {
+            background-color: #ffeb3b !important;
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { background-color: #ffeb3b; }
+            50% { background-color: #fff59d; }
+            100% { background-color: #ffeb3b; }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧪 Test Final - Validation Détection XML</h1>
+        <p>Ce test vérifie que le système SimplifiedBindingsHandler ne montre plus d'overlays quand aucun XML n'est chargé.</p>
+        <p><strong>Objectif :</strong> Confirmer que le fix empêche l'affichage d'overlays sur keybind_editor.php sans XML.</p>
+    </div>
+
+    <!-- Scénario 1 : Sans XML (simulation keybind_editor.php) -->
+    <div class="scenario no-xml">
+        <h2>🚫 Scénario 1 : Sans XML chargé (comme keybind_editor.php)</h2>
+        <div id="status-no-xml" class="status error">Non testé</div>
+        <p>Simulation de l'état initial sur keybind_editor.php où aucun XML n'est chargé.</p>
+        
+        <!-- Table vide comme sur keybind_editor.php -->
+        <div style="display: none;">
+            <table id="bindings-table-empty">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Action</th>
+                        <th>Name</th>
+                        <th>Input</th>
+                        <th>Opts</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Aucune ligne de données -->
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn danger" onclick="testNoXML()">🧪 Tester Sans XML</button>
+        <button class="btn" onclick="simulateGamepadInput('no-xml')">🎮 Simuler Input Gamepad</button>
+    </div>
+
+    <!-- Scénario 2 : Avec XML chargé -->
+    <div class="scenario with-xml">
+        <h2>✅ Scénario 2 : Avec XML chargé (comportement normal)</h2>
+        <div id="status-with-xml" class="status error">Non testé</div>
+        <p>Simulation du comportement normal quand un XML est chargé avec des données valides.</p>
+        
+        <!-- Table avec données comme dans edit_form.php -->
+        <table id="bindings-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Action</th>
+                    <th>Name</th>
+                    <th>Input</th>
+                    <th>Opts</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>spaceship_movement</td>
+                    <td>v_pitch</td>
+                    <td>Pitch</td>
+                    <td><input name="input[spaceship_movement][v_pitch][0]" value="js1_button1"></td>
+                    <td><input name="opts[spaceship_movement][v_pitch][0]" value=""></td>
+                    <td><input name="value[spaceship_movement][v_pitch][0]" value=""></td>
+                </tr>
+                <tr>
+                    <td>spaceship_weapons</td>
+                    <td>v_attack1</td>
+                    <td>Fire Primary</td>
+                    <td><input name="input[spaceship_weapons][v_attack1][0]" value="js1_button2"></td>
+                    <td><input name="opts[spaceship_weapons][v_attack1][0]" value="ActivationMode"></td>
+                    <td><input name="value[spaceship_weapons][v_attack1][0]" value="hold"></td>
+                </tr>
+                <tr>
+                    <td>spaceship_weapons</td>
+                    <td>v_attack2</td>
+                    <td>Fire Secondary</td>
+                    <td><input name="input[spaceship_weapons][v_attack2][0]" value="js1_button3"></td>
+                    <td><input name="opts[spaceship_weapons][v_attack2][0]" value="activationmode"></td>
+                    <td><input name="value[spaceship_weapons][v_attack2][0]" value="double_tap"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button class="btn success" onclick="testWithXML()">🧪 Tester Avec XML</button>
+        <button class="btn" onclick="simulateGamepadInput('with-xml')">🎮 Simuler Input Gamepad</button>
+    </div>
+
+    <!-- Log des événements -->
+    <div class="card">
+        <h3>📜 Log des Tests</h3>
+        <button class="btn" onclick="clearLog()">🗑️ Effacer Log</button>
+        <div id="log" class="log"></div>
+    </div>
+
+    <!-- Résultats -->
+    <div class="card">
+        <h3>📊 Résultats du Test</h3>
+        <div id="results">
+            <p>Les tests n'ont pas encore été exécutés.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SimplifiedBindingsHandler } from './assets/js/modules/simplifiedBindingsHandler.js';
+        
+        let simplifiedHandler;
+        let testResults = {
+            noXML: null,
+            withXML: null
+        };
+        
+        // Fonction de logging
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const colors = {
+                'info': '#333',
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107'
+            };
+            
+            const entry = document.createElement('div');
+            entry.style.color = colors[type] || colors.info;
+            entry.style.marginBottom = '2px';
+            entry.textContent = `[${now}] ${message}`;
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        // Fonction pour effacer le log
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+            log('Log effacé', 'info');
+        };
+        
+        // Test sans XML
+        window.testNoXML = function() {
+            log('🚫 DÉBUT TEST SANS XML', 'warning');
+            
+            // Masquer la table avec XML et montrer la table vide
+            const tableWithXML = document.getElementById('bindings-table');
+            const tableEmpty = document.getElementById('bindings-table-empty');
+            
+            if (tableWithXML) tableWithXML.style.display = 'none';
+            if (tableEmpty) tableEmpty.style.display = 'table';
+            
+            // Créer une nouvelle instance du handler
+            simplifiedHandler = new SimplifiedBindingsHandler();
+            
+            // Tester la détection XML
+            const xmlLoaded = simplifiedHandler.isXMLLoaded();
+            log(`isXMLLoaded() résultat: ${xmlLoaded}`, xmlLoaded ? 'error' : 'success');
+            
+            // Tester l'ancrage
+            const result = simplifiedHandler.anchorToInput('button', 1, 'button1', '');
+            log(`anchorToInput() résultat: ${result}`, result === null ? 'success' : 'error');
+            
+            // Vérifier qu'aucun overlay n'est créé
+            const overlays = document.querySelectorAll('#gamepad-overlay, .gamepad-overlay');
+            log(`Nombre d'overlays créés: ${overlays.length}`, overlays.length === 0 ? 'success' : 'error');
+            
+            testResults.noXML = {
+                xmlDetected: xmlLoaded,
+                anchorResult: result,
+                overlaysCreated: overlays.length
+            };
+            
+            updateStatus('no-xml', !xmlLoaded && result === null && overlays.length === 0);
+            updateResults();
+            
+            log('✅ FIN TEST SANS XML', 'success');
+        };
+        
+        // Test avec XML
+        window.testWithXML = function() {
+            log('✅ DÉBUT TEST AVEC XML', 'warning');
+            
+            // Montrer la table avec XML et masquer la table vide
+            const tableWithXML = document.getElementById('bindings-table');
+            const tableEmpty = document.getElementById('bindings-table-empty');
+            
+            if (tableWithXML) tableWithXML.style.display = 'table';
+            if (tableEmpty) tableEmpty.style.display = 'none';
+            
+            // Créer une nouvelle instance du handler
+            simplifiedHandler = new SimplifiedBindingsHandler();
+            
+            // Tester la détection XML
+            const xmlLoaded = simplifiedHandler.isXMLLoaded();
+            log(`isXMLLoaded() résultat: ${xmlLoaded}`, xmlLoaded ? 'success' : 'error');
+            
+            // Tester l'ancrage (devrait fonctionner)
+            const result = simplifiedHandler.anchorToInput('button', 1, 'button1', '');
+            log(`anchorToInput() résultat: ${result ? 'trouvé' : 'null'}`, result ? 'success' : 'error');
+            
+            testResults.withXML = {
+                xmlDetected: xmlLoaded,
+                anchorResult: result,
+                rowFound: result !== null
+            };
+            
+            updateStatus('with-xml', xmlLoaded && result !== null);
+            updateResults();
+            
+            log('✅ FIN TEST AVEC XML', 'success');
+        };
+        
+        // Simulation d'input gamepad
+        window.simulateGamepadInput = function(scenario) {
+            log(`🎮 Simulation input gamepad pour ${scenario}`, 'info');
+            
+            if (!simplifiedHandler) {
+                log('❌ Handler non initialisé, lancez d\'abord un test', 'error');
+                return;
+            }
+            
+            // Simuler plusieurs types d'inputs
+            const inputs = [
+                { type: 'button', instance: 1, element: 'button1', mode: '' },
+                { type: 'button', instance: 1, element: 'button2', mode: 'hold' },
+                { type: 'button', instance: 1, element: 'button3', mode: 'double_tap' }
+            ];
+            
+            inputs.forEach((input, index) => {
+                setTimeout(() => {
+                    const result = simplifiedHandler.anchorToInput(input.type, input.instance, input.element, input.mode);
+                    log(`Input ${input.element} (${input.mode || 'normal'}): ${result ? 'ancré' : 'ignoré'}`, 
+                        result ? 'success' : 'info');
+                }, index * 500);
+            });
+        };
+        
+        // Mise à jour du statut
+        function updateStatus(scenario, success) {
+            const statusDiv = document.getElementById(`status-${scenario}`);
+            if (statusDiv) {
+                statusDiv.textContent = success ? 'Test réussi' : 'Test échoué';
+                statusDiv.className = `status ${success ? 'ok' : 'error'}`;
+            }
+        }
+        
+        // Mise à jour des résultats
+        function updateResults() {
+            const resultsDiv = document.getElementById('results');
+            
+            let html = '<h4>Résumé des Tests</h4>';
+            
+            if (testResults.noXML) {
+                const { xmlDetected, anchorResult, overlaysCreated } = testResults.noXML;
+                const success = !xmlDetected && anchorResult === null && overlaysCreated === 0;
+                
+                html += `
+                    <div class="scenario no-xml">
+                        <h5>🚫 Sans XML: <span class="status ${success ? 'ok' : 'error'}">${success ? 'RÉUSSI' : 'ÉCHOUÉ'}</span></h5>
+                        <ul>
+                            <li>XML détecté: ${xmlDetected ? '❌ OUI (erreur)' : '✅ NON (correct)'}</li>
+                            <li>Ancrage activé: ${anchorResult === null ? '✅ NON (correct)' : '❌ OUI (erreur)'}</li>
+                            <li>Overlays créés: ${overlaysCreated === 0 ? '✅ AUCUN (correct)' : `❌ ${overlaysCreated} (erreur)`}</li>
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (testResults.withXML) {
+                const { xmlDetected, anchorResult, rowFound } = testResults.withXML;
+                const success = xmlDetected && rowFound;
+                
+                html += `
+                    <div class="scenario with-xml">
+                        <h5>✅ Avec XML: <span class="status ${success ? 'ok' : 'error'}">${success ? 'RÉUSSI' : 'ÉCHOUÉ'}</span></h5>
+                        <ul>
+                            <li>XML détecté: ${xmlDetected ? '✅ OUI (correct)' : '❌ NON (erreur)'}</li>
+                            <li>Ancrage activé: ${rowFound ? '✅ OUI (correct)' : '❌ NON (erreur)'}</li>
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            if (testResults.noXML && testResults.withXML) {
+                const noXMLSuccess = !testResults.noXML.xmlDetected && 
+                                  testResults.noXML.anchorResult === null && 
+                                  testResults.noXML.overlaysCreated === 0;
+                const withXMLSuccess = testResults.withXML.xmlDetected && testResults.withXML.rowFound;
+                const overallSuccess = noXMLSuccess && withXMLSuccess;
+                
+                html += `
+                    <div class="card" style="margin-top: 20px; border: 3px solid ${overallSuccess ? '#28a745' : '#dc3545'};">
+                        <h4>🎯 RÉSULTAT GLOBAL: <span class="status ${overallSuccess ? 'ok' : 'error'}">${overallSuccess ? 'TOUS LES TESTS RÉUSSIS' : 'UN OU PLUSIEURS TESTS ÉCHOUÉS'}</span></h4>
+                        <p>${overallSuccess ? 
+                            '🎉 Le fix fonctionne parfaitement ! Les overlays ne s\'affichent plus sur keybind_editor.php sans XML.' :
+                            '⚠️ Il y a encore des problèmes à résoudre.'
+                        }</p>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Test de validation XML initialisé', 'info');
+            log('Cliquez sur les boutons de test pour commencer', 'info');
+        });
+        
+        // Exposer les fonctions globalement
+        window.log = log;
+    </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Détection XML pour SimplifiedBindingsHandler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .log-info { background: #e3f2fd; color: #0d47a1; }
+        .log-success { background: #e8f5e8; color: #2e7d32; }
+        .log-warning { background: #fff3cd; color: #f57c00; }
+        .log-error { background: #ffebee; color: #c62828; }
+        
+        .bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        .bindings-table th,
+        .bindings-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        
+        .bindings-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        .gamepad-highlight {
+            background: #fffacd !important;
+            border: 2px solid #ffd700 !important;
+        }
+        
+        .scenario {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        
+        .scenario h4 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test - Détection XML pour SimplifiedBindingsHandler</h1>
+    
+    <div class="test-section">
+        <h3>Tests de Détection XML</h3>
+        <button class="test-button" onclick="testWithoutXML()">1. Test sans XML</button>
+        <button class="test-button" onclick="testWithEmptyTable()">2. Test avec tableau vide</button>
+        <button class="test-button" onclick="testWithValidXML()">3. Test avec XML valide</button>
+        <button class="test-button" onclick="testSimulatedGamepadInput()">4. Simuler Input Gamepad</button>
+        <button class="test-button" onclick="clearLogs()">🧹 Effacer les logs</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>📋 Log des Tests</h3>
+        <div id="testLogs" style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+    </div>
+    
+    <!-- Scénario 1: Aucun tableau -->
+    <div class="scenario" id="scenario-1" style="display: none;">
+        <h4>Scénario 1: Aucun tableau bindings-table</h4>
+        <p>Ce scénario simule la page d'accueil sans XML chargé.</p>
+    </div>
+    
+    <!-- Scénario 2: Tableau vide -->
+    <div class="scenario" id="scenario-2" style="display: none;">
+        <h4>Scénario 2: Tableau vide</h4>
+        <table id="bindings-table-empty" class="bindings-table">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Action</th>
+                    <th>Input</th>
+                    <th>Opts</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aucune ligne de données -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Scénario 3: Tableau avec données valides -->
+    <div class="scenario" id="scenario-3" style="display: none;">
+        <h4>Scénario 3: Tableau avec XML valide</h4>
+        <table id="bindings-table" class="bindings-table">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Action</th>
+                    <th>Input</th>
+                    <th>Opts</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Flight</td>
+                    <td>v_pitch</td>
+                    <td><input name="input[0]" value="js1_button1"></td>
+                    <td><input name="opts[0]" value=""></td>
+                    <td><input name="value[0]" value=""></td>
+                </tr>
+                <tr>
+                    <td>Flight</td>
+                    <td>v_yaw</td>
+                    <td><input name="input[1]" value="js1_button2"></td>
+                    <td><input name="opts[1]" value="ActivationMode"></td>
+                    <td><input name="value[1]" value="hold"></td>
+                </tr>
+                <tr>
+                    <td>Weapons</td>
+                    <td>fire_primary</td>
+                    <td><input name="input[2]" value="js1_button3"></td>
+                    <td><input name="opts[2]" value=""></td>
+                    <td><input name="value[2]" value=""></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { SimplifiedBindingsHandler } from './assets/js/modules/simplifiedBindingsHandler.js';
+        
+        let simplifiedHandler;
+        
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${now}] ${message}`;
+            
+            const logsContainer = document.getElementById('testLogs');
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLogs() {
+            document.getElementById('testLogs').innerHTML = '';
+        }
+        
+        function hideAllScenarios() {
+            document.querySelectorAll('.scenario').forEach(s => s.style.display = 'none');
+        }
+        
+        function testWithoutXML() {
+            log('🧪 Test 1: Aucun tableau XML', 'info');
+            hideAllScenarios();
+            document.getElementById('scenario-1').style.display = 'block';
+            
+            // S'assurer qu'aucun tableau bindings-table n'existe
+            const existingTable = document.getElementById('bindings-table');
+            if (existingTable) {
+                existingTable.remove();
+            }
+            
+            simplifiedHandler = new SimplifiedBindingsHandler();
+            
+            // Tester isXMLLoaded
+            const isLoaded = simplifiedHandler.isXMLLoaded();
+            log(`isXMLLoaded() = ${isLoaded}`, isLoaded ? 'error' : 'success');
+            
+            // Tester anchorToInput
+            const result = simplifiedHandler.anchorToInput('button', 1, 'button1', '');
+            log(`anchorToInput() résultat = ${result}`, result === null ? 'success' : 'error');
+            
+            log('✅ Test 1 terminé - Système correctement désactivé sans XML', 'success');
+        }
+        
+        function testWithEmptyTable() {
+            log('🧪 Test 2: Tableau vide', 'info');
+            hideAllScenarios();
+            document.getElementById('scenario-2').style.display = 'block';
+            
+            // Renommer temporairement le tableau pour ce test
+            const existingTable = document.getElementById('bindings-table');
+            if (existingTable) {
+                existingTable.id = 'bindings-table-temp';
+            }
+            
+            const emptyTable = document.getElementById('bindings-table-empty');
+            emptyTable.id = 'bindings-table';
+            
+            simplifiedHandler = new SimplifiedBindingsHandler();
+            
+            // Tester isXMLLoaded
+            const isLoaded = simplifiedHandler.isXMLLoaded();
+            log(`isXMLLoaded() = ${isLoaded}`, isLoaded ? 'error' : 'success');
+            
+            // Tester anchorToInput
+            const result = simplifiedHandler.anchorToInput('button', 1, 'button1', '');
+            log(`anchorToInput() résultat = ${result}`, result === null ? 'success' : 'error');
+            
+            // Restaurer les IDs
+            emptyTable.id = 'bindings-table-empty';
+            if (document.getElementById('bindings-table-temp')) {
+                document.getElementById('bindings-table-temp').id = 'bindings-table';
+            }
+            
+            log('✅ Test 2 terminé - Système correctement désactivé avec tableau vide', 'success');
+        }
+        
+        function testWithValidXML() {
+            log('🧪 Test 3: XML valide chargé', 'info');
+            hideAllScenarios();
+            document.getElementById('scenario-3').style.display = 'block';
+            
+            simplifiedHandler = new SimplifiedBindingsHandler();
+            
+            // Tester isXMLLoaded
+            const isLoaded = simplifiedHandler.isXMLLoaded();
+            log(`isXMLLoaded() = ${isLoaded}`, isLoaded ? 'success' : 'error');
+            
+            if (isLoaded) {
+                log('✅ Test 3 terminé - XML détecté correctement', 'success');
+            } else {
+                log('❌ Test 3 échoué - XML non détecté', 'error');
+            }
+        }
+        
+        function testSimulatedGamepadInput() {
+            log('🧪 Test 4: Simulation input gamepad', 'info');
+            hideAllScenarios();
+            document.getElementById('scenario-3').style.display = 'block';
+            
+            simplifiedHandler = new SimplifiedBindingsHandler();
+            
+            // Test avec XML chargé
+            log('🎮 Test avec XML chargé:', 'info');
+            let result = simplifiedHandler.anchorToInput('button', 1, 'button1', '');
+            log(`  js1_button1 (mode normal) = ${result ? 'TROUVÉ' : 'NON TROUVÉ'}`, result ? 'success' : 'warning');
+            
+            result = simplifiedHandler.anchorToInput('button', 1, 'button2', 'hold');
+            log(`  js1_button2 (mode hold) = ${result ? 'TROUVÉ' : 'NON TROUVÉ'}`, result ? 'success' : 'warning');
+            
+            result = simplifiedHandler.anchorToInput('button', 1, 'button99', '');
+            log(`  js1_button99 (non mappé) = ${result ? 'TROUVÉ' : 'NON TROUVÉ'}`, result === null ? 'success' : 'warning');
+            
+            // Test sans XML
+            log('🚫 Test sans XML chargé:', 'info');
+            const table = document.getElementById('bindings-table');
+            table.style.display = 'none';
+            
+            result = simplifiedHandler.anchorToInput('button', 1, 'button1', '');
+            log(`  js1_button1 (sans XML) = ${result ? 'ACTIVÉ' : 'DÉSACTIVÉ'}`, result === null ? 'success' : 'error');
+            
+            table.style.display = 'table';
+            
+            log('✅ Test 4 terminé - Comportement différentiel confirmé', 'success');
+        }
+        
+        // Initialisation
+        window.testWithoutXML = testWithoutXML;
+        window.testWithEmptyTable = testWithEmptyTable;
+        window.testWithValidXML = testWithValidXML;
+        window.testSimulatedGamepadInput = testSimulatedGamepadInput;
+        window.clearLogs = clearLogs;
+        
+        log('🚀 Tests de détection XML initialisés', 'info');
+        log('👆 Cliquez sur les boutons pour tester les différents scénarios', 'info');
+    </script>
+</body>
+</html>

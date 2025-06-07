@@ -10,6 +10,46 @@ export class SimplifiedBindingsHandler {
     }
 
     /**
+     * Vérifie si un XML est chargé en contrôlant la présence du tableau de bindings avec des données
+     * @returns {boolean} - true si un XML est chargé, false sinon
+     */
+    isXMLLoaded() {
+        const table = document.getElementById('bindings-table');
+        if (!table) {
+            console.log(`[XMLCheck] Tableau bindings-table introuvable`);
+            return false;
+        }
+        
+        // Compter les lignes de données (exclure l'en-tête)
+        const dataRows = table.querySelectorAll('tbody tr');
+        if (dataRows.length === 0) {
+            console.log(`[XMLCheck] Aucune ligne de données dans le tableau`);
+            return false;
+        }
+        
+        // Vérifier qu'au moins une ligne contient des données valides
+        let hasValidData = false;
+        for (const row of dataRows) {
+            const inputField = row.querySelector('input[name^="input["]');
+            if (inputField && inputField.value.trim() !== '') {
+                // Vérifier que ce n'est pas juste un préfixe vide (js1_, js2_, etc.)
+                if (!/^(js|kb|mo)\d+_?$/.test(inputField.value.trim())) {
+                    hasValidData = true;
+                    break;
+                }
+            }
+        }
+        
+        if (!hasValidData) {
+            console.log(`[XMLCheck] Aucune donnée de binding valide trouvée`);
+            return false;
+        }
+        
+        console.log(`[XMLCheck] XML chargé avec ${dataRows.length} lignes, données valides détectées`);
+        return true;
+    }
+
+    /**
      * Point d'entrée principal : ancrage direct basé sur l'événement gamepad
      * @param {string} type - 'button', 'axis', 'hat'
      * @param {number} instance - Instance du gamepad (ex: 1 pour js1)
@@ -17,6 +57,12 @@ export class SimplifiedBindingsHandler {
      * @param {string} mode - '', 'hold', 'double_tap'
      */
     anchorToInput(type, instance, elementName, mode = '') {
+        // Vérifier si un XML est chargé avant d'activer le feedback
+        if (!this.isXMLLoaded()) {
+            console.log(`[SimplifiedAnchor] Aucun XML chargé, ancrage désactivé`);
+            return null;
+        }
+        
         const now = Date.now();
         const MIN_CALL_INTERVAL = 50; // Protection anti-spam réduite (50ms au lieu de 100ms)
         
