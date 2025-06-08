@@ -4,6 +4,10 @@
 
 $title = 'Erreur - Éditeur de keybinds XML Star Citizen';
 $head = '<style>body { color: red; }</style>';
+
+// Sécuriser la variable errorMsg
+$errorMsg = $errorMsg ?? 'Erreur inconnue';
+
 $content = <<<HTML
 <h3>Erreur</h3>
 <p>{$errorMsg}</p>

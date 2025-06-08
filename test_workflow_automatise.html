@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Automatisé - Workflow Réel Keybind Editor</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        
+        .log-container {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .log-info { color: #17a2b8; }
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-debug { color: #6c757d; }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        
+        #keybind-iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-pending { background: #ffc107; }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Automatisé - Workflow Réel Keybind Editor</h1>
+    
+    <div class="test-container">
+        <h3>Contrôles de Test</h3>
+        <button class="btn-primary" onclick="startFullTest()">🚀 Test Complet Automatisé</button>
+        <button class="btn-success" onclick="checkIntegrationStatus()">📊 État de l'Intégration</button>
+        <button class="btn-warning" onclick="simulateXMLUpload()">📤 Simuler Upload XML</button>
+        <button class="btn-danger" onclick="clearLogs()">🗑️ Clear Logs</button>
+    </div>
+
+    <div class="test-container">
+        <h3>📋 États des Tests</h3>
+        <div id="test-status">
+            <div><span class="status-indicator status-pending"></span>Initialisation...</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h3>🎯 Page Keybind Editor (Iframe)</h3>
+        <iframe id="keybind-iframe" src="keybind_editor.php"></iframe>
+    </div>
+
+    <div class="test-container">
+        <h3>📋 Logs de Test</h3>
+        <div id="log-container" class="log-container">
+            <div class="log-entry log-info">📊 Interface de test automatisé chargée...</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration du logger
+        function log(level, message, module = 'Test') {
+            const logContainer = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${level}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] [${module}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateStatus(steps) {
+            const statusDiv = document.getElementById('test-status');
+            statusDiv.innerHTML = steps.map(step => {
+                const status = step.status || 'pending';
+                return `<div><span class="status-indicator status-${status}"></span>${step.text}</div>`;
+            }).join('');
+        }
+
+        async function startFullTest() {
+            log('info', '🚀 Début du test complet automatisé');
+            
+            const steps = [
+                { text: '1. Chargement page keybind_editor.php', status: 'pending' },
+                { text: '2. Vérification disponibilité modules', status: 'pending' },
+                { text: '3. Simulation upload XML', status: 'pending' },
+                { text: '4. Vérification tableau bindings', status: 'pending' },
+                { text: '5. Vérification section gestion dispositifs', status: 'pending' },
+                { text: '6. Test fonctionnalité boutons', status: 'pending' }
+            ];
+            
+            updateStatus(steps);
+            
+            try {
+                // Étape 1: Chargement iframe
+                log('info', '1️⃣ Recharger iframe keybind_editor.php...');
+                const iframe = document.getElementById('keybind-iframe');
+                iframe.src = iframe.src + '?t=' + Date.now();
+                
+                await new Promise(resolve => {
+                    iframe.onload = resolve;
+                    setTimeout(resolve, 3000); // Timeout sécurité
+                });
+                
+                steps[0].status = 'success';
+                updateStatus(steps);
+                log('success', '✅ Page rechargée');
+                
+                // Attendre stabilisation
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Étape 2: Vérifier modules dans iframe
+                log('info', '2️⃣ Vérification modules dans iframe...');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                const hasBindingEditorIntegration = iframe.contentWindow.bindingEditorIntegration;
+                const hasGlobalLogger = iframe.contentWindow.globalLogger;
+                
+                log('info', `BindingEditorIntegration: ${!!hasBindingEditorIntegration}`);
+                log('info', `GlobalLogger: ${!!hasGlobalLogger}`);
+                
+                if (hasBindingEditorIntegration) {
+                    steps[1].status = 'success';
+                } else {
+                    steps[1].status = 'error';
+                    log('error', '❌ BindingEditorIntegration non trouvé dans iframe');
+                }
+                updateStatus(steps);
+                
+                // Étape 3: Simulation upload XML (via form)
+                log('info', '3️⃣ Simulation upload XML...');
+                
+                // Créer un formulaire pour upload
+                const form = iframeDoc.querySelector('form[enctype="multipart/form-data"]');
+                if (form) {
+                    log('info', 'Formulaire d\'upload trouvé');
+                    
+                    // Simuler sélection fichier (nous allons utiliser une approche différente)
+                    // Pour ce test, nous allons directement injecter le contenu après upload
+                    
+                    // Simuler la réponse après upload en injectant le template edit_form
+                    await simulatePostUploadContent(iframeDoc);
+                    
+                    steps[2].status = 'success';
+                    log('success', '✅ Contenu post-upload simulé');
+                } else {
+                    steps[2].status = 'error';
+                    log('error', '❌ Formulaire upload non trouvé');
+                }
+                updateStatus(steps);
+                
+                // Étape 4: Vérifier tableau bindings
+                log('info', '4️⃣ Vérification tableau bindings...');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                const bindingsTable = iframeDoc.getElementById('bindings-table');
+                if (bindingsTable) {
+                    steps[3].status = 'success';
+                    log('success', '✅ Tableau bindings trouvé');
+                    log('info', `Lignes dans le tableau: ${bindingsTable.rows.length}`);
+                } else {
+                    steps[3].status = 'error';
+                    log('error', '❌ Tableau bindings non trouvé');
+                }
+                updateStatus(steps);
+                
+                // Étape 5: Vérifier section gestion dispositifs
+                log('info', '5️⃣ Vérification section gestion dispositifs...');
+                
+                // Forcer une nouvelle tentative d'initialisation
+                if (hasBindingEditorIntegration && !hasBindingEditorIntegration.isInitialized) {
+                    log('info', 'Forcer initialisation BindingEditorIntegration...');
+                    hasBindingEditorIntegration.initialize();
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                const deviceSection = iframeDoc.querySelector('.device-management-section');
+                if (deviceSection) {
+                    steps[4].status = 'success';
+                    log('success', '✅ Section gestion dispositifs trouvée!');
+                    
+                    // Vérifier les boutons
+                    const managerBtn = deviceSection.querySelector('#open-device-manager');
+                    const importBtn = deviceSection.querySelector('#import-device-json');
+                    log('info', `Bouton gestionnaire: ${!!managerBtn}`);
+                    log('info', `Bouton import: ${!!importBtn}`);
+                    
+                    if (managerBtn && importBtn) {
+                        steps[5].status = 'success';
+                        log('success', '✅ Tous les boutons présents');
+                    } else {
+                        steps[5].status = 'error';
+                        log('error', '❌ Boutons manquants');
+                    }
+                } else {
+                    steps[4].status = 'error';
+                    log('error', '❌ Section gestion dispositifs NON TROUVÉE');
+                    
+                    // Debug approfondi
+                    log('debug', 'Debug - Éléments dans iframe:');
+                    log('debug', `- filter-nonempty: ${!!iframeDoc.getElementById('filter-nonempty')}`);
+                    log('debug', `- bindings-table: ${!!iframeDoc.getElementById('bindings-table')}`);
+                    log('debug', `- forms: ${iframeDoc.querySelectorAll('form').length}`);
+                    log('debug', `- divs avec "Filtres": ${Array.from(iframeDoc.querySelectorAll('div')).filter(d => d.textContent.includes('Filtres')).length}`);
+                }
+                updateStatus(steps);
+                
+                // Résumé final
+                const successCount = steps.filter(s => s.status === 'success').length;
+                if (successCount === steps.length) {
+                    log('success', '🎉 TOUS LES TESTS RÉUSSIS!');
+                } else {
+                    log('error', `❌ ${steps.length - successCount} test(s) échoué(s) sur ${steps.length}`);
+                }
+                
+            } catch (error) {
+                log('error', `Erreur durant test: ${error.message}`);
+                log('debug', `Stack: ${error.stack}`);
+            }
+        }
+
+        async function simulatePostUploadContent(iframeDoc) {
+            // Simuler le contenu qui apparaît après upload XML
+            const body = iframeDoc.body;
+            
+            // Injecter structure similaire à edit_form.php
+            const postUploadHTML = `
+                <div style="margin-bottom:1em;"><b>Filtres</b><br>
+                    <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+                    <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+                </div>
+                <form method="post">
+                    <input type="hidden" name="save" value="1">
+                    <table border="1" cellpadding="4" id="bindings-table">
+                        <tr>
+                            <th>category</th>
+                            <th>action</th>
+                            <th>name</th>
+                            <th>input</th>
+                            <th>opts</th>
+                            <th>value</th>
+                        </tr>
+                        <tr>
+                            <td>spaceship_movement</td>
+                            <td>pitch_up</td>
+                            <td>Cabrer</td>
+                            <td>js1_x</td>
+                            <td></td>
+                            <td>1.0</td>
+                        </tr>
+                        <tr>
+                            <td>spaceship_movement</td>
+                            <td>pitch_down</td>
+                            <td>Piquer</td>
+                            <td>js1_x</td>
+                            <td></td>
+                            <td>-1.0</td>
+                        </tr>
+                    </table>
+                </form>
+            `;
+            
+            // Supprimer contenu existant et ajouter le nouveau
+            const existingTable = iframeDoc.getElementById('bindings-table');
+            if (!existingTable) {
+                body.innerHTML += postUploadHTML;
+                log('info', 'Contenu post-upload injecté');
+            } else {
+                log('info', 'Contenu post-upload déjà présent');
+            }
+        }
+
+        function checkIntegrationStatus() {
+            log('info', '📊 Vérification état intégration...');
+            
+            const iframe = document.getElementById('keybind-iframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            const integration = iframe.contentWindow.bindingEditorIntegration;
+            
+            if (integration) {
+                log('info', `Intégration trouvée - Initialisée: ${integration.isInitialized}`);
+                
+                const deviceSection = iframeDoc.querySelector('.device-management-section');
+                log('info', `Section gestion: ${!!deviceSection}`);
+                
+                const bindingsTable = iframeDoc.getElementById('bindings-table');
+                log('info', `Tableau bindings: ${!!bindingsTable}`);
+                
+                const filterElement = iframeDoc.getElementById('filter-nonempty');
+                log('info', `Élément filter: ${!!filterElement}`);
+                
+                if (!integration.isInitialized && bindingsTable) {
+                    log('warning', 'Forcer nouvelle initialisation...');
+                    integration.initialize();
+                }
+                
+            } else {
+                log('error', 'Aucune intégration trouvée dans iframe');
+            }
+        }
+
+        function simulateXMLUpload() {
+            log('info', '📤 Simulation upload XML...');
+            
+            const iframe = document.getElementById('keybind-iframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            simulatePostUploadContent(iframeDoc);
+            
+            // Forcer détection
+            setTimeout(() => {
+                const integration = iframe.contentWindow.bindingEditorIntegration;
+                if (integration) {
+                    integration.initialize();
+                }
+            }, 500);
+        }
+
+        function clearLogs() {
+            document.getElementById('log-container').innerHTML = 
+                '<div class="log-entry log-info">📊 Logs effacés...</div>';
+        }
+
+        // Auto-initialisation
+        setTimeout(() => {
+            log('info', '🚀 Interface de test prête');
+            log('info', 'Utilisez "Test Complet Automatisé" pour une validation complète');
+        }, 500);
+    </script>
+</body>
+</html>

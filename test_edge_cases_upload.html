@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload - Cas limites XML</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .container { background: #f8f9fa; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #ddd; }
+        .upload-form { text-align: center; }
+        input[type="file"] { margin: 10px; padding: 10px; }
+        button { background: #007acc; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #005a9e; }
+        .info { color: #666; margin: 15px 0; }
+        .highlight { background: #fff3cd; padding: 10px; border-radius: 5px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Upload XML - Cas limites</h1>
+        
+        <div class="test-section">
+            <h3>📋 Description du test</h3>
+            <div class="info">
+                Ce test utilise le fichier <code>test_edge_cases.xml</code> qui contient :
+                <ul>
+                    <li>10 actions au total</li>
+                    <li>4 actions réellement configurées</li>
+                    <li>6 actions non configurées (vides, incomplètes, ou absentes)</li>
+                </ul>
+            </div>
+            <div class="highlight">
+                <strong>Résultat attendu :</strong> 4 actions configurées sur 10 (40%)
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📤 Upload du fichier de test</h3>
+            <div class="upload-form">
+                <form action="step_by_step_handler.php" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="step" value="1">
+                    <input type="hidden" name="action" value="upload">
+                    <div class="info">Sélectionnez le fichier test_edge_cases.xml :</div>
+                    <input type="file" name="xmlFile" accept=".xml" required>
+                    <br>
+                    <button type="submit">🚀 Uploader et tester</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔗 Liens de test rapide</h3>
+            <div style="text-align: center;">
+                <a href="test_edge_cases_analysis.php" style="display: inline-block; margin: 10px; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px;">
+                    📊 Analyse détaillée des cas limites
+                </a>
+                <br>
+                <a href="validation_finale.php" style="display: inline-block; margin: 10px; padding: 10px 20px; background: #6f42c1; color: white; text-decoration: none; border-radius: 5px;">
+                    ✅ Validation complète du système
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction DeviceSetupUI</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007cba; }
+        .btn { padding: 8px 16px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .btn:hover { background: #005a8e; }
+        .status { display: inline-block; padding: 4px 8px; border-radius: 3px; font-weight: bold; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Correction DeviceSetupUI</h1>
+    <p>Ce test vérifie que les corrections apportées au module DeviceSetupUI empêchent l'erreur "Cannot read properties of null".</p>
+
+    <div class="test-section">
+        <h3>🚀 Tests de Sécurité</h3>
+        <button class="btn" onclick="testNullAutoDetection()">Test autoDetection null</button>
+        <button class="btn" onclick="testNullUnknownDevices()">Test unknownDevices null</button>
+        <button class="btn" onclick="testMissingDevice()">Test device manquant</button>
+        <button class="btn" onclick="testNormalOperation()">Test fonctionnement normal</button>
+        <button class="btn" onclick="clearLog()">Vider Log</button>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Résultats des Tests</h3>
+        <div id="testResults">
+            <p>Aucun test exécuté</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Log des Événements</h3>
+        <div id="logOutput" class="log">Prêt pour les tests...\n</div>
+    </div>
+
+    <script type="module">
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let testResults = [];
+
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logOutput = document.getElementById('logOutput');
+            const colors = {
+                'info': '#333',
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107'
+            };
+            
+            logOutput.textContent += `[${now}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(`[Test] ${message}`);
+        }
+
+        function updateResults() {
+            const container = document.getElementById('testResults');
+            if (testResults.length === 0) {
+                container.innerHTML = '<p>Aucun test exécuté</p>';
+                return;
+            }
+
+            let html = '';
+            testResults.forEach(result => {
+                const statusClass = result.success ? 'success' : 'error';
+                const statusText = result.success ? '✅ RÉUSSI' : '❌ ÉCHOUÉ';
+                html += `
+                    <div class="status ${statusClass}" style="display: block; margin: 5px 0;">
+                        ${statusText} ${result.name}: ${result.message}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Test 1: autoDetection null
+        window.testNullAutoDetection = function() {
+            log('🧪 Test 1: DeviceSetupUI avec autoDetection null', 'info');
+            
+            try {
+                // Créer une instance avec autoDetection null
+                const setupUI = new DeviceSetupUI(null, null);
+                
+                // Tenter d'appeler startSetup
+                setupUI.startSetup('test_device_key');
+                
+                // Si on arrive ici, c'est un problème
+                testResults.push({
+                    name: 'autoDetection null',
+                    success: false,
+                    message: 'Erreur attendue non levée'
+                });
+                log('❌ Test 1 ÉCHOUÉ: Erreur attendue non levée', 'error');
+                
+            } catch (error) {
+                // C'est le comportement attendu
+                testResults.push({
+                    name: 'autoDetection null',
+                    success: true,
+                    message: `Erreur capturée correctement: ${error.message}`
+                });
+                log(`✅ Test 1 RÉUSSI: ${error.message}`, 'success');
+            }
+            
+            updateResults();
+        };
+
+        // Test 2: unknownDevices null
+        window.testNullUnknownDevices = function() {
+            log('🧪 Test 2: autoDetection avec unknownDevices null', 'info');
+            
+            try {
+                // Créer un mock autoDetection avec unknownDevices null
+                const mockAutoDetection = {
+                    unknownDevices: null
+                };
+                
+                const setupUI = new DeviceSetupUI(null, mockAutoDetection);
+                setupUI.startSetup('test_device_key');
+                
+                testResults.push({
+                    name: 'unknownDevices null',
+                    success: false,
+                    message: 'Erreur attendue non levée'
+                });
+                log('❌ Test 2 ÉCHOUÉ: Erreur attendue non levée', 'error');
+                
+            } catch (error) {
+                testResults.push({
+                    name: 'unknownDevices null',
+                    success: true,
+                    message: `Erreur capturée correctement: ${error.message}`
+                });
+                log(`✅ Test 2 RÉUSSI: ${error.message}`, 'success');
+            }
+            
+            updateResults();
+        };
+
+        // Test 3: Device manquant
+        window.testMissingDevice = function() {
+            log('🧪 Test 3: Device inexistant dans unknownDevices', 'info');
+            
+            try {
+                // Créer un mock autoDetection avec unknownDevices vide
+                const mockAutoDetection = {
+                    unknownDevices: new Map()
+                };
+                
+                const setupUI = new DeviceSetupUI(null, mockAutoDetection);
+                setupUI.startSetup('inexistant_device_key');
+                
+                testResults.push({
+                    name: 'Device manquant',
+                    success: false,
+                    message: 'Erreur attendue non levée'
+                });
+                log('❌ Test 3 ÉCHOUÉ: Erreur attendue non levée', 'error');
+                
+            } catch (error) {
+                testResults.push({
+                    name: 'Device manquant',
+                    success: true,
+                    message: `Erreur capturée correctement: ${error.message}`
+                });
+                log(`✅ Test 3 RÉUSSI: ${error.message}`, 'success');
+            }
+            
+            updateResults();
+        };
+
+        // Test 4: Fonctionnement normal
+        window.testNormalOperation = function() {
+            log('🧪 Test 4: Fonctionnement normal avec device valide', 'info');
+            
+            try {
+                // Créer un device factice
+                const fakeDevice = {
+                    id: 'Test Device',
+                    vendor_id: '0x1234',
+                    product_id: '0x5678',
+                    buttons: 10,
+                    axes: 4,
+                    gamepad: {
+                        id: 'Test Device',
+                        axes: [0, 0, 0, 0],
+                        buttons: Array(10).fill({ pressed: false, value: 0 })
+                    }
+                };
+                
+                // Mock autoDetection avec device
+                const mockAutoDetection = {
+                    unknownDevices: new Map([['test_device_key', fakeDevice]]),
+                    getDeviceKey: (gamepad) => 'test_device_key',
+                    onNewDeviceDetected: (callback) => {}
+                };
+                
+                const setupUI = new DeviceSetupUI(null, mockAutoDetection);
+                
+                // Appeler getDeviceInfo qui utilise notre méthode sécurisée
+                const deviceInfo = setupUI.getDeviceInfo('test_device_key');
+                
+                if (deviceInfo && deviceInfo.id === 'Test Device') {
+                    testResults.push({
+                        name: 'Fonctionnement normal',
+                        success: true,
+                        message: 'Device récupéré avec succès via getDeviceInfo()'
+                    });
+                    log(`✅ Test 4 RÉUSSI: Device "${deviceInfo.id}" récupéré`, 'success');
+                } else {
+                    throw new Error('Device non récupéré correctement');
+                }
+                
+            } catch (error) {
+                testResults.push({
+                    name: 'Fonctionnement normal',
+                    success: false,
+                    message: `Erreur inattendue: ${error.message}`
+                });
+                log(`❌ Test 4 ÉCHOUÉ: ${error.message}`, 'error');
+            }
+            
+            updateResults();
+        };
+
+        window.clearLog = function() {
+            document.getElementById('logOutput').textContent = 'Log effacé...\n';
+            testResults = [];
+            updateResults();
+        };
+
+        // Message d'initialisation
+        log('🎯 Tests de correction DeviceSetupUI prêts', 'info');
+        log('💡 Cliquez sur les boutons de test pour vérifier les corrections', 'info');
+    </script>
+</body>
+</html>

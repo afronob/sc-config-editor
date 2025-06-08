@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Step2 - Saitek Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 3px; font-family: monospace; }
+        .success { background: #d4edda; }
+        .error { background: #f8d7da; }
+        .warning { background: #fff3cd; }
+        .info { background: #d1ecf1; }
+        button { margin: 5px; padding: 10px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Step2 - Détection Saitek X-56</h1>
+    
+    <div class="debug-section">
+        <h2>1. État des données</h2>
+        <button onclick="checkDataState()">Vérifier l'état des données</button>
+        <div id="dataState"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>2. Test de la fonction checkIfDeviceIsKnown</h2>
+        <button onclick="testCheckFunction()">Tester la fonction</button>
+        <div id="functionTest"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>3. Simulation du flux Step2</h2>
+        <button onclick="simulateStep2Flow()">Simuler le flux Step2</button>
+        <div id="step2Flow"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>4. Test avec vrai gamepad</h2>
+        <button onclick="testWithRealGamepad()">Tester avec gamepad connecté</button>
+        <div id="realGamepadTest"></div>
+    </div>
+
+    <script type="module">
+        // Copie exacte de la fonction de step2_devices.php
+        function checkIfDeviceIsKnown(gamepad) {
+            if (!window.devicesDataJs || !Array.isArray(window.devicesDataJs)) {
+                console.log('⚠️ Données des dispositifs non disponibles, tous considérés comme nouveaux');
+                return false;
+            }
+            
+            // Extraire vendor_id et product_id du gamepad
+            const vendorMatch = gamepad.id.match(/Vendor:\s*([0-9a-fA-F]{4})/i);
+            const productMatch = gamepad.id.match(/Product:\s*([0-9a-fA-F]{4})/i);
+            
+            if (vendorMatch && productMatch) {
+                const gamepadVendor = `0x${vendorMatch[1].toLowerCase()}`;
+                const gamepadProduct = `0x${productMatch[1].toLowerCase()}`;
+                
+                console.log(`🔍 Recherche dispositif - Vendor: ${gamepadVendor}, Product: ${gamepadProduct}`);
+                
+                // Vérifier par vendor/product ID
+                const found = window.devicesDataJs.find(device => {
+                    return device.vendor_id && device.product_id &&
+                           device.vendor_id.toLowerCase() === gamepadVendor &&
+                           device.product_id.toLowerCase() === gamepadProduct;
+                });
+                
+                if (found) {
+                    console.log(`✅ Dispositif reconnu par ID: ${gamepad.id} -> ${found.id}`);
+                    return true;
+                }
+            }
+            
+            // Fallback : recherche par nom
+            const gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim().toLowerCase();
+            const foundByName = window.devicesDataJs.find(device => {
+                if (!device.id) return false;
+                
+                const deviceIdSimple = device.id.replace(/\(Vendor:.*$/, '').trim().toLowerCase();
+                return gamepadIdSimple.includes(deviceIdSimple) || deviceIdSimple.includes(gamepadIdSimple);
+            });
+            
+            if (foundByName) {
+                console.log(`✅ Dispositif reconnu par nom: ${gamepad.id} -> ${foundByName.id}`);
+                return true;
+            }
+            
+            console.log(`❓ Dispositif non reconnu: ${gamepad.id}`);
+            return false;
+        }
+
+        window.checkDataState = async function() {
+            const output = document.getElementById('dataState');
+            output.innerHTML = '<div class="log info">Chargement des données...</div>';
+            
+            try {
+                const response = await fetch('../../get_devices_data.php');
+                const data = await response.json();
+                window.devicesDataJs = data;
+                
+                const saitekDevice = data.find(d => d.vendor_id === '0x0738' && d.product_id === '0xa221');
+                
+                let html = `<div class="log success">✅ Données chargées: ${data.length} dispositifs</div>`;
+                
+                if (saitekDevice) {
+                    html += `<div class="log success">✅ Saitek X-56 trouvé dans les données</div>`;
+                    html += `<div class="log info">ID: ${saitekDevice.id}</div>`;
+                    html += `<div class="log info">Vendor: ${saitekDevice.vendor_id}</div>`;
+                    html += `<div class="log info">Product: ${saitekDevice.product_id}</div>`;
+                } else {
+                    html += `<div class="log error">❌ Saitek X-56 NOT FOUND dans les données</div>`;
+                    html += `<div class="log info">Dispositifs disponibles: ${data.map(d => d.id).join(', ')}</div>`;
+                }
+                
+                output.innerHTML = html;
+            } catch (error) {
+                output.innerHTML = `<div class="log error">❌ Erreur: ${error.message}</div>`;
+            }
+        };
+
+        window.testCheckFunction = function() {
+            const output = document.getElementById('functionTest');
+            
+            if (!window.devicesDataJs) {
+                output.innerHTML = '<div class="log warning">⚠️ Chargez d\'abord les données</div>';
+                return;
+            }
+            
+            // Test avec le Saitek X-56
+            const mockSaitek = {
+                id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)"
+            };
+            
+            console.log('=== TEST FONCTION ===');
+            const result = checkIfDeviceIsKnown(mockSaitek);
+            console.log('=== FIN TEST ===');
+            
+            if (result) {
+                output.innerHTML = '<div class="log success">✅ Fonction reconnaît correctement le Saitek X-56</div>';
+            } else {
+                output.innerHTML = '<div class="log error">❌ Fonction ne reconnaît PAS le Saitek X-56</div>';
+            }
+        };
+
+        window.simulateStep2Flow = async function() {
+            const output = document.getElementById('step2Flow');
+            output.innerHTML = '<div class="log info">Simulation du flux Step2...</div>';
+            
+            // 1. Charger les données comme dans step2
+            try {
+                const response = await fetch('../../get_devices_data.php');
+                const devicesData = await response.json();
+                window.devicesDataJs = devicesData;
+                
+                let html = '<div class="log success">✅ Données chargées</div>';
+                
+                // 2. Simuler la détection de gamepads
+                const gamepads = navigator.getGamepads();
+                let foundSaitek = false;
+                
+                for (let i = 0; i < gamepads.length; i++) {
+                    if (gamepads[i]) {
+                        const isKnown = checkIfDeviceIsKnown(gamepads[i]);
+                        html += `<div class="log ${isKnown ? 'success' : 'warning'}">
+                            ${isKnown ? '✅' : '❓'} ${gamepads[i].id}
+                        </div>`;
+                        
+                        if (gamepads[i].id.toLowerCase().includes('saitek')) {
+                            foundSaitek = true;
+                        }
+                    }
+                }
+                
+                if (!foundSaitek) {
+                    html += '<div class="log info">ℹ️ Aucun dispositif Saitek physiquement connecté</div>';
+                    
+                    // Test avec un Saitek simulé
+                    const mockSaitek = {
+                        id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)"
+                    };
+                    const mockResult = checkIfDeviceIsKnown(mockSaitek);
+                    html += `<div class="log ${mockResult ? 'success' : 'error'}">
+                        🧪 Test avec Saitek simulé: ${mockResult ? '✅ Reconnu' : '❌ Non reconnu'}
+                    </div>`;
+                }
+                
+                output.innerHTML = html;
+                
+            } catch (error) {
+                output.innerHTML = `<div class="log error">❌ Erreur simulation: ${error.message}</div>`;
+            }
+        };
+
+        window.testWithRealGamepad = function() {
+            const output = document.getElementById('realGamepadTest');
+            
+            const gamepads = navigator.getGamepads();
+            let html = '';
+            let saitekFound = false;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    const isSaitek = gamepads[i].id.toLowerCase().includes('saitek');
+                    if (isSaitek) {
+                        saitekFound = true;
+                        const isKnown = checkIfDeviceIsKnown(gamepads[i]);
+                        html += `<div class="log ${isKnown ? 'success' : 'error'}">
+                            🎮 Saitek détecté: ${gamepads[i].id}<br>
+                            ${isKnown ? '✅ Reconnu par la fonction' : '❌ NON reconnu par la fonction'}
+                        </div>`;
+                    } else {
+                        html += `<div class="log info">🎮 Autre: ${gamepads[i].id}</div>`;
+                    }
+                }
+            }
+            
+            if (!saitekFound) {
+                html = '<div class="log warning">⚠️ Aucun dispositif Saitek connecté physiquement</div>';
+            }
+            
+            output.innerHTML = html || '<div class="log info">Aucun gamepad détecté</div>';
+        };
+
+        // Auto-chargement des données au démarrage
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                checkDataState();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

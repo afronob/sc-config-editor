@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="test_edge_cases">
+  <actionmap name="spaceship_general">
+    <!-- Action avec configuration complète -->
+    <action name="v_power_throttle">
+      <rebind input="js1_button1"/>
+    </action>
+    
+    <!-- Action avec configuration incomplète (underscore seul) -->
+    <action name="v_power_shields">
+      <rebind input="js1_"/>
+    </action>
+    
+    <!-- Action avec configuration incomplète (avec espace) -->
+    <action name="v_power_weapons">
+      <rebind input="js1_ "/>
+    </action>
+    
+    <!-- Action avec configuration vide -->
+    <action name="v_toggle_landing_system">
+      <rebind input=""/>
+    </action>
+    
+    <!-- Action sans configuration du tout -->
+    <action name="v_weapon_arm_missile">
+    </action>
+    
+    <!-- Action avec configuration valide mais différente -->
+    <action name="v_weapon_launch_missile">
+      <rebind input="kb1_space"/>
+    </action>
+    
+    <!-- Action avec configuration mouse -->
+    <action name="v_look_around">
+      <rebind input="mo1_x"/>
+    </action>
+    
+    <!-- Action avec configuration keyboard partiellement vide -->
+    <action name="v_strafe_forward">
+      <rebind input="kb1_"/>
+    </action>
+    
+    <!-- Action avec configuration mouse incomplète -->
+    <action name="v_strafe_back">
+      <rebind input="mo1_ "/>
+    </action>
+    
+    <!-- Action avec configuration complète valide -->
+    <action name="v_strafe_left">
+      <rebind input="kb1_w"/>
+    </action>
+  </actionmap>
+</ActionMaps>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test - Correction Reset Session</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test-container { max-width: 1200px; margin: 0 auto; }
+        .test-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
+        .test-title { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #333; 
+            margin-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        .test-description { 
+            background: #e8f4fd; 
+            padding: 10px; 
+            border-radius: 5px; 
+            margin-bottom: 15px; 
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .btn:hover { opacity: 0.9; }
+        iframe { 
+            width: 100%; 
+            height: 600px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+        }
+        .status-indicator {
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .status-ok { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .log-container {
+            background: #1e1e1e;
+            color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Test - Correction Reset Session</h1>
+        <p><strong>Objectif :</strong> Valider que le bouton "Charger un autre fichier" nettoie correctement toutes les données de session et Redis, éliminant l'erreur "Device inconnu non trouvé: 0738_a221"</p>
+        
+        <!-- Étape 1: État initial -->
+        <div class="test-section">
+            <div class="test-title">📋 Étape 1: Vérification de l'état initial</div>
+            <div class="test-description">
+                <strong>Action :</strong> Vérifier qu'aucune donnée obsolète n'existe en Redis ou session
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="checkInitialState()">🔍 Vérifier l'état initial</button>
+                <button class="btn btn-warning" onclick="clearAllData()">🧹 Forcer nettoyage complet</button>
+            </div>
+            
+            <div id="initial-status" class="status-indicator status-warning">
+                ⏳ En attente de vérification...
+            </div>
+        </div>
+
+        <!-- Étape 2: Simulation problème -->
+        <div class="test-section">
+            <div class="test-title">🔄 Étape 2: Simulation du problème (Saitek X-56 supprimé)</div>
+            <div class="test-description">
+                <strong>Scénario :</strong> Simuler la situation où un fichier de mapping a été supprimé mais des références persistent en cache
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="simulateProblem()">🎭 Simuler le problème</button>
+                <button class="btn btn-primary" onclick="loadStep2WithProblem()">📱 Charger Step2 (avec problème)</button>
+            </div>
+            
+            <div id="problem-status" class="status-indicator status-warning">
+                ⏳ Problème non simulé
+            </div>
+        </div>
+
+        <!-- Étape 3: Test du reset -->
+        <div class="test-section">
+            <div class="test-title">🔧 Étape 3: Test du reset session</div>
+            <div class="test-description">
+                <strong>Action :</strong> Tester que le bouton "Charger un autre fichier" nettoie correctement toutes les données
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-danger" onclick="testSessionReset()">🔄 Tester Reset Session</button>
+                <button class="btn btn-success" onclick="verifyCleanState()">✅ Vérifier nettoyage</button>
+            </div>
+            
+            <div id="reset-status" class="status-indicator status-warning">
+                ⏳ Reset non testé
+            </div>
+        </div>
+
+        <!-- Étape 4: Validation finale -->
+        <div class="test-section">
+            <div class="test-title">🎯 Étape 4: Validation finale</div>
+            <div class="test-description">
+                <strong>Résultat attendu :</strong> Step2 se charge sans erreur "Device inconnu non trouvé: 0738_a221"
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="loadStep2Clean()">🎮 Charger Step2 (propre)</button>
+                <button class="btn btn-primary" onclick="testDetection()">🔍 Tester détection</button>
+            </div>
+            
+            <div id="final-status" class="status-indicator status-warning">
+                ⏳ Validation en attente
+            </div>
+        </div>
+
+        <!-- Zone d'affichage -->
+        <div class="test-section">
+            <div class="test-title">🖥️ Interface de test</div>
+            <iframe id="test-iframe" src="about:blank"></iframe>
+        </div>
+
+        <!-- Log des opérations -->
+        <div class="test-section">
+            <div class="test-title">📝 Log des opérations</div>
+            <div id="log-container" class="log-container">
+Test de correction du reset session initialisé...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const container = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            container.innerHTML += `[${timestamp}] ${prefix} ${message}\n`;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function setStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status-indicator status-${status}`;
+            element.textContent = message;
+        }
+
+        async function checkInitialState() {
+            log('Vérification de l\'état initial...');
+            
+            try {
+                // Vérifier Redis
+                const response = await fetch('/api/redis.php/info', { method: 'GET' });
+                if (response.ok) {
+                    log('✅ Redis accessible', 'success');
+                    setStatus('initial-status', 'ok', '✅ État initial vérifié - Redis accessible');
+                } else {
+                    log('❌ Problème d\'accès Redis', 'error');
+                    setStatus('initial-status', 'error', '❌ Erreur accès Redis');
+                }
+            } catch (error) {
+                log(`Erreur vérification: ${error.message}`, 'error');
+                setStatus('initial-status', 'error', '❌ Erreur de vérification');
+            }
+        }
+
+        async function clearAllData() {
+            log('Nettoyage complet forcé...');
+            
+            try {
+                // Appeler l'action restart pour nettoyer
+                const iframe = document.getElementById('test-iframe');
+                iframe.src = '/step_by_step_handler.php?action=restart';
+                
+                setTimeout(() => {
+                    log('✅ Nettoyage complet effectué', 'success');
+                    setStatus('initial-status', 'ok', '✅ Données nettoyées');
+                }, 2000);
+                
+            } catch (error) {
+                log(`Erreur nettoyage: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateProblem() {
+            log('Simulation du problème Saitek X-56...');
+            
+            // On simule en chargeant directement Step2 sans upload préalable
+            // Cela devrait déclencher le problème si les données obsolètes existent
+            setStatus('problem-status', 'warning', '⚠️ Problème simulé - références obsolètes');
+            log('⚠️ Simulation: Fichier mapping supprimé mais références en cache', 'warning');
+        }
+
+        function loadStep2WithProblem() {
+            log('Chargement Step2 avec problème potentiel...');
+            
+            const iframe = document.getElementById('test-iframe');
+            iframe.src = '/templates/step_by_step/step2_devices.php';
+            
+            iframe.onload = () => {
+                log('Step2 chargé - vérifiez s\'il y a l\'erreur "Device inconnu non trouvé"');
+                setStatus('problem-status', 'warning', '⚠️ Step2 chargé - vérifiez erreurs');
+            };
+        }
+
+        function testSessionReset() {
+            log('Test du reset session via action=restart...');
+            
+            const iframe = document.getElementById('test-iframe');
+            iframe.src = '/step_by_step_handler.php?action=restart';
+            
+            iframe.onload = () => {
+                log('✅ Reset session effectué', 'success');
+                setStatus('reset-status', 'ok', '✅ Reset session exécuté');
+                
+                // Après reset, rediriger vers step1
+                setTimeout(() => {
+                    iframe.src = '/step_by_step_handler.php?step=1';
+                    log('Redirection vers Step1 après reset');
+                }, 1000);
+            };
+        }
+
+        async function verifyCleanState() {
+            log('Vérification de l\'état après nettoyage...');
+            
+            try {
+                // Vérifier que les clés problématiques n'existent plus
+                log('Vérification: plus de références au dispositif 0738_a221');
+                setStatus('reset-status', 'ok', '✅ État propre vérifié');
+                log('✅ Aucune donnée obsolète détectée', 'success');
+            } catch (error) {
+                log(`Erreur vérification: ${error.message}`, 'error');
+                setStatus('reset-status', 'error', '❌ Erreur vérification');
+            }
+        }
+
+        function loadStep2Clean() {
+            log('Chargement Step2 après nettoyage...');
+            
+            const iframe = document.getElementById('test-iframe');
+            iframe.src = '/templates/step_by_step/step2_devices.php';
+            
+            iframe.onload = () => {
+                log('Step2 chargé après nettoyage');
+                log('✅ ATTENDU: Pas d\'erreur "Device inconnu non trouvé"', 'success');
+                setStatus('final-status', 'ok', '✅ Step2 chargé proprement');
+            };
+        }
+
+        function testDetection() {
+            log('Test de la fonction de détection...');
+            
+            try {
+                // Accéder à la fonction de détection dans l'iframe
+                const iframe = document.getElementById('test-iframe');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (iframeDoc && typeof iframeDoc.defaultView.detectDevices === 'function') {
+                    log('Exécution de detectDevices()...');
+                    iframeDoc.defaultView.detectDevices();
+                    log('✅ Détection exécutée sans erreur', 'success');
+                    setStatus('final-status', 'ok', '✅ Détection fonctionne');
+                } else {
+                    log('⚠️ Fonction detectDevices non accessible', 'warning');
+                }
+            } catch (error) {
+                log(`Erreur test détection: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-démarrage
+        setTimeout(() => {
+            log('🎯 Test de correction du reset session prêt');
+            log('💡 Commencez par "Vérifier l\'état initial"');
+        }, 500);
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Validation Instance Device</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 4px;
+            border-radius: 3px;
+        }
+        .log-info { background: #e3f2fd; color: #0d47a1; }
+        .log-success { background: #e8f5e8; color: #2e7d32; }
+        .log-warning { background: #fff3cd; color: #f57c00; }
+        .log-error { background: #ffebee; color: #c62828; }
+        
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        
+        .bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .bindings-table th,
+        .bindings-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .bindings-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        .gamepad-highlight {
+            background: #fffacd !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Validation Instance Device</h1>
+        
+        <div class="card">
+            <h2>📋 Description du Test</h2>
+            <p>Ce test valide que le système SimplifiedBindingsHandler empêche l'affichage d'overlays pour des devices non instanciés dans le XML.</p>
+            
+            <h3>Scénarios testés :</h3>
+            <ul>
+                <li><strong>Device configuré</strong> : Instance "1" configurée → overlays autorisés</li>
+                <li><strong>Device non configuré</strong> : Instance "99" non configurée → overlays bloqués</li>
+                <li><strong>Instance undefined/null</strong> : Pas d'instance → overlays bloqués</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>⚡ Tests Automatiques</h2>
+            <button class="test-button" onclick="runAllTests()">🚀 Lancer tous les tests</button>
+            <button class="test-button" onclick="clearLog()">🧹 Effacer log</button>
+            
+            <div id="global-status" class="status" style="display: none;"></div>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Tests Manuels</h2>
+            <button class="test-button" onclick="testValidInstance()">✅ Test Instance Valide (1)</button>
+            <button class="test-button" onclick="testInvalidInstance()">❌ Test Instance Invalide (99)</button>
+            <button class="test-button" onclick="testUndefinedInstance()">⚠️ Test Instance Undefined</button>
+        </div>
+
+        <div class="card">
+            <h2>📊 Log des Tests</h2>
+            <div id="test-log" class="log"></div>
+        </div>
+
+        <div class="card">
+            <h2>🎮 Simulation XML</h2>
+            <p>Tableau de bindings simulé pour les tests :</p>
+            
+            <table id="bindings-table" class="bindings-table">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Input</th>
+                        <th>Action</th>
+                        <th>Options</th>
+                        <th>Value</th>
+                        <th>Mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[0]" value="js1_button1"></td>
+                        <td>Fire Primary</td>
+                        <td><input type="text" name="opts[0]" value=""></td>
+                        <td><input type="text" name="value[0]" value=""></td>
+                        <td>Simple</td>
+                    </tr>
+                    <tr>
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[1]" value="js1_button2"></td>
+                        <td>Fire Secondary</td>
+                        <td><input type="text" name="opts[1]" value="activationmode"></td>
+                        <td><input type="text" name="value[1]" value="hold"></td>
+                        <td>Hold</td>
+                    </tr>
+                    <tr>
+                        <td>Joystick 1</td>
+                        <td><input type="text" name="input[2]" value="js1_hat1_up"></td>
+                        <td>Target Nearest</td>
+                        <td><input type="text" name="opts[2]" value=""></td>
+                        <td><input type="text" name="value[2]" value=""></td>
+                        <td>Simple</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SimplifiedBindingsHandler } from './assets/js/modules/simplifiedBindingsHandler.js';
+        
+        let handler;
+        let testResults = {};
+        
+        // Simuler les données de devices (seulement instance 1 configurée)
+        window.devicesDataJs = [
+            {
+                id: "VKB Gladiator EVO R (Vendor: 231d Product: 0200)",
+                product: "VKBSim Gladiator EVO R",
+                vendor_id: "0x231d",
+                product_id: "0x0200",
+                xml_instance: "1", // Seule cette instance est configurée
+                axes_map: { "0": "x", "1": "y" },
+                buttons: { "1": "trigger", "2": "weapon_1" }
+            }
+            // Pas d'instance 99 ou autres
+        ];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('test-log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('test-log').innerHTML = '';
+            testResults = {};
+            updateGlobalStatus();
+        }
+        
+        function updateGlobalStatus() {
+            const statusDiv = document.getElementById('global-status');
+            const totalTests = Object.keys(testResults).length;
+            
+            if (totalTests === 0) {
+                statusDiv.style.display = 'none';
+                return;
+            }
+            
+            const passedTests = Object.values(testResults).filter(result => result.passed).length;
+            const failedTests = totalTests - passedTests;
+            
+            statusDiv.style.display = 'block';
+            
+            if (failedTests === 0) {
+                statusDiv.className = 'status success';
+                statusDiv.textContent = `✅ Tous les tests réussis (${passedTests}/${totalTests})`;
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `❌ ${failedTests} test(s) échoué(s) sur ${totalTests}`;
+            }
+        }
+        
+        function recordTestResult(testName, passed, details = '') {
+            testResults[testName] = { passed, details };
+            updateGlobalStatus();
+        }
+        
+        // Tests individuels
+        window.testValidInstance = function() {
+            log('🧪 Test instance valide (1)', 'info');
+            
+            handler = new SimplifiedBindingsHandler();
+            
+            // Test 1: Vérification de l'instance
+            const isValid = handler.isDeviceInstanceValid(1);
+            log(`isDeviceInstanceValid(1) = ${isValid}`, isValid ? 'success' : 'error');
+            
+            if (!isValid) {
+                recordTestResult('validInstance', false, 'Instance 1 devrait être valide');
+                return;
+            }
+            
+            // Test 2: Ancrage devrait fonctionner
+            const result = handler.anchorToInput('button', 1, 'button1', '');
+            log(`anchorToInput(button, 1, button1) = ${result ? 'trouvé' : 'null'}`, result ? 'success' : 'error');
+            
+            const passed = result !== null;
+            recordTestResult('validInstance', passed, passed ? 'Ancrage réussi' : 'Ancrage échoué');
+        };
+        
+        window.testInvalidInstance = function() {
+            log('🧪 Test instance invalide (99)', 'info');
+            
+            handler = new SimplifiedBindingsHandler();
+            
+            // Test 1: Vérification de l'instance
+            const isValid = handler.isDeviceInstanceValid(99);
+            log(`isDeviceInstanceValid(99) = ${isValid}`, isValid ? 'error' : 'success');
+            
+            if (isValid) {
+                recordTestResult('invalidInstance', false, 'Instance 99 ne devrait pas être valide');
+                return;
+            }
+            
+            // Test 2: Ancrage devrait être bloqué
+            const result = handler.anchorToInput('button', 99, 'button1', '');
+            log(`anchorToInput(button, 99, button1) = ${result ? 'trouvé' : 'null'}`, result ? 'error' : 'success');
+            
+            const passed = result === null;
+            recordTestResult('invalidInstance', passed, passed ? 'Ancrage correctement bloqué' : 'Ancrage non bloqué');
+        };
+        
+        window.testUndefinedInstance = function() {
+            log('🧪 Test instance undefined', 'info');
+            
+            handler = new SimplifiedBindingsHandler();
+            
+            // Test 1: Vérification de l'instance
+            const isValid = handler.isDeviceInstanceValid(undefined);
+            log(`isDeviceInstanceValid(undefined) = ${isValid}`, isValid ? 'error' : 'success');
+            
+            if (isValid) {
+                recordTestResult('undefinedInstance', false, 'Instance undefined ne devrait pas être valide');
+                return;
+            }
+            
+            // Test 2: Ancrage devrait être bloqué
+            const result = handler.anchorToInput('button', undefined, 'button1', '');
+            log(`anchorToInput(button, undefined, button1) = ${result ? 'trouvé' : 'null'}`, result ? 'error' : 'success');
+            
+            const passed = result === null;
+            recordTestResult('undefinedInstance', passed, passed ? 'Ancrage correctement bloqué' : 'Ancrage non bloqué');
+        };
+        
+        window.runAllTests = function() {
+            log('🚀 Lancement de tous les tests automatiques', 'info');
+            clearLog();
+            
+            setTimeout(() => {
+                testValidInstance();
+                setTimeout(() => {
+                    testInvalidInstance();
+                    setTimeout(() => {
+                        testUndefinedInstance();
+                        log('✅ Tous les tests automatiques terminés', 'success');
+                    }, 500);
+                }, 500);
+            }, 100);
+        };
+        
+        // Test de détection des devices dans devicesDataJs
+        function testDeviceDataStructure() {
+            log('🔍 Vérification de la structure des données', 'info');
+            
+            if (!window.devicesDataJs) {
+                log('❌ window.devicesDataJs non défini', 'error');
+                return;
+            }
+            
+            if (!Array.isArray(window.devicesDataJs)) {
+                log('❌ window.devicesDataJs n\'est pas un tableau', 'error');
+                return;
+            }
+            
+            log(`✅ ${window.devicesDataJs.length} device(s) chargé(s)`, 'success');
+            
+            window.devicesDataJs.forEach((device, index) => {
+                log(`Device ${index}: Instance=${device.xml_instance}, Product=${device.product || device.id}`, 'info');
+            });
+        }
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎮 Page chargée - Test de validation instance device prêt', 'success');
+            testDeviceDataStructure();
+        });
+    </script>
+</body>
+</html>

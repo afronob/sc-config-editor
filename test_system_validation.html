@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Test Validation Système - Gestion Dispositifs</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .test-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .test-button:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .status.success { color: #28a745; }
+        .status.error { color: #dc3545; }
+        .status.warning { color: #ffc107; }
+        .status.info { color: #17a2b8; }
+
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .iframe-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            height: 600px;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Test de Validation Système</h1>
+            <p>Validation complète de l'intégration gestion des dispositifs</p>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Plan de Test</h2>
+            <div class="test-grid">
+                <div>
+                    <h3>🔍 Phase 1: Validation Infrastructure</h3>
+                    <button class="test-button" id="test-files">Vérifier Fichiers</button>
+                    <button class="test-button" id="test-server">Tester Serveur</button>
+                    <button class="test-button" id="test-xml">Valider XML Test</button>
+                    <div class="status" id="phase1-status">En attente...</div>
+                </div>
+
+                <div>
+                    <h3>🎯 Phase 2: Test Intégration</h3>
+                    <button class="test-button" id="test-integration" disabled>Test Direct</button>
+                    <button class="test-button" id="test-upload" disabled>Simuler Upload</button>
+                    <button class="test-button" id="test-detection" disabled>Test Détection</button>
+                    <div class="status" id="phase2-status">En attente...</div>
+                </div>
+
+                <div>
+                    <h3>✅ Phase 3: Validation Finale</h3>
+                    <button class="test-button" id="test-workflow" disabled>Workflow Complet</button>
+                    <button class="test-button" id="test-modal" disabled>Test Modal</button>
+                    <button class="test-button" id="test-persistence" disabled>Test Persistence</button>
+                    <div class="status" id="phase3-status">En attente...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Résultats en Temps Réel</h2>
+            <div id="log-container" class="log-container">
+                <div>🚀 Démarrage des tests...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🖥️ Interface de Test</h2>
+            <div class="iframe-container">
+                <iframe id="test-iframe" src="keybind_editor.php"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SystemValidator {
+            constructor() {
+                this.logContainer = document.getElementById('log-container');
+                this.phase1Status = document.getElementById('phase1-status');
+                this.phase2Status = document.getElementById('phase2-status');
+                this.phase3Status = document.getElementById('phase3-status');
+                this.testIframe = document.getElementById('test-iframe');
+                
+                this.results = {
+                    phase1: false,
+                    phase2: false,
+                    phase3: false
+                };
+
+                this.bindEvents();
+                this.startValidation();
+            }
+
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.style.color = this.getLogColor(type);
+                logEntry.innerHTML = `[${timestamp}] ${message}`;
+                this.logContainer.appendChild(logEntry);
+                this.logContainer.scrollTop = this.logContainer.scrollHeight;
+            }
+
+            getLogColor(type) {
+                const colors = {
+                    info: '#17a2b8',
+                    success: '#28a745',
+                    error: '#dc3545',
+                    warning: '#ffc107'
+                };
+                return colors[type] || '#ffffff';
+            }
+
+            updateStatus(phase, status, message) {
+                const statusElement = this[`phase${phase}Status`];
+                statusElement.className = `status ${status}`;
+                statusElement.textContent = message;
+            }
+
+            bindEvents() {
+                // Phase 1
+                document.getElementById('test-files').addEventListener('click', () => this.testFiles());
+                document.getElementById('test-server').addEventListener('click', () => this.testServer());
+                document.getElementById('test-xml').addEventListener('click', () => this.testXML());
+
+                // Phase 2
+                document.getElementById('test-integration').addEventListener('click', () => this.testIntegration());
+                document.getElementById('test-upload').addEventListener('click', () => this.testUpload());
+                document.getElementById('test-detection').addEventListener('click', () => this.testDetection());
+
+                // Phase 3
+                document.getElementById('test-workflow').addEventListener('click', () => this.testWorkflow());
+                document.getElementById('test-modal').addEventListener('click', () => this.testModal());
+                document.getElementById('test-persistence').addEventListener('click', () => this.testPersistence());
+            }
+
+            async startValidation() {
+                this.log('🚀 Démarrage de la validation système', 'info');
+                await this.validatePhase1();
+            }
+
+            async validatePhase1() {
+                this.log('🔍 Phase 1: Validation de l\'infrastructure', 'info');
+                
+                try {
+                    // Test des fichiers critiques
+                    await this.testFiles();
+                    await this.delay(500);
+                    
+                    // Test du serveur
+                    await this.testServer();
+                    await this.delay(500);
+                    
+                    // Test du fichier XML
+                    await this.testXML();
+                    
+                    this.results.phase1 = true;
+                    this.updateStatus(1, 'success', '✅ Phase 1 réussie');
+                    this.enablePhase2();
+                    
+                } catch (error) {
+                    this.log(`❌ Erreur Phase 1: ${error.message}`, 'error');
+                    this.updateStatus(1, 'error', '❌ Phase 1 échouée');
+                }
+            }
+
+            async testFiles() {
+                this.log('📁 Test des fichiers critiques...', 'info');
+                
+                const criticalFiles = [
+                    'assets/js/modules/bindingEditorIntegration.js',
+                    'assets/js/bindingEditor.js',
+                    'assets/js/modules/globalLogger.js',
+                    'test_integration_xml.xml'
+                ];
+
+                for (const file of criticalFiles) {
+                    try {
+                        const response = await fetch(file);
+                        if (response.ok) {
+                            this.log(`✅ ${file} - OK`, 'success');
+                        } else {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                    } catch (error) {
+                        this.log(`❌ ${file} - ${error.message}`, 'error');
+                        throw error;
+                    }
+                }
+            }
+
+            async testServer() {
+                this.log('🌐 Test du serveur PHP...', 'info');
+                
+                try {
+                    const response = await fetch('keybind_editor.php');
+                    if (response.ok) {
+                        this.log('✅ Serveur PHP opérationnel', 'success');
+                    } else {
+                        throw new Error(`Serveur retourne ${response.status}`);
+                    }
+                } catch (error) {
+                    this.log(`❌ Erreur serveur: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+
+            async testXML() {
+                this.log('📄 Test du fichier XML...', 'info');
+                
+                try {
+                    const response = await fetch('test_integration_xml.xml');
+                    if (response.ok) {
+                        const xmlContent = await response.text();
+                        if (xmlContent.includes('actionmap') && xmlContent.includes('action')) {
+                            this.log('✅ Fichier XML valide', 'success');
+                        } else {
+                            throw new Error('Structure XML invalide');
+                        }
+                    } else {
+                        throw new Error(`XML non accessible: ${response.status}`);
+                    }
+                } catch (error) {
+                    this.log(`❌ Erreur XML: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+
+            enablePhase2() {
+                document.getElementById('test-integration').disabled = false;
+                document.getElementById('test-upload').disabled = false;
+                document.getElementById('test-detection').disabled = false;
+                this.updateStatus(2, 'info', '🔄 Phase 2 disponible');
+            }
+
+            async testIntegration() {
+                this.log('🔗 Test de l\'intégration directe...', 'info');
+                
+                try {
+                    // Vérifier que l'iframe est chargée
+                    const iframeDoc = this.testIframe.contentDocument;
+                    if (!iframeDoc) {
+                        throw new Error('Iframe non accessible');
+                    }
+
+                    // Vérifier la présence des scripts
+                    const scripts = iframeDoc.querySelectorAll('script[src*="bindingEditor"]');
+                    if (scripts.length > 0) {
+                        this.log('✅ Scripts d\'intégration détectés', 'success');
+                    } else {
+                        this.log('⚠️ Scripts d\'intégration non trouvés', 'warning');
+                    }
+
+                    // Vérifier l'objet global
+                    const integration = this.testIframe.contentWindow.bindingEditorIntegration;
+                    if (integration) {
+                        this.log('✅ Objet integration trouvé', 'success');
+                        this.log(`📊 État: initialisé=${integration.isInitialized}`, 'info');
+                    } else {
+                        this.log('⚠️ Objet integration non trouvé', 'warning');
+                    }
+
+                } catch (error) {
+                    this.log(`❌ Erreur intégration: ${error.message}`, 'error');
+                }
+            }
+
+            async testUpload() {
+                this.log('📤 Test de simulation d\'upload...', 'info');
+                
+                try {
+                    // Rediriger vers la page de test d'upload
+                    this.testIframe.src = 'test_upload_simulation.html';
+                    
+                    // Attendre le chargement
+                    await this.delay(2000);
+                    
+                    this.log('✅ Page de test d\'upload chargée', 'success');
+                    
+                } catch (error) {
+                    this.log(`❌ Erreur upload: ${error.message}`, 'error');
+                }
+            }
+
+            async testDetection() {
+                this.log('🎯 Test de détection automatique...', 'info');
+                
+                try {
+                    // Retour à la page principale et test de détection
+                    this.testIframe.src = 'keybind_editor.php';
+                    
+                    // Attendre le chargement
+                    await this.delay(3000);
+                    
+                    // Vérifier les logs dans l'iframe
+                    const iframeWindow = this.testIframe.contentWindow;
+                    if (iframeWindow.console && iframeWindow.console.log) {
+                        this.log('✅ Console accessible pour logging', 'success');
+                    }
+                    
+                    this.enablePhase3();
+                    
+                } catch (error) {
+                    this.log(`❌ Erreur détection: ${error.message}`, 'error');
+                }
+            }
+
+            enablePhase3() {
+                document.getElementById('test-workflow').disabled = false;
+                document.getElementById('test-modal').disabled = false;
+                document.getElementById('test-persistence').disabled = false;
+                this.updateStatus(3, 'info', '🔄 Phase 3 disponible');
+            }
+
+            async testWorkflow() {
+                this.log('🔄 Test du workflow complet...', 'info');
+                
+                // Ouvrir une nouvelle fenêtre pour le test complet
+                const testWindow = window.open('test_advanced_debug.html', '_blank');
+                if (testWindow) {
+                    this.log('✅ Interface de debug avancé ouverte', 'success');
+                } else {
+                    this.log('❌ Impossible d\'ouvrir l\'interface de debug', 'error');
+                }
+            }
+
+            async testModal() {
+                this.log('🪟 Test des modales...', 'info');
+                this.log('ℹ️ Test manuel requis dans l\'interface', 'info');
+            }
+
+            async testPersistence() {
+                this.log('💾 Test de persistence...', 'info');
+                this.log('ℹ️ Test manuel requis dans l\'interface', 'info');
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Démarrage automatique
+        document.addEventListener('DOMContentLoaded', () => {
+            new SystemValidator();
+        });
+    </script>
+</body>
+</html>

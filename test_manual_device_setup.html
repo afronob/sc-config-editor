@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Test Manuel - Configuration Device</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        .devices-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .device-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .device-unknown {
+            border-left-color: #ffc107;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🎮 Test Manuel - Configuration Device</h1>
+        <p>Cette page vous permet de tester manuellement le système de configuration des devices depuis `keybind_editor.php`.</p>
+        
+        <div class="card">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li><strong>Connectez votre device</strong> non configuré</li>
+                <li><strong>Cliquez sur "Détecter Devices"</strong> ci-dessous</li>
+                <li><strong>Sélectionnez votre device</strong> dans la liste</li>
+                <li><strong>Lancez la configuration</strong> avec le nouveau système XML</li>
+            </ol>
+        </div>
+        
+        <div class="card">
+            <h3>🔧 Contrôles</h3>
+            <button id="detectDevices" class="btn">Détecter Devices</button>
+            <button id="openKeybindEditor" class="btn btn-success">Ouvrir keybind_editor.php</button>
+            <button id="clearLog" class="btn btn-warning">Effacer Log</button>
+        </div>
+        
+        <div class="card">
+            <h3>🎮 Devices Détectés</h3>
+            <div id="devicesList" class="devices-list">
+                <p><em>Cliquez sur "Détecter Devices" pour scanner...</em></p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>📋 Log</h3>
+            <div id="log" class="log">
+                <div>[Initialisation] Test manuel prêt</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetection.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let autoDetection = null;
+        let setupUI = null;
+
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            const colors = {
+                'info': '#333',
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107'
+            };
+            
+            const entry = document.createElement('div');
+            entry.style.color = colors[type] || colors.info;
+            entry.style.marginBottom = '2px';
+            entry.textContent = `[${now}] ${message}`;
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function initializeSystem() {
+            try {
+                log('🔧 Initialisation du système de détection...', 'info');
+                
+                // Simuler les données de devices comme dans keybind_editor.php
+                window.devicesDataJs = [];
+                
+                // Initialiser les modules
+                autoDetection = new DeviceAutoDetection();
+                setupUI = new DeviceSetupUI(null, autoDetection);
+                
+                // Rendre disponibles globalement
+                window.deviceAutoDetection = autoDetection;
+                window.deviceSetupUI = setupUI;
+                
+                log('✅ Système initialisé avec succès', 'success');
+                return true;
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function detectDevices() {
+            log('🔍 Détection des devices connectés...', 'info');
+            
+            const gamepads = navigator.getGamepads();
+            const devicesList = document.getElementById('devicesList');
+            
+            if (!gamepads || gamepads.length === 0) {
+                devicesList.innerHTML = '<p><em>Aucun device détecté. Connectez un gamepad/joystick.</em></p>';
+                log('⚠️ Aucun device détecté', 'warning');
+                return;
+            }
+
+            let html = '';
+            let deviceFound = false;
+
+            for (let i = 0; i < gamepads.length; i++) {
+                const gamepad = gamepads[i];
+                if (!gamepad) continue;
+
+                deviceFound = true;
+                const isKnown = autoDetection ? autoDetection.isDeviceKnown(gamepad) : false;
+                const deviceClass = isKnown ? 'device-item' : 'device-item device-unknown';
+                const status = isKnown ? '✅ Configuré' : '❓ Non configuré';
+                
+                html += `
+                    <div class="${deviceClass}">
+                        <strong>${gamepad.id}</strong><br>
+                        <small>Index: ${gamepad.index} | Boutons: ${gamepad.buttons.length} | Axes: ${gamepad.axes.length}</small><br>
+                        <span>${status}</span>
+                        ${!isKnown ? `<button class="btn" onclick="configureDevice(${i})" style="margin-left: 10px;">Configurer</button>` : ''}
+                    </div>
+                `;
+                
+                log(`Device ${i}: ${gamepad.id} - ${status}`, isKnown ? 'success' : 'warning');
+            }
+
+            if (deviceFound) {
+                devicesList.innerHTML = html;
+                log(`✅ ${deviceFound} device(s) détecté(s)`, 'success');
+            } else {
+                devicesList.innerHTML = '<p><em>Aucun device actif détecté.</em></p>';
+            }
+        }
+
+        window.configureDevice = function(gamepadIndex) {
+            log(`🚀 Lancement de la configuration pour le device ${gamepadIndex}`, 'info');
+            
+            const gamepads = navigator.getGamepads();
+            const gamepad = gamepads[gamepadIndex];
+            
+            if (!gamepad) {
+                log('❌ Device non trouvé', 'error');
+                return;
+            }
+
+            if (!autoDetection || !setupUI) {
+                log('❌ Système non initialisé', 'error');
+                return;
+            }
+
+            try {
+                // Simuler une détection manuelle
+                const deviceInfo = {
+                    id: gamepad.id,
+                    gamepad: gamepad,
+                    vendor_id: 'unknown',
+                    product_id: 'unknown',
+                    buttons: gamepad.buttons.length,
+                    axes: gamepad.axes.length
+                };
+
+                // Forcer l'ajout aux devices inconnus
+                const deviceKey = autoDetection.getDeviceKey(gamepad);
+                autoDetection.unknownDevices.set(deviceKey, deviceInfo);
+                
+                log(`✅ Device ajouté aux devices inconnus: ${deviceKey}`, 'success');
+                
+                // Lancer la configuration
+                setupUI.startSetup(deviceKey);
+                log(`🎯 Configuration lancée pour: ${gamepad.id}`, 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur lors du lancement: ${error.message}`, 'error');
+            }
+        };
+
+        // Event listeners
+        document.getElementById('detectDevices').addEventListener('click', detectDevices);
+        
+        document.getElementById('openKeybindEditor').addEventListener('click', () => {
+            log('🌐 Ouverture de keybind_editor.php...', 'info');
+            window.open('keybind_editor.php', '_blank');
+        });
+        
+        document.getElementById('clearLog').addEventListener('click', () => {
+            document.getElementById('log').innerHTML = '<div>[Log effacé]</div>';
+        });
+
+        // Initialisation automatique
+        document.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 Démarrage du test manuel', 'info');
+            await initializeSystem();
+            log('💡 Cliquez sur "Détecter Devices" pour commencer', 'info');
+        });
+
+        // Écouter les connexions/déconnexions
+        window.addEventListener('gamepadconnected', (e) => {
+            log(`🎮 Device connecté: ${e.gamepad.id}`, 'success');
+            detectDevices();
+        });
+
+        window.addEventListener('gamepaddisconnected', (e) => {
+            log(`🔌 Device déconnecté: ${e.gamepad.id}`, 'warning');
+            detectDevices();
+        });
+    </script>
+</body>
+</html>

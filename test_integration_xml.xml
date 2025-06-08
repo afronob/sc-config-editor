@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" profileName="layout_test">
+  <CustomisationUIHeader label="Test Integration" />
+  <actionmap name="spaceship_general">
+    <action name="v_throttle_abs">
+      <rebind input="js1_axis1" />
+    </action>
+    <action name="v_strafe_forward">
+      <rebind input="js1_button1" />
+    </action>
+  </actionmap>
+  <joystick>
+    <instance value="1" />
+    <product value="Test Joystick" />
+  </joystick>
+</ActionMaps>

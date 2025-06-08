@@ -115,7 +115,7 @@
             try {
                 // Initialiser le système de détection
                 autoDetection = new DeviceAutoDetection();
-                setupUI = new DeviceSetupUI(autoDetection);
+                setupUI = new DeviceSetupUI(null, autoDetection);
                 
                 // Rendre disponible globalement
                 window.deviceSetupUI = setupUI;

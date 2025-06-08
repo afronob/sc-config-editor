@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Rapide - Upload XML et Intégration</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .section { background: white; padding: 20px; margin: 10px 0; border-radius: 5px; }
+        .log { background: #1e1e1e; color: #fff; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto; font-family: monospace; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; background: #007bff; color: white; }
+        input[type="file"] { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Rapide - Upload XML et Intégration</h1>
+    
+    <div class="section">
+        <h3>1. Upload XML de Test</h3>
+        <form action="keybind_editor.php" method="post" enctype="multipart/form-data" target="result-frame">
+            <input type="file" name="xmlfile" accept=".xml" id="xmlFile">
+            <button type="submit">📤 Upload XML</button>
+        </form>
+        <button onclick="useTestXML()">📋 Utiliser XML de Test</button>
+    </div>
+
+    <div class="section">
+        <h3>2. Résultat Keybind Editor</h3>
+        <iframe name="result-frame" id="result-frame" style="width: 100%; height: 400px; border: 1px solid #ddd;"></iframe>
+    </div>
+
+    <div class="section">
+        <h3>3. Tests et Vérifications</h3>
+        <button onclick="checkIntegration()">🔍 Vérifier Intégration</button>
+        <button onclick="forceTrigger()">⚡ Forcer Intégration</button>
+        <button onclick="clearLogs()">🗑️ Clear Logs</button>
+    </div>
+
+    <div class="section">
+        <h3>📋 Logs</h3>
+        <div id="logs" class="log">
+            <div class="info">[INFO] Interface de test rapide chargée</div>
+        </div>
+    </div>
+
+    <script>
+        function log(level, message) {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = level;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] [${level.toUpperCase()}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function useTestXML() {
+            log('info', 'Utilisation du XML de test...');
+            
+            // Créer un blob avec le contenu XML de test
+            const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" profileName="test_profile" optionsVersion="2" rebindVersion="2">
+    <CustomisationUIHeader label="Test Configuration" description="Configuration de test pour dispositifs" />
+    <actionmap name="spaceship_movement">
+        <action name="pitch_up">
+            <rebind device="joystick" input="js1_x" />
+        </action>
+        <action name="pitch_down">
+            <rebind device="joystick" input="js1_x" activationMode="hold" />
+        </action>
+        <action name="roll_left">
+            <rebind device="joystick" input="js1_y" />
+        </action>
+    </actionmap>
+    <actionmap name="spaceship_targeting">
+        <action name="target_nearest_hostile">
+            <rebind device="keyboard" input="kb1_t" />
+        </action>
+    </actionmap>
+</ActionMaps>`;
+
+            const blob = new Blob([xmlContent], { type: 'text/xml' });
+            const file = new File([blob], 'test_integration.xml', { type: 'text/xml' });
+            
+            // Mettre le fichier dans l'input
+            const fileInput = document.getElementById('xmlFile');
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            
+            log('success', 'XML de test prêt - Cliquez sur "Upload XML"');
+        }
+
+        function checkIntegration() {
+            log('info', 'Vérification de l\'intégration...');
+            
+            const iframe = document.getElementById('result-frame');
+            if (!iframe.contentWindow) {
+                log('error', 'Aucun contenu dans l\'iframe - Uploadez d\'abord un XML');
+                return;
+            }
+            
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const integration = iframe.contentWindow.bindingEditorIntegration;
+                
+                log('info', `Intégration trouvée: ${!!integration}`);
+                
+                if (integration) {
+                    log('info', `Intégration initialisée: ${integration.isInitialized}`);
+                    
+                    // Vérifier éléments DOM
+                    const bindingsTable = iframeDoc.getElementById('bindings-table');
+                    const filterElement = iframeDoc.getElementById('filter-nonempty');
+                    const deviceSection = iframeDoc.querySelector('.device-management-section');
+                    
+                    log('info', `Tableau bindings: ${!!bindingsTable}`);
+                    log('info', `Élément filter: ${!!filterElement}`);
+                    log('info', `Section dispositifs: ${!!deviceSection}`);
+                    
+                    if (bindingsTable && !deviceSection) {
+                        log('error', 'Tableau présent mais section dispositifs manquante!');
+                        log('info', 'Cela confirme le problème d\'injection');
+                        
+                        // Debug approfondi
+                        const allDivs = iframeDoc.querySelectorAll('div');
+                        const divsWithFilters = Array.from(allDivs).filter(d => d.textContent.includes('Filtres'));
+                        log('info', `Divs avec "Filtres" trouvées: ${divsWithFilters.length}`);
+                        
+                        if (divsWithFilters.length > 0) {
+                            log('info', 'Div avec Filtres trouvée - Problème dans addDeviceManagementLinks()');
+                        }
+                    } else if (deviceSection) {
+                        log('success', '✅ Section dispositifs présente!');
+                        
+                        // Vérifier boutons
+                        const managerBtn = deviceSection.querySelector('#open-device-manager');
+                        const importBtn = deviceSection.querySelector('#import-device-json');
+                        log('info', `Bouton gestionnaire: ${!!managerBtn}`);
+                        log('info', `Bouton import: ${!!importBtn}`);
+                    }
+                } else {
+                    log('error', 'Intégration non trouvée dans iframe');
+                }
+                
+            } catch (error) {
+                log('error', `Erreur lors vérification: ${error.message}`);
+            }
+        }
+
+        function forceTrigger() {
+            log('info', 'Forcer déclenchement de l\'intégration...');
+            
+            const iframe = document.getElementById('result-frame');
+            if (!iframe.contentWindow) {
+                log('error', 'Aucun contenu dans l\'iframe');
+                return;
+            }
+            
+            try {
+                const integration = iframe.contentWindow.bindingEditorIntegration;
+                if (integration) {
+                    log('info', 'Forcer initialize()...');
+                    integration.initialize();
+                    
+                    setTimeout(() => {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const deviceSection = iframeDoc.querySelector('.device-management-section');
+                        
+                        if (deviceSection) {
+                            log('success', '✅ Section dispositifs apparue après force!');
+                        } else {
+                            log('error', '❌ Section toujours manquante après force');
+                            
+                            // Appeler debugDOMStructure si disponible
+                            if (typeof integration.debugDOMStructure === 'function') {
+                                log('info', 'Appel debugDOMStructure()...');
+                                integration.debugDOMStructure();
+                            }
+                        }
+                    }, 1000);
+                } else {
+                    log('error', 'Intégration non disponible');
+                }
+                
+            } catch (error) {
+                log('error', `Erreur: ${error.message}`);
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '<div class="info">[INFO] Logs effacés</div>';
+        }
+
+        // Surveiller le chargement de l'iframe
+        document.getElementById('result-frame').addEventListener('load', function() {
+            log('info', 'Iframe chargée - Contenu disponible');
+            
+            setTimeout(() => {
+                log('info', 'Vérification automatique dans 2 secondes...');
+                checkIntegration();
+            }, 2000);
+        });
+
+        log('info', 'Prêt pour les tests');
+        log('info', '1. Cliquez "Utiliser XML de Test" puis "Upload XML"');
+        log('info', '2. Attendez le chargement puis vérifiez l\'intégration');
+    </script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Test Correction Step 2 - Saitek X-56</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .test-result { padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid; }
+        .success { background: #f0f9ff; border-color: #22c55e; color: #065f46; }
+        .error { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+        .info { background: #f0f9ff; border-color: #3b82f6; color: #1e40af; }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2563eb; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .comparison-item { padding: 15px; border-radius: 5px; }
+        .old-logic { background: #fee2e2; border: 1px solid #f87171; }
+        .new-logic { background: #dcfce7; border: 1px solid #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test de Correction - Step 2 Detection Saitek X-56</h1>
+        
+        <div class="test-result info">
+            <h3>📋 Problème identifié et corrigé</h3>
+            <p><strong>Cause :</strong> Le script Step 2 utilisait <code>device.name</code> qui n'existe pas dans les données, au lieu de <code>device.id</code></p>
+            <p><strong>Solution :</strong> Harmoniser la logique de détection avec <code>deviceAutoDetection.js</code> (vendor_id/product_id + fallback sur device.id)</p>
+        </div>
+
+        <div class="comparison">
+            <div class="comparison-item old-logic">
+                <h4>❌ Ancienne logique (défaillante)</h4>
+                <pre>
+// Recherchait device.name (inexistant)
+const found = window.devicesDataJs.find(device => {
+    if (!device.name) return false; // ❌ Toujours false !
+    
+    const deviceNameSimple = device.name.toLowerCase()...
+    return gamepadIdSimple.includes(deviceNameSimple)...
+});
+                </pre>
+            </div>
+            
+            <div class="comparison-item new-logic">
+                <h4>✅ Nouvelle logique (correcte)</h4>
+                <pre>
+// 1. Vérification vendor_id/product_id (principale)
+const found = window.devicesDataJs.find(device => {
+    return device.vendor_id && device.product_id &&
+           device.vendor_id.toLowerCase() === gamepadVendor &&
+           device.product_id.toLowerCase() === gamepadProduct;
+});
+
+// 2. Fallback sur device.id (existe !)
+const foundByName = window.devicesDataJs.find(device => {
+    if (!device.id) return false;
+    const deviceIdSimple = device.id.replace(/\(Vendor:.*$/, '')...
+});
+                </pre>
+            </div>
+        </div>
+        
+        <div id="results"></div>
+        
+        <button onclick="testCorrectedLogic()">🧪 Tester la Logique Corrigée</button>
+        <button onclick="testDataStructure()">📊 Vérifier Structure des Données</button>
+        <button onclick="simulateDetection()">🎮 Simuler Détection Saitek</button>
+        <button onclick="clearResults()">🗑️ Vider</button>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Fonction de détection corrigée (copiée depuis le template mis à jour)
+        function checkIfDeviceIsKnownCorrected(gamepad, devicesData) {
+            if (!devicesData || !Array.isArray(devicesData)) {
+                return false;
+            }
+            
+            // Extraire vendor_id et product_id du gamepad (même logique que deviceAutoDetection.js)
+            const vendorMatch = gamepad.id.match(/Vendor:\\s*([0-9a-fA-F]{4})/i);
+            const productMatch = gamepad.id.match(/Product:\\s*([0-9a-fA-F]{4})/i);
+            
+            if (vendorMatch && productMatch) {
+                const gamepadVendor = `0x${vendorMatch[1].toLowerCase()}`;
+                const gamepadProduct = `0x${productMatch[1].toLowerCase()}`;
+                
+                console.log(`🔍 Recherche dispositif - Vendor: ${gamepadVendor}, Product: ${gamepadProduct}`);
+                
+                // Vérifier par vendor/product ID (méthode principale)
+                const found = devicesData.find(device => {
+                    return device.vendor_id && device.product_id &&
+                           device.vendor_id.toLowerCase() === gamepadVendor &&
+                           device.product_id.toLowerCase() === gamepadProduct;
+                });
+                
+                if (found) {
+                    console.log(`✅ Dispositif reconnu par ID: ${gamepad.id} -> ${found.id}`);
+                    return found;
+                }
+            }
+            
+            // Fallback : recherche par nom (utiliser device.id au lieu de device.name)
+            const gamepadIdSimple = gamepad.id.replace(/\\(Vendor:.*$/, '').trim().toLowerCase();
+            const foundByName = devicesData.find(device => {
+                if (!device.id) return false;
+                
+                const deviceIdSimple = device.id.replace(/\\(Vendor:.*$/, '').trim().toLowerCase();
+                return gamepadIdSimple.includes(deviceIdSimple) || deviceIdSimple.includes(gamepadIdSimple);
+            });
+            
+            if (foundByName) {
+                console.log(`✅ Dispositif reconnu par nom: ${gamepad.id} -> ${foundByName.id}`);
+                return foundByName;
+            }
+            
+            return false;
+        }
+
+        // Ancienne fonction défaillante (pour comparaison)
+        function checkIfDeviceIsKnownOld(gamepad, devicesData) {
+            if (!devicesData || !Array.isArray(devicesData)) {
+                return false;
+            }
+            
+            const gamepadIdSimple = gamepad.id.toLowerCase().replace(/\\s+/g, ' ').trim();
+            
+            // ❌ Cherche device.name qui n'existe pas !
+            const found = devicesData.find(device => {
+                if (!device.name) return false; // ❌ Toujours false !
+                
+                const deviceNameSimple = device.name.toLowerCase().replace(/\\s+/g, ' ').trim();
+                return gamepadIdSimple.includes(deviceNameSimple) || deviceNameSimple.includes(gamepadIdSimple);
+            });
+            
+            return found;
+        }
+
+        async function testDataStructure() {
+            log('<h3>📊 Test de la Structure des Données</h3>');
+            
+            try {
+                const response = await fetch('/get_devices_data.php');
+                const data = await response.json();
+                
+                log(`✅ Données chargées : ${data.length} dispositifs`, 'success');
+                
+                // Analyser le Saitek
+                const saitek = data.find(d => d.id && d.id.includes('0738') && d.id.includes('a221'));
+                
+                if (saitek) {
+                    log(`🎮 <strong>Saitek trouvé dans les données :</strong><br>
+                         • ID: ${saitek.id}<br>
+                         • Vendor ID: ${saitek.vendor_id}<br>
+                         • Product ID: ${saitek.product_id}<br>
+                         • XML Instance: ${saitek.xml_instance}<br>
+                         • Name: ${saitek.name || '❌ MANQUANT'}`, 'success');
+                } else {
+                    log('❌ Saitek non trouvé dans les données !', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur de chargement : ${error.message}`, 'error');
+            }
+        }
+
+        async function testCorrectedLogic() {
+            log('<h3>🧪 Test de la Logique Corrigée</h3>');
+            
+            try {
+                const response = await fetch('/get_devices_data.php');
+                const devicesData = await response.json();
+                
+                // Simuler un gamepad Saitek
+                const mockSaitek = {
+                    id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)",
+                    index: 0,
+                    connected: true
+                };
+                
+                // Test avec l'ancienne logique
+                const oldResult = checkIfDeviceIsKnownOld(mockSaitek, devicesData);
+                log(`❌ <strong>Ancienne logique :</strong> ${oldResult ? 'Reconnu' : 'Non reconnu'} ${!oldResult ? '(comme attendu car défaillante)' : ''}`, oldResult ? 'error' : 'info');
+                
+                // Test avec la nouvelle logique
+                const newResult = checkIfDeviceIsKnownCorrected(mockSaitek, devicesData);
+                log(`✅ <strong>Nouvelle logique :</strong> ${newResult ? 'Reconnu' : 'Non reconnu'} ${newResult ? '(CORRECTE !)' : ''}`, newResult ? 'success' : 'error');
+                
+                if (newResult) {
+                    log(`🎉 <strong>Dispositif détecté :</strong> ${newResult.id}`, 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur : ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateDetection() {
+            log('<h3>🎮 Simulation Complète de Détection</h3>');
+            
+            // Vérifier si des gamepads sont connectés
+            const gamepads = navigator.getGamepads();
+            let saitekFound = false;
+            
+            try {
+                const response = await fetch('/get_devices_data.php');
+                const devicesData = await response.json();
+                
+                log(`🔍 Recherche dans ${gamepads.length} slots gamepad...`);
+                
+                for (let i = 0; i < gamepads.length; i++) {
+                    if (gamepads[i]) {
+                        log(`📱 Gamepad ${i}: ${gamepads[i].id}`);
+                        
+                        const detected = checkIfDeviceIsKnownCorrected(gamepads[i], devicesData);
+                        
+                        if (detected) {
+                            log(`✅ <strong>Dispositif reconnu :</strong> ${detected.id}`, 'success');
+                            
+                            if (gamepads[i].id.includes('0738') && gamepads[i].id.includes('a221')) {
+                                saitekFound = true;
+                                log(`🎉 <strong>SAITEK X-56 RECONNU AVEC SUCCÈS !</strong>`, 'success');
+                            }
+                        } else {
+                            log(`❓ Dispositif non reconnu : ${gamepads[i].id}`, 'error');
+                        }
+                    }
+                }
+                
+                if (!saitekFound && gamepads.filter(g => g).length === 0) {
+                    log('ℹ️ Aucun gamepad connecté. Connectez votre Saitek X-56 pour un test complet.', 'info');
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur : ${error.message}`, 'error');
+            }
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testDataStructure();
+                setTimeout(testCorrectedLogic, 1000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

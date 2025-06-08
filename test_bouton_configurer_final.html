@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final - Bouton Configurer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .device-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .device-info h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        
+        .device-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test Final - Bouton Configurer</h1>
+        <p>Test de validation pour vérifier que le bouton "Configurer" ouvre maintenant l'interface graphique au lieu d'afficher une erreur.</p>
+        
+        <div class="test-section">
+            <h3>📊 État du Système</h3>
+            <div id="systemStatus">Initialisation...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎮 Dispositifs Connectés</h3>
+            <div id="connectedDevices">Recherche en cours...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>❓ Dispositifs Inconnus (Nouveaux)</h3>
+            <div id="unknownDevices">Aucun dispositif inconnu détecté</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Actions de Test</h3>
+            <button class="btn btn-primary" onclick="simulateUnknownDevice()">Simuler un Dispositif Inconnu</button>
+            <button class="btn btn-success" onclick="refreshDevices()">Actualiser la Liste</button>
+            <button class="btn btn-warning" onclick="clearLog()">Vider le Log</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Log des Événements</h3>
+            <div id="logOutput" class="log">Initialisation du test...\n</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Importer exactement les mêmes modules que step2_devices.php
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetection.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+        
+        let deviceAutoDetection = null;
+        let deviceSetupUI = null;
+        
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logOutput = document.getElementById('logOutput');
+            const colors = {
+                'success': '#28a745',
+                'error': '#dc3545',
+                'warning': '#ffc107',
+                'info': '#17a2b8'
+            };
+            
+            const coloredMessage = `[${now}] ${message}`;
+            logOutput.textContent += coloredMessage + '\n';
+            logOutput.scrollTop = logOutput.scrollHeight;
+            
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        async function initializeSystem() {
+            try {
+                log('🔧 Initialisation du système (même code que step2_devices.php)...', 'info');
+                
+                // Simuler les données des dispositifs comme dans l'application
+                window.devicesDataJs = [
+                    {
+                        "id": "VKB-Sim Gladiator NXT EVO R",
+                        "vendor_id": "0x231d",
+                        "product_id": "0x0201",
+                        "xml_instance": "231d_0201"
+                    },
+                    {
+                        "id": "Saitek Pro Flight X-56 Rhino Stick",
+                        "vendor_id": "0x06a3",
+                        "product_id": "0x0255",
+                        "xml_instance": "06a3_0255"
+                    }
+                ];
+                
+                log('📋 Données des dispositifs chargées', 'success');
+                
+                // Initialiser le système de détection (EXACTEMENT comme step2_devices.php)
+                deviceAutoDetection = new DeviceAutoDetection();
+                log('✅ DeviceAutoDetection initialisé', 'success');
+                
+                // Initialiser l'interface utilisateur de configuration (NOUVEAU!)
+                deviceSetupUI = new DeviceSetupUI(null, deviceAutoDetection);
+                log('✅ DeviceSetupUI initialisé', 'success');
+                
+                // Rendre disponible globalement pour l'accès depuis les boutons
+                window.deviceSetupUI = deviceSetupUI;
+                log('✅ Interface rendue disponible globalement', 'success');
+                
+                // Écouter les nouveaux dispositifs détectés
+                deviceAutoDetection.onNewDeviceDetected((deviceInfo) => {
+                    log(`🔍 Nouveau dispositif détecté: ${deviceInfo.id}`, 'success');
+                    updateUnknownDevicesList();
+                });
+                
+                updateStatus('✅ Système initialisé avec succès - DeviceSetupUI disponible!', 'success');
+                log('🎉 Système complètement initialisé', 'success');
+                
+                // Démarrer la détection
+                updateConnectedDevicesList();
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                updateStatus('❌ Erreur d\'initialisation', 'error');
+                console.error('Erreur complète:', error);
+            }
+        }
+        
+        function updateConnectedDevicesList() {
+            const container = document.getElementById('connectedDevices');
+            const gamepads = navigator.getGamepads();
+            
+            if (!gamepads || gamepads.length === 0) {
+                container.innerHTML = '<p><em>Aucun dispositif connecté. Connectez un joystick pour tester.</em></p>';
+                return;
+            }
+            
+            let html = '';
+            let deviceFound = false;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                const gamepad = gamepads[i];
+                if (!gamepad) continue;
+                
+                deviceFound = true;
+                const isKnown = deviceAutoDetection ? deviceAutoDetection.isDeviceKnown(gamepad) : false;
+                const status = isKnown ? '✅ Connu' : '❓ Inconnu';
+                const statusClass = isKnown ? 'success' : 'warning';
+                
+                html += `
+                    <div class="device-item">
+                        <div class="device-info">
+                            <h4>${gamepad.id}</h4>
+                            <div class="device-details">
+                                Boutons: ${gamepad.buttons.length} | Axes: ${gamepad.axes.length}<br>
+                                Index: ${gamepad.index}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="status ${statusClass}">${status}</span>
+                            ${!isKnown ? `<button class="btn btn-warning" onclick="testConfigureButton('${gamepad.id}', ${gamepad.index})">Tester Configuration</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (!deviceFound) {
+                container.innerHTML = '<p><em>Aucun dispositif détecté.</em></p>';
+            } else {
+                container.innerHTML = html;
+            }
+        }
+        
+        function updateUnknownDevicesList() {
+            const container = document.getElementById('unknownDevices');
+            
+            if (!deviceAutoDetection) {
+                container.innerHTML = 'Système non initialisé';
+                return;
+            }
+            
+            const unknownDevices = deviceAutoDetection.getUnknownDevices();
+            
+            if (unknownDevices.length === 0) {
+                container.innerHTML = 'Aucun dispositif inconnu détecté';
+                return;
+            }
+            
+            let html = '';
+            unknownDevices.forEach(device => {
+                const deviceKey = deviceAutoDetection.getDeviceKey(device.gamepad);
+                html += `
+                    <div class="device-item">
+                        <div class="device-info">
+                            <h4>${device.id}</h4>
+                            <div class="device-details">
+                                Vendor: ${device.vendor_id || 'N/A'} | Product: ${device.product_id || 'N/A'}<br>
+                                Boutons: ${device.buttons} | Axes: ${device.axes}
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-warning" onclick="startDeviceSetup('${deviceKey}')">
+                                Configurer
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Fonction globale EXACTEMENT identique à step2_devices.php
+        window.startDeviceSetup = function(deviceKey) {
+            if (!deviceAutoDetection) {
+                alert('Système de détection non initialisé');
+                return;
+            }
+            
+            if (!deviceSetupUI) {
+                alert('Interface de configuration non initialisée');
+                return;
+            }
+            
+            try {
+                log(`🔧 Démarrage de la configuration pour: ${deviceKey}`, 'info');
+                
+                // Utiliser deviceSetupUI.startSetup directement (comme dans step2_devices.php)
+                deviceSetupUI.startSetup(deviceKey);
+                log(`✅ Interface de configuration lancée`, 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur lors du démarrage de la configuration: ${error.message}`, 'error');
+                console.error('Erreur complète:', error);
+                
+                // Gestion d'erreur identique à step2_devices.php
+                if (error.message.includes('Device inconnu non trouvé') || error.message.includes('Device non trouvé')) {
+                    console.warn('Tentative de configuration d\'un dispositif supprimé:', deviceKey);
+                    if (confirm('Ce dispositif n\'est plus disponible. Voulez-vous actualiser la page pour mettre à jour la liste ?')) {
+                        window.location.reload();
+                    }
+                } else {
+                    alert('Erreur lors du démarrage de la configuration: ' + error.message);
+                }
+            }
+        };
+        
+        // Fonctions utilitaires globales
+        window.simulateUnknownDevice = function() {
+            if (!deviceAutoDetection) {
+                updateStatus('❌ Système non initialisé', 'error');
+                return;
+            }
+            
+            log('🎭 Simulation d\'un dispositif inconnu...', 'info');
+            
+            // Créer un gamepad fictif
+            const fakeGamepad = {
+                id: 'Test Unknown Device (Vendor: 9999 Product: 8888)',
+                index: 99,
+                connected: true,
+                timestamp: Date.now(),
+                mapping: 'standard',
+                buttons: Array(10).fill({ pressed: false, value: 0 }),
+                axes: Array(4).fill(0)
+            };
+            
+            // Simuler la détection
+            deviceAutoDetection.handleGamepadConnected(fakeGamepad);
+            log('✅ Dispositif fictif ajouté à la liste des inconnus', 'success');
+            
+            // Mettre à jour l'affichage
+            updateUnknownDevicesList();
+        };
+        
+        window.testConfigureButton = function(gamepadId, gamepadIndex) {
+            const gamepads = navigator.getGamepads();
+            const gamepad = gamepads[gamepadIndex];
+            
+            if (!gamepad) {
+                log(`❌ Gamepad non trouvé à l'index ${gamepadIndex}`, 'error');
+                return;
+            }
+            
+            log(`🧪 Test du bouton configurer pour: ${gamepadId}`, 'info');
+            
+            // Forcer l'ajout aux dispositifs inconnus
+            deviceAutoDetection.registerUnknownDevice(gamepad);
+            const deviceKey = deviceAutoDetection.getDeviceKey(gamepad);
+            
+            log(`📝 Dispositif ajouté aux inconnus avec la clé: ${deviceKey}`, 'info');
+            
+            // Mettre à jour l'affichage
+            updateUnknownDevicesList();
+            
+            // Tester la fonction de configuration
+            setTimeout(() => {
+                startDeviceSetup(deviceKey);
+            }, 500);
+        };
+        
+        window.refreshDevices = function() {
+            log('🔄 Actualisation de la liste des dispositifs...', 'info');
+            updateConnectedDevicesList();
+            updateUnknownDevicesList();
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('logOutput').textContent = 'Log effacé...\n';
+        };
+        
+        // Initialiser au chargement
+        initializeSystem();
+        
+        // Actualiser périodiquement
+        setInterval(() => {
+            updateConnectedDevicesList();
+        }, 2000);
+    </script>
+</body>
+</html>

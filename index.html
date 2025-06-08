@@ -43,7 +43,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
             max-width: 1200px;
             width: 100%;
@@ -212,7 +212,9 @@
     <div class="new-features">
         <h3>🎉 Nouvelles Fonctionnalités Disponibles</h3>
         <p>Le système de détection automatique des devices est maintenant opérationnel !</p>
+        <p><strong>🚀 Nouveau :</strong> Éditeur étape par étape pour une expérience simplifiée</p>
         <div class="features-list">
+            <span class="feature-tag">🚀 Workflow Guidé</span>
             <span class="feature-tag">🤖 Détection Auto</span>
             <span class="feature-tag">⚙️ Configuration Guidée</span>
             <span class="feature-tag">🔘 Bouton Corrigé</span>
@@ -222,6 +224,15 @@
     </div>
 
     <div class="grid">
+        <!-- Nouvel éditeur étape par étape -->
+        <a href="step_by_step_handler.php?step=1" class="card" style="border: 2px solid #4CAF50; background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(129, 199, 132, 0.1));">
+            <div class="card-icon" style="font-size: 3rem;">🚀</div>
+            <div class="card-title" style="color: #4CAF50;">🆕 Éditeur Étape par Étape</div>
+            <div class="card-description">
+                <strong>Nouveau !</strong> Interface guidée en 4 étapes : Upload XML → Reconnaissance des dispositifs → Configuration → Téléchargement
+            </div>
+        </a>
+
         <!-- Éditeur principal -->
         <a href="keybind_editor.php" class="card">
             <div class="card-icon icon-edit"></div>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Debug Avancé Intégration</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f8f9fa; 
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .panel { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        .full-width { grid-column: span 2; }
+        
+        h1 { color: #495057; margin-bottom: 30px; text-align: center; }
+        h3 { color: #6c757d; margin-top: 0; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
+        
+        .btn { 
+            display: inline-block;
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            margin: 4px;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #1e7e34; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn-info:hover { background: #138496; }
+        
+        .logs-container {
+            background: #1e1e1e;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .log-error { color: #ff6b6b; font-weight: bold; }
+        .log-warn { color: #ffd93d; font-weight: bold; }
+        .log-success { color: #51cf66; font-weight: bold; }
+        .log-info { color: #74c0fc; }
+        .log-debug { color: #ced4da; }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-pending { background: #6c757d; }
+        
+        .checklist {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .checklist ul { margin: 0; padding-left: 20px; }
+        .checklist li { margin: 8px 0; }
+        
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .stat {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔧 Debug Avancé - Intégration Gestion Dispositifs</h1>
+    
+    <div class="grid">
+        
+        <!-- Panel de contrôle -->
+        <div class="panel">
+            <h3>🎮 Contrôles de Test</h3>
+            
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="openKeybindEditor()">
+                    📂 Ouvrir Éditeur
+                </button>
+                <button class="btn btn-info" onclick="downloadTestXML()">
+                    💾 Télécharger XML Test
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <button class="btn btn-warning" onclick="checkIntegration()">
+                    🔍 Vérifier Intégration
+                </button>
+                <button class="btn btn-success" onclick="testModal()">
+                    🎮 Tester Modal
+                </button>
+            </div>
+            
+            <div>
+                <button class="btn btn-info" onclick="exportLogs()">
+                    📤 Exporter Logs
+                </button>
+                <button class="btn btn-warning" onclick="clearLogs()">
+                    🧹 Effacer Logs
+                </button>
+            </div>
+        </div>
+
+        <!-- Statut global -->
+        <div class="panel">
+            <h3>📊 Statut Global</h3>
+            
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="logs-count">0</div>
+                    <div class="stat-label">Logs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="errors-count">0</div>
+                    <div class="stat-label">Erreurs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="success-count">0</div>
+                    <div class="stat-label">Succès</div>
+                </div>
+            </div>
+            
+            <div id="status-list">
+                <div><span class="status-indicator status-pending"></span>Éditeur non ouvert</div>
+                <div><span class="status-indicator status-pending"></span>XML non uploadé</div>
+                <div><span class="status-indicator status-pending"></span>Intégration non vérifiée</div>
+                <div><span class="status-indicator status-pending"></span>Modal non testée</div>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="panel full-width">
+            <h3>📋 Instructions de Test</h3>
+            
+            <div class="checklist">
+                <strong>🎯 Procédure de Test Complète :</strong>
+                <ol>
+                    <li><strong>Ouvrir l'éditeur :</strong> Cliquez sur "📂 Ouvrir Éditeur" (nouvelle fenêtre)</li>
+                    <li><strong>Télécharger XML :</strong> Cliquez sur "💾 Télécharger XML Test" pour obtenir le fichier</li>
+                    <li><strong>Upload XML :</strong> Dans l'éditeur, uploadez le fichier téléchargé</li>
+                    <li><strong>Vérifier :</strong> Utilisez "🔍 Vérifier Intégration" ou observez la console</li>
+                    <li><strong>Tester modal :</strong> Cliquez sur "🎮 Tester Modal" si intégration OK</li>
+                </ol>
+            </div>
+            
+            <div class="checklist" style="margin-top: 15px;">
+                <strong>👀 Éléments à Vérifier dans l'Éditeur :</strong>
+                <ul>
+                    <li>✅ Section "🎮 Gestion des Dispositifs" visible au-dessus du tableau</li>
+                    <li>✅ Bouton "Gérer les dispositifs" présent et cliquable</li>
+                    <li>✅ Bouton "Importer JSON" présent</li>
+                    <li>✅ Compteur "0 dispositifs configurés" affiché</li>
+                    <li>✅ Clic sur "Gérer les dispositifs" ouvre la modal</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Logs en temps réel -->
+        <div class="panel full-width">
+            <h3>📝 Logs en Temps Réel</h3>
+            <div class="logs-container" id="logs-display">
+                <div class="log-info">Initialisation du système de debug...</div>
+                <div class="log-info">En attente des logs de l'éditeur...</div>
+            </div>
+        </div>
+        
+        <!-- Iframe pour l'éditeur -->
+        <div class="panel full-width">
+            <h3>🖥️ Éditeur de Keybinds</h3>
+            <iframe id="editor-iframe" src="about:blank"></iframe>
+        </div>
+        
+    </div>
+</div>
+
+<script type="module">
+    let editorWindow = null;
+    let logInterval = null;
+    
+    // Variables globales pour tracking
+    window.debugStats = {
+        logsCount: 0,
+        errorsCount: 0,
+        successCount: 0
+    };
+
+    function updateStats() {
+        document.getElementById('logs-count').textContent = window.debugStats.logsCount;
+        document.getElementById('errors-count').textContent = window.debugStats.errorsCount;
+        document.getElementById('success-count').textContent = window.debugStats.successCount;
+    }
+
+    function addLog(message, level = 'info', module = 'Debug') {
+        const logsDisplay = document.getElementById('logs-display');
+        const timestamp = new Date().toLocaleTimeString();
+        
+        const logDiv = document.createElement('div');
+        logDiv.className = `log-entry log-${level}`;
+        logDiv.innerHTML = `[${timestamp}] [${module}] ${message}`;
+        
+        logsDisplay.appendChild(logDiv);
+        logsDisplay.scrollTop = logsDisplay.scrollHeight;
+        
+        // Mettre à jour les stats
+        window.debugStats.logsCount++;
+        if (level === 'error') window.debugStats.errorsCount++;
+        if (level === 'success') window.debugStats.successCount++;
+        updateStats();
+    }
+
+    function updateStatus(index, success, label) {
+        const statusList = document.getElementById('status-list');
+        const statusItems = statusList.children;
+        
+        if (statusItems[index]) {
+            const indicator = statusItems[index].querySelector('.status-indicator');
+            indicator.className = `status-indicator ${success ? 'status-success' : 'status-error'}`;
+            statusItems[index].innerHTML = `<span class="status-indicator ${success ? 'status-success' : 'status-error'}"></span>${label}`;
+        }
+    }
+
+    window.openKeybindEditor = function() {
+        addLog('Ouverture de keybind_editor.php...', 'info');
+        
+        editorWindow = window.open('http://localhost:8080/keybind_editor.php', '_blank', 
+            'width=1200,height=800,scrollbars=yes,resizable=yes');
+        
+        if (editorWindow) {
+            updateStatus(0, true, 'Éditeur ouvert avec succès');
+            addLog('Éditeur ouvert dans une nouvelle fenêtre', 'success');
+            
+            // Démarrer la surveillance des logs depuis l'éditeur
+            startLogMonitoring();
+        } else {
+            updateStatus(0, false, 'Impossible d\'ouvrir l\'éditeur');
+            addLog('Impossible d\'ouvrir la fenêtre (popup bloqué?)', 'error');
+        }
+    };
+
+    window.downloadTestXML = function() {
+        const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" profileName="layout_test">
+  <CustomisationUIHeader label="Test Integration" />
+  <actionmap name="spaceship_general">
+    <action name="v_throttle_abs">
+      <rebind input="js1_axis1" />
+    </action>
+    <action name="v_strafe_forward">
+      <rebind input="js1_button1" />
+    </action>
+  </actionmap>
+  <joystick>
+    <instance value="1" />
+    <product value="Test Joystick" />
+  </joystick>
+</ActionMaps>`;
+
+        const blob = new Blob([xmlContent], { type: 'application/xml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'test_integration_xml.xml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        addLog('Fichier XML test téléchargé: test_integration_xml.xml', 'success');
+    };
+
+    window.checkIntegration = function() {
+        addLog('Vérification de l\'intégration...', 'info');
+        
+        if (!editorWindow || editorWindow.closed) {
+            addLog('Aucune fenêtre éditeur ouverte', 'error');
+            return;
+        }
+        
+        try {
+            // Tenter d'accéder au logger global de l'éditeur
+            const editorLogger = editorWindow.globalLogger;
+            
+            if (editorLogger) {
+                addLog('Logger global trouvé dans l\'éditeur', 'success');
+                
+                // Récupérer les logs de l'intégration
+                const integrationLogs = editorLogger.getLogs(null, 'BindingEditorIntegration');
+                addLog(`${integrationLogs.length} logs d'intégration trouvés`, 'info');
+                
+                // Afficher les logs récents
+                integrationLogs.slice(-10).forEach(log => {
+                    addLog(log.message, log.level, 'Editor-' + log.module);
+                });
+                
+                // Vérifier le statut d'initialisation
+                const integration = editorWindow.bindingEditorIntegration;
+                if (integration && integration.isInitialized) {
+                    updateStatus(2, true, 'Intégration initialisée avec succès');
+                    addLog('✅ Intégration confirmée comme initialisée', 'success');
+                } else {
+                    updateStatus(2, false, 'Intégration non initialisée');
+                    addLog('❌ Intégration non initialisée', 'error');
+                }
+                
+            } else {
+                addLog('Logger global non trouvé dans l\'éditeur', 'warn');
+            }
+            
+        } catch (error) {
+            addLog(`Erreur lors de la vérification: ${error.message}`, 'error');
+        }
+    };
+
+    window.testModal = function() {
+        addLog('Test d\'ouverture de la modal...', 'info');
+        
+        if (!editorWindow || editorWindow.closed) {
+            addLog('Aucune fenêtre éditeur ouverte', 'error');
+            return;
+        }
+        
+        try {
+            const integration = editorWindow.bindingEditorIntegration;
+            
+            if (integration && integration.isInitialized) {
+                // Simuler un clic sur le bouton
+                const button = editorWindow.document.getElementById('open-device-manager');
+                
+                if (button) {
+                    button.click();
+                    addLog('Clic simulé sur le bouton de gestion', 'info');
+                    
+                    setTimeout(() => {
+                        const modal = editorWindow.document.getElementById('device-manager-modal');
+                        if (modal) {
+                            updateStatus(3, true, 'Modal ouverte avec succès');
+                            addLog('✅ Modal détectée et ouverte', 'success');
+                        } else {
+                            updateStatus(3, false, 'Modal non trouvée');
+                            addLog('❌ Modal non trouvée après clic', 'error');
+                        }
+                    }, 1000);
+                    
+                } else {
+                    addLog('❌ Bouton de gestion non trouvé', 'error');
+                }
+            } else {
+                addLog('❌ Intégration non initialisée', 'error');
+            }
+            
+        } catch (error) {
+            addLog(`Erreur test modal: ${error.message}`, 'error');
+        }
+    };
+
+    window.exportLogs = function() {
+        const logsDisplay = document.getElementById('logs-display');
+        const logsText = Array.from(logsDisplay.children)
+            .map(child => child.textContent)
+            .join('\n');
+        
+        const blob = new Blob([logsText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `debug-logs-${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        addLog('Logs exportés vers fichier', 'success');
+    };
+
+    window.clearLogs = function() {
+        document.getElementById('logs-display').innerHTML = '';
+        window.debugStats = { logsCount: 0, errorsCount: 0, successCount: 0 };
+        updateStats();
+        addLog('Logs effacés', 'info');
+    };
+
+    function startLogMonitoring() {
+        // Surveiller les logs de l'éditeur toutes les 2 secondes
+        logInterval = setInterval(() => {
+            if (editorWindow && !editorWindow.closed && editorWindow.globalLogger) {
+                // Ici on pourrait synchroniser les logs de l'éditeur avec notre debug
+                // Pour l'instant, on vérifie juste que le logger est accessible
+            }
+        }, 2000);
+        
+        addLog('Surveillance des logs de l\'éditeur démarrée', 'info');
+    }
+
+    // Initialisation
+    window.addEventListener('DOMContentLoaded', () => {
+        addLog('Page de debug chargée et prête', 'success');
+        updateStats();
+    });
+
+    // Nettoyage à la fermeture
+    window.addEventListener('beforeunload', () => {
+        if (logInterval) {
+            clearInterval(logInterval);
+        }
+    });
+</script>
+
+</body>
+</html>

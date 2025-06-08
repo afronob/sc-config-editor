@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction Final - Step2 Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 3px; font-family: monospace; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .simulate-detect { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 0; }
+        .simulate-detect:disabled { background: #6c757d; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Correction Final - Step2 Detection</h1>
+    
+    <div class="test-section">
+        <h2>Simulation de la fonction detectDevices corrigée</h2>
+        <p>Cette simulation reproduit exactement le comportement de la fonction detectDevices() dans step2_devices.php</p>
+        
+        <button class="simulate-detect" onclick="simulateDetectDevices()">🔍 Lancer détection (simulation)</button>
+        
+        <div id="detectionResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Validation du flux complet</h2>
+        <div id="validationStatus" class="log info">Cliquez sur le bouton ci-dessus pour commencer</div>
+    </div>
+
+    <script>
+        // Reproduction exacte de la fonction checkIfDeviceIsKnown de step2_devices.php
+        function checkIfDeviceIsKnown(gamepad) {
+            if (!window.devicesDataJs || !Array.isArray(window.devicesDataJs)) {
+                console.log('⚠️ Données des dispositifs non disponibles, tous considérés comme nouveaux');
+                return false;
+            }
+            
+            // Extraire vendor_id et product_id du gamepad
+            const vendorMatch = gamepad.id.match(/Vendor:\s*([0-9a-fA-F]{4})/i);
+            const productMatch = gamepad.id.match(/Product:\s*([0-9a-fA-F]{4})/i);
+            
+            if (vendorMatch && productMatch) {
+                const gamepadVendor = `0x${vendorMatch[1].toLowerCase()}`;
+                const gamepadProduct = `0x${productMatch[1].toLowerCase()}`;
+                
+                console.log(`🔍 Recherche dispositif - Vendor: ${gamepadVendor}, Product: ${gamepadProduct}`);
+                
+                // Vérifier par vendor/product ID
+                const found = window.devicesDataJs.find(device => {
+                    return device.vendor_id && device.product_id &&
+                           device.vendor_id.toLowerCase() === gamepadVendor &&
+                           device.product_id.toLowerCase() === gamepadProduct;
+                });
+                
+                if (found) {
+                    console.log(`✅ Dispositif reconnu par ID: ${gamepad.id} -> ${found.id}`);
+                    return true;
+                }
+            }
+            
+            // Fallback : recherche par nom
+            const gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim().toLowerCase();
+            const foundByName = window.devicesDataJs.find(device => {
+                if (!device.id) return false;
+                
+                const deviceIdSimple = device.id.replace(/\(Vendor:.*$/, '').trim().toLowerCase();
+                return gamepadIdSimple.includes(deviceIdSimple) || deviceIdSimple.includes(gamepadIdSimple);
+            });
+            
+            if (foundByName) {
+                console.log(`✅ Dispositif reconnu par nom: ${gamepad.id} -> ${foundByName.id}`);
+                return true;
+            }
+            
+            console.log(`❓ Dispositif non reconnu: ${gamepad.id}`);
+            return false;
+        }
+
+        // Simulation exacte de la fonction detectDevices corrigée
+        async function simulateDetectDevices() {
+            const resultsDiv = document.getElementById('detectionResults');
+            const validationDiv = document.getElementById('validationStatus');
+            const button = document.querySelector('.simulate-detect');
+            
+            // Simulation de l'état du bouton
+            const originalText = button.textContent;
+            button.textContent = '🔄 Détection en cours...';
+            button.disabled = true;
+            
+            resultsDiv.innerHTML = '<div class="log info">🔄 Début de la simulation...</div>';
+            
+            try {
+                // S'assurer que les données des dispositifs sont chargées (nouvelle correction)
+                if (!window.devicesDataJs) {
+                    resultsDiv.innerHTML += '<div class="log info">📥 Chargement des données des dispositifs...</div>';
+                    
+                    const response = await fetch('../get_devices_data.php');
+                    const devicesData = await response.json();
+                    window.devicesDataJs = devicesData;
+                    
+                    resultsDiv.innerHTML += `<div class="log success">✅ Données chargées: ${devicesData.length} dispositifs</div>`;
+                }
+                
+                // Vérification que le Saitek est dans les données
+                const saitekInData = window.devicesDataJs.find(d => 
+                    d.vendor_id === '0x0738' && d.product_id === '0xa221'
+                );
+                
+                if (saitekInData) {
+                    resultsDiv.innerHTML += '<div class="log success">✅ Saitek X-56 trouvé dans les données</div>';
+                } else {
+                    resultsDiv.innerHTML += '<div class="log error">❌ Saitek X-56 non trouvé dans les données</div>';
+                }
+                
+                // Fonction de détection des gamepads
+                resultsDiv.innerHTML += '<div class="log info">🔍 Début de la détection des dispositifs</div>';
+                
+                const gamepads = navigator.getGamepads();
+                let devicesFound = 0;
+                let unknownDevicesFound = 0;
+                let saitekDetected = false;
+                let saitekRecognized = false;
+                
+                resultsDiv.innerHTML += `<div class="log info">📊 ${gamepads.length} slots de gamepad vérifiés</div>`;
+                
+                for (let i = 0; i < gamepads.length; i++) {
+                    if (gamepads[i]) {
+                        devicesFound++;
+                        resultsDiv.innerHTML += `<div class="log info">🎮 Dispositif trouvé: ${gamepads[i].id}</div>`;
+                        
+                        const isKnown = checkIfDeviceIsKnown(gamepads[i]);
+                        
+                        if (isKnown) {
+                            resultsDiv.innerHTML += `<div class="log success">✅ Device connu détecté: ${gamepads[i].id}</div>`;
+                        } else {
+                            unknownDevicesFound++;
+                            resultsDiv.innerHTML += `<div class="log warning">❓ Dispositif non reconnu: ${gamepads[i].id}</div>`;
+                        }
+                        
+                        // Vérification spéciale pour Saitek
+                        if (gamepads[i].id.toLowerCase().includes('saitek')) {
+                            saitekDetected = true;
+                            saitekRecognized = isKnown;
+                        }
+                    }
+                }
+                
+                // Test avec un Saitek simulé si aucun n'est connecté
+                if (!saitekDetected) {
+                    resultsDiv.innerHTML += '<div class="log info">🧪 Test avec Saitek X-56 simulé...</div>';
+                    
+                    const mockSaitek = {
+                        id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)"
+                    };
+                    
+                    const mockResult = checkIfDeviceIsKnown(mockSaitek);
+                    
+                    if (mockResult) {
+                        resultsDiv.innerHTML += '<div class="log success">✅ TEST RÉUSSI: Saitek X-56 simulé reconnu correctement</div>';
+                        validationDiv.innerHTML = '<div class="log success">🎉 CORRECTION VALIDÉE: Le système reconnaît maintenant correctement le Saitek X-56 !</div>';
+                    } else {
+                        resultsDiv.innerHTML += '<div class="log error">❌ TEST ÉCHOUÉ: Saitek X-56 simulé non reconnu</div>';
+                        validationDiv.innerHTML = '<div class="log error">⚠️ PROBLÈME PERSISTANT: Le système ne reconnaît toujours pas le Saitek X-56</div>';
+                    }
+                } else {
+                    // Test avec vrai Saitek
+                    if (saitekRecognized) {
+                        validationDiv.innerHTML = '<div class="log success">🎉 PARFAIT: Saitek X-56 physique reconnu correctement !</div>';
+                    } else {
+                        validationDiv.innerHTML = '<div class="log error">⚠️ PROBLÈME: Saitek X-56 physique non reconnu</div>';
+                    }
+                }
+                
+                // Résumé final
+                resultsDiv.innerHTML += `<div class="log info">
+                    📊 Résultats finaux:<br>
+                    - Dispositifs trouvés: ${devicesFound}<br>
+                    - Dispositifs non reconnus: ${unknownDevicesFound}<br>
+                    - Saitek détecté physiquement: ${saitekDetected ? 'OUI' : 'NON'}<br>
+                    - Saitek reconnu: ${saitekRecognized ? 'OUI' : 'NON'}
+                </div>`;
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<div class="log error">❌ Erreur: ${error.message}</div>`;
+                validationDiv.innerHTML = '<div class="log error">❌ Erreur lors de la validation</div>';
+            } finally {
+                // Restaurer le bouton
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

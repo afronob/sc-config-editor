@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🎯 Test Manuel Upload XML</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-container { max-width: 1200px; margin: 0 auto; }
+        .test-section { background: #f8f9fa; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid #007bff; }
+        .result { background: #d4edda; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #f5c6cb; }
+        .iframe-container { border: 2px solid #dee2e6; border-radius: 8px; overflow: hidden; margin: 20px 0; }
+        iframe { width: 100%; height: 600px; border: none; }
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 20px 0; }
+        .step-card { background: white; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; text-align: center; }
+        .step-card.active { border-color: #007bff; background: #e7f3ff; }
+        .step-card.completed { border-color: #28a745; background: #d4edda; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        button.success { background: #28a745; }
+        button.danger { background: #dc3545; }
+        .log { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 15px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Test Manuel - Upload XML avec Statistiques</h1>
+        
+        <div class="test-section">
+            <h2>📋 Plan de Test</h2>
+            <p>Ce test vérifie que les statistiques d'actions XML s'affichent correctement après l'upload d'un fichier.</p>
+            
+            <div class="steps">
+                <div class="step-card" id="step1">
+                    <h3>1️⃣ Étape Initiale</h3>
+                    <p>Charger l'étape 1 vierge</p>
+                    <button onclick="loadInitialStep()">Charger</button>
+                </div>
+                <div class="step-card" id="step2">
+                    <h3>2️⃣ Upload Fichier</h3>
+                    <p>Uploader un fichier XML de test</p>
+                    <button onclick="uploadTestFile()">Upload</button>
+                </div>
+                <div class="step-card" id="step3">
+                    <h3>3️⃣ Vérifier Stats</h3>
+                    <p>Vérifier l'affichage des statistiques</p>
+                    <button onclick="checkStatistics()">Vérifier</button>
+                </div>
+                <div class="step-card" id="step4">
+                    <h3>4️⃣ Navigation</h3>
+                    <p>Tester la navigation vers l'étape 2</p>
+                    <button onclick="testNavigation()">Tester</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Contrôles de Test</h2>
+            <button onclick="runFullTest()" class="success">🚀 Test Complet</button>
+            <button onclick="resetTest()" class="danger">🔄 Reset</button>
+            <button onclick="clearLog()">🧹 Clear Log</button>
+            
+            <h3>📝 Journal de Test</h3>
+            <div id="log" class="log"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>🖥️ Interface Live</h2>
+            <div class="iframe-container">
+                <iframe id="test-iframe" src="step_by_step_handler.php?step=1"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentStepIndex = 0;
+        const steps = ['step1', 'step2', 'step3', 'step4'];
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            logDiv.innerHTML += `[${timestamp}] ${prefix} ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function setStepStatus(stepId, status) {
+            const step = document.getElementById(stepId);
+            step.className = `step-card ${status}`;
+        }
+
+        function loadInitialStep() {
+            log('Chargement de l\'étape 1 initiale...');
+            setStepStatus('step1', 'active');
+            
+            const iframe = document.getElementById('test-iframe');
+            iframe.src = 'step_by_step_handler.php?step=1&_t=' + Date.now();
+            
+            iframe.onload = () => {
+                log('Étape 1 chargée avec succès', 'success');
+                setStepStatus('step1', 'completed');
+                
+                // Vérifier que la section upload est visible
+                setTimeout(() => {
+                    try {
+                        const doc = iframe.contentDocument;
+                        const uploadSection = doc.querySelector('.upload-section');
+                        const statsSection = doc.querySelector('.file-uploaded-info');
+                        
+                        if (uploadSection) {
+                            log('✓ Section upload détectée');
+                        } else {
+                            log('✗ Section upload manquante', 'error');
+                        }
+                        
+                        if (!statsSection) {
+                            log('✓ Section statistiques cachée (normal pour première visite)');
+                        } else {
+                            log('⚠ Section statistiques visible (inattendu)', 'warning');
+                        }
+                    } catch (e) {
+                        log('Impossible d\'accéder au contenu iframe: ' + e.message, 'error');
+                    }
+                }, 500);
+            };
+        }
+
+        function uploadTestFile() {
+            log('Démarrage upload fichier test...');
+            setStepStatus('step2', 'active');
+            
+            // Créer un fichier XML de test
+            const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="test">
+  <actionmap name="spaceship_general">
+    <action name="v_power_throttle">
+      <rebind input="js1_button1"/>
+    </action>
+    <action name="v_power_shields">
+      <rebind input="js1_button2" ActivationMode="hold"/>
+    </action>
+    <action name="v_power_weapons">
+      <rebind input="js1_button3"/>
+    </action>
+    <action name="v_weapon_arm_missile">
+    </action>
+    <action name="v_weapon_launch_missile">
+    </action>
+  </actionmap>
+  <actionmap name="spaceship_movement">
+    <action name="v_pitch">
+      <rebind input="js1_x"/>
+    </action>
+    <action name="v_yaw">
+    </action>
+    <action name="v_roll">
+    </action>
+  </actionmap>
+</ActionMaps>`;
+
+            // Créer un FormData pour simuler l'upload
+            const formData = new FormData();
+            const file = new Blob([xmlContent], { type: 'application/xml' });
+            formData.append('xmlfile', file, 'test_config.xml');
+
+            // Envoyer la requête POST
+            fetch('step_by_step_handler.php?step=1&action=upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    log('Upload réussi - Redirection détectée', 'success');
+                    setStepStatus('step2', 'completed');
+                    
+                    // Charger la nouvelle page
+                    setTimeout(() => {
+                        document.getElementById('test-iframe').src = response.url;
+                        checkStatistics();
+                    }, 1000);
+                } else {
+                    return response.text().then(html => {
+                        if (html.includes('error') || html.includes('erreur')) {
+                            log('Erreur durant upload', 'error');
+                            setStepStatus('step2', 'error');
+                        } else {
+                            log('Upload traité (pas de redirection)', 'warning');
+                            setStepStatus('step2', 'completed');
+                            // Rafraîchir pour voir les changements
+                            document.getElementById('test-iframe').src = 'step_by_step_handler.php?step=1&_t=' + Date.now();
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                log('Erreur lors de l\'upload: ' + error.message, 'error');
+                setStepStatus('step2', 'error');
+            });
+        }
+
+        function checkStatistics() {
+            log('Vérification affichage des statistiques...');
+            setStepStatus('step3', 'active');
+            
+            setTimeout(() => {
+                try {
+                    const iframe = document.getElementById('test-iframe');
+                    const doc = iframe.contentDocument;
+                    
+                    const statsSection = doc.querySelector('.file-uploaded-info');
+                    const uploadSection = doc.querySelector('.upload-section');
+                    
+                    if (statsSection) {
+                        log('✓ Section statistiques trouvée!', 'success');
+                        
+                        // Vérifier le contenu des statistiques
+                        const fileName = statsSection.querySelector('.file-detail-item');
+                        const stats = statsSection.querySelectorAll('.stat-highlight');
+                        
+                        if (fileName) {
+                            log('✓ Nom du fichier affiché');
+                        }
+                        
+                        if (stats && stats.length >= 2) {
+                            log(`✓ Statistiques trouvées: ${stats.length} éléments`);
+                            stats.forEach((stat, index) => {
+                                log(`  - Stat ${index + 1}: ${stat.textContent}`);
+                            });
+                        }
+                        
+                        const continueBtn = statsSection.querySelector('.btn-continue');
+                        if (continueBtn) {
+                            log('✓ Bouton de navigation vers étape 2 trouvé');
+                        }
+                        
+                        setStepStatus('step3', 'completed');
+                    } else {
+                        log('✗ Section statistiques non trouvée', 'error');
+                        setStepStatus('step3', 'error');
+                        
+                        // Debug: lister toutes les sections
+                        const allSections = doc.querySelectorAll('div[class*="section"], div[class*="info"]');
+                        log(`Debug: ${allSections.length} sections trouvées dans la page`);
+                        allSections.forEach((section, index) => {
+                            log(`  - Section ${index}: ${section.className}`);
+                        });
+                    }
+                    
+                    if (!uploadSection || uploadSection.style.display === 'none') {
+                        log('✓ Section upload cachée (correct après upload)');
+                    } else {
+                        log('⚠ Section upload encore visible', 'warning');
+                    }
+                    
+                } catch (e) {
+                    log('Erreur lors de la vérification: ' + e.message, 'error');
+                    setStepStatus('step3', 'error');
+                }
+            }, 1000);
+        }
+
+        function testNavigation() {
+            log('Test de navigation vers étape 2...');
+            setStepStatus('step4', 'active');
+            
+            setTimeout(() => {
+                try {
+                    const iframe = document.getElementById('test-iframe');
+                    const doc = iframe.contentDocument;
+                    const continueBtn = doc.querySelector('.btn-continue');
+                    
+                    if (continueBtn) {
+                        log('Clic sur le bouton de navigation...');
+                        continueBtn.click();
+                        
+                        setTimeout(() => {
+                            if (iframe.src.includes('step=2')) {
+                                log('✓ Navigation vers étape 2 réussie!', 'success');
+                                setStepStatus('step4', 'completed');
+                            } else {
+                                log('✗ Navigation échouée', 'error');
+                                setStepStatus('step4', 'error');
+                            }
+                        }, 1000);
+                    } else {
+                        log('✗ Bouton de navigation non trouvé', 'error');
+                        setStepStatus('step4', 'error');
+                    }
+                } catch (e) {
+                    log('Erreur navigation: ' + e.message, 'error');
+                    setStepStatus('step4', 'error');
+                }
+            }, 500);
+        }
+
+        async function runFullTest() {
+            log('🚀 DÉMARRAGE TEST COMPLET', 'success');
+            
+            loadInitialStep();
+            await sleep(3000);
+            
+            uploadTestFile();
+            await sleep(4000);
+            
+            checkStatistics();
+            await sleep(3000);
+            
+            testNavigation();
+            await sleep(2000);
+            
+            log('🏁 TEST COMPLET TERMINÉ', 'success');
+        }
+
+        function resetTest() {
+            log('🔄 Reset du test...');
+            
+            // Reset de l'iframe
+            document.getElementById('test-iframe').src = 'step_by_step_handler.php?action=restart';
+            
+            // Reset des statuts des étapes
+            steps.forEach(step => {
+                setStepStatus(step, '');
+            });
+            
+            currentStepIndex = 0;
+            
+            setTimeout(() => {
+                document.getElementById('test-iframe').src = 'step_by_step_handler.php?step=1&_t=' + Date.now();
+                log('Reset terminé', 'success');
+            }, 1000);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Auto-démarrage du premier test
+        setTimeout(() => {
+            log('🎯 Page de test chargée - Prêt pour les tests');
+        }, 500);
+    </script>
+</body>
+</html>

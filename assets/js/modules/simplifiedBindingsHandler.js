@@ -50,6 +50,34 @@ export class SimplifiedBindingsHandler {
     }
 
     /**
+     * Vérifie si l'instance d'un device est valide (correspond à un device configuré)
+     * @param {number|string} instance - Instance du device (ex: 1, "1", "231d_0200")
+     * @returns {boolean} - true si l'instance est valide, false sinon
+     */
+    isDeviceInstanceValid(instance) {
+        if (!window.devicesDataJs || !Array.isArray(window.devicesDataJs)) {
+            console.log(`[DeviceCheck] devicesDataJs non disponible`);
+            return false;
+        }
+        
+        // Convertir l'instance en string pour la comparaison
+        const instanceStr = String(instance);
+        
+        // Vérifier si cette instance existe dans les données des devices
+        const deviceFound = window.devicesDataJs.find(device => {
+            return device.xml_instance && String(device.xml_instance) === instanceStr;
+        });
+        
+        if (deviceFound) {
+            console.log(`[DeviceCheck] Instance ${instanceStr} valide (device: ${deviceFound.product || deviceFound.id})`);
+            return true;
+        } else {
+            console.log(`[DeviceCheck] Instance ${instanceStr} invalide - device non configuré dans le XML`);
+            return false;
+        }
+    }
+
+    /**
      * Point d'entrée principal : ancrage direct basé sur l'événement gamepad
      * @param {string} type - 'button', 'axis', 'hat'
      * @param {number} instance - Instance du gamepad (ex: 1 pour js1)
@@ -60,6 +88,13 @@ export class SimplifiedBindingsHandler {
         // Vérifier si un XML est chargé avant d'activer le feedback
         if (!this.isXMLLoaded()) {
             console.log(`[SimplifiedAnchor] Aucun XML chargé, ancrage désactivé`);
+            return null;
+        }
+        
+        // Vérifier si l'instance du device est valide (configurée dans le XML)
+        if (!this.isDeviceInstanceValid(instance)) {
+            console.log(`[SimplifiedAnchor] Instance ${instance} non configurée, proposer configuration...`);
+            this.proposeDeviceConfiguration(instance, type, elementName);
             return null;
         }
         
@@ -310,6 +345,221 @@ export class SimplifiedBindingsHandler {
         overlay.style.opacity = '1';
         
         // Masquer après 3 secondes (un peu plus long pour les erreurs)
+        clearTimeout(this.overlayTimeout);
+        this.overlayTimeout = setTimeout(() => {
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+        }, 3000);
+    }
+
+    /**
+     * Propose la configuration d'un device non instancié
+     * @param {number|string} instance - Instance du device (ex: 1, "1")
+     * @param {string} type - Type d'input ('button', 'axis', 'hat')  
+     * @param {string} elementName - Nom de l'élément (ex: 'button1', 'axis2')
+     */
+    proposeDeviceConfiguration(instance, type, elementName) {
+        // Vérifier si le système de détection automatique est disponible
+        if (!window.deviceAutoDetection || !window.deviceSetupUI) {
+            console.warn(`[DeviceConfig] Système de configuration automatique non disponible`);
+            this.showDeviceConfigUnavailableOverlay(instance, type, elementName);
+            return;
+        }
+
+        // Chercher le gamepad correspondant à cette instance
+        const gamepads = navigator.getGamepads();
+        let targetGamepad = null;
+        
+        // L'instance correspond généralement à l'index du gamepad + 1 (js1 = gamepad[0])
+        const gamepadIndex = parseInt(instance) - 1;
+        if (gamepadIndex >= 0 && gamepadIndex < gamepads.length && gamepads[gamepadIndex]) {
+            targetGamepad = gamepads[gamepadIndex];
+        }
+        
+        if (!targetGamepad) {
+            console.warn(`[DeviceConfig] Gamepad pour instance ${instance} non trouvé`);
+            this.showDeviceNotFoundOverlay(instance, type, elementName);
+            return;
+        }
+
+        console.log(`[DeviceConfig] Proposition de configuration pour device: ${targetGamepad.id}`);
+        
+        // Vérifier si ce device est déjà dans les devices inconnus
+        const deviceKey = window.deviceAutoDetection.getDeviceKey(targetGamepad);
+        const unknownDevices = window.deviceAutoDetection.getUnknownDevices();
+        const existingDevice = unknownDevices.find(dev => 
+            window.deviceAutoDetection.getDeviceKey(dev.gamepad) === deviceKey
+        );
+
+        if (existingDevice) {
+            // Device déjà détecté comme inconnu, afficher directement la notification
+            window.deviceSetupUI.showNewDeviceNotification(existingDevice);
+        } else {
+            // Déclencher la détection pour ce device spécifique
+            window.deviceAutoDetection.handleGamepadConnected(targetGamepad);
+            
+            // La notification sera automatiquement affichée via le callback du système
+            console.log(`[DeviceConfig] Détection déclenchée pour: ${targetGamepad.id}`);
+        }
+        
+        // Afficher un overlay informatif temporaire
+        this.showDeviceConfigProposalOverlay(instance, type, elementName, targetGamepad.id);
+    }
+
+    /**
+     * Affiche un overlay informatif quand la proposition de configuration est déclenchée
+     */
+    showDeviceConfigProposalOverlay(instance, type, elementName, deviceName) {
+        // Créer l'overlay s'il n'existe pas
+        let overlay = document.querySelector('.gamepad-overlay-config-proposal');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'gamepad-overlay-config-proposal';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: rgba(23, 162, 184, 0.95);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 16px;
+                font-family: Arial, sans-serif;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                transition: opacity 0.3s ease;
+                opacity: 0;
+                pointer-events: none;
+                z-index: 10001;
+                border-left: 4px solid #17a2b8;
+                max-width: 300px;
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        // Formatage de l'input pour l'affichage
+        const inputDisplay = `js${instance}_${elementName}`;
+        
+        // Mettre à jour le contenu
+        overlay.innerHTML = `
+            <div style="color: #E6F7FF; margin-bottom: 5px; font-size: 14px;">
+                <strong>${inputDisplay}</strong>
+            </div>
+            <div style="color: #FFF; font-size: 12px;">
+                💡 Device non configuré<br>
+                📝 Notification de configuration envoyée
+            </div>
+        `;
+        
+        // Afficher avec animation
+        overlay.style.opacity = '1';
+        
+        // Masquer après 4 secondes
+        clearTimeout(this.overlayTimeout);
+        this.overlayTimeout = setTimeout(() => {
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+        }, 4000);
+    }
+
+    /**
+     * Affiche un overlay d'erreur quand le système de configuration n'est pas disponible
+     */
+    showDeviceConfigUnavailableOverlay(instance, type, elementName) {
+        let overlay = document.querySelector('.gamepad-overlay-config-unavailable');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'gamepad-overlay-config-unavailable';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: rgba(255, 152, 0, 0.95);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 16px;
+                font-family: Arial, sans-serif;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                transition: opacity 0.3s ease;
+                opacity: 0;
+                pointer-events: none;
+                z-index: 10001;
+                border-left: 4px solid #ff9800;
+                max-width: 300px;
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        const inputDisplay = `js${instance}_${elementName}`;
+        
+        overlay.innerHTML = `
+            <div style="color: #FFF3E0; margin-bottom: 5px; font-size: 14px;">
+                <strong>${inputDisplay}</strong>
+            </div>
+            <div style="color: #FFF; font-size: 12px;">
+                ⚠️ Device non configuré<br>
+                🔧 Système de configuration indisponible
+            </div>
+        `;
+        
+        overlay.style.opacity = '1';
+        
+        clearTimeout(this.overlayTimeout);
+        this.overlayTimeout = setTimeout(() => {
+            if (overlay) {
+                overlay.style.opacity = '0';
+            }
+        }, 3000);
+    }
+
+    /**
+     * Affiche un overlay d'erreur quand le device physique n'est pas trouvé
+     */
+    showDeviceNotFoundOverlay(instance, type, elementName) {
+        let overlay = document.querySelector('.gamepad-overlay-device-not-found');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'gamepad-overlay-device-not-found';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: rgba(220, 53, 69, 0.95);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: bold;
+                font-size: 16px;
+                font-family: Arial, sans-serif;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+                transition: opacity 0.3s ease;
+                opacity: 0;
+                pointer-events: none;
+                z-index: 10001;
+                border-left: 4px solid #dc3545;
+                max-width: 300px;
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        const inputDisplay = `js${instance}_${elementName}`;
+        
+        overlay.innerHTML = `
+            <div style="color: #FFE6E6; margin-bottom: 5px; font-size: 14px;">
+                <strong>${inputDisplay}</strong>
+            </div>
+            <div style="color: #FFF; font-size: 12px;">
+                ❌ Device physique non trouvé<br>
+                🔌 Vérifiez la connexion
+            </div>
+        `;
+        
+        overlay.style.opacity = '1';
+        
         clearTimeout(this.overlayTimeout);
         this.overlayTimeout = setTimeout(() => {
             if (overlay) {

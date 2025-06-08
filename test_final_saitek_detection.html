@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Final - Détection Saitek X-56</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <h1>Test Final - Détection Saitek X-56</h1>
+    
+    <h2>1. Test de chargement des données</h2>
+    <div id="dataTest" class="log">En cours...</div>
+    
+    <h2>2. Test de la fonction checkIfDeviceIsKnown</h2>
+    <div id="functionTest" class="log">En cours...</div>
+    
+    <h2>3. Test avec données réelles du gamepad</h2>
+    <div id="gamepadTest" class="log">En cours...</div>
+    
+    <button onclick="runFullTest()">Relancer tous les tests</button>
+
+    <script>
+        let devicesDataJs = null;
+
+        // Fonction identique à celle de step2_devices.php
+        function checkIfDeviceIsKnown(gamepad) {
+            if (!devicesDataJs || !Array.isArray(devicesDataJs)) {
+                console.log('⚠️ Données des dispositifs non disponibles, tous considérés comme nouveaux');
+                return false;
+            }
+            
+            // Extraire vendor_id et product_id du gamepad
+            const vendorMatch = gamepad.id.match(/Vendor:\s*([0-9a-fA-F]{4})/i);
+            const productMatch = gamepad.id.match(/Product:\s*([0-9a-fA-F]{4})/i);
+            
+            if (vendorMatch && productMatch) {
+                const gamepadVendor = `0x${vendorMatch[1].toLowerCase()}`;
+                const gamepadProduct = `0x${productMatch[1].toLowerCase()}`;
+                
+                console.log(`🔍 Recherche dispositif - Vendor: ${gamepadVendor}, Product: ${gamepadProduct}`);
+                
+                // Vérifier par vendor/product ID
+                const found = devicesDataJs.find(device => {
+                    return device.vendor_id && device.product_id &&
+                           device.vendor_id.toLowerCase() === gamepadVendor &&
+                           device.product_id.toLowerCase() === gamepadProduct;
+                });
+                
+                if (found) {
+                    console.log(`✅ Dispositif reconnu par ID: ${gamepad.id} -> ${found.id}`);
+                    return true;
+                }
+            }
+            
+            // Fallback : recherche par nom
+            const gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim().toLowerCase();
+            const foundByName = devicesDataJs.find(device => {
+                if (!device.id) return false;
+                
+                const deviceIdSimple = device.id.replace(/\(Vendor:.*$/, '').trim().toLowerCase();
+                return gamepadIdSimple.includes(deviceIdSimple) || deviceIdSimple.includes(gamepadIdSimple);
+            });
+            
+            if (foundByName) {
+                console.log(`✅ Dispositif reconnu par nom: ${gamepad.id} -> ${foundByName.id}`);
+                return true;
+            }
+            
+            console.log(`❓ Dispositif non reconnu: ${gamepad.id}`);
+            return false;
+        }
+
+        async function testDataLoading() {
+            try {
+                const response = await fetch('get_devices_data.php');
+                const data = await response.json();
+                devicesDataJs = data;
+                
+                const saitekDevice = data.find(device => 
+                    device.vendor_id === '0x0738' && device.product_id === '0xa221'
+                );
+                
+                const element = document.getElementById('dataTest');
+                if (saitekDevice) {
+                    element.className = 'log success';
+                    element.innerHTML = `
+                        ✅ Données chargées avec succès<br>
+                        Total dispositifs: ${data.length}<br>
+                        Saitek X-56 trouvé: ${saitekDevice.id}<br>
+                        Vendor ID: ${saitekDevice.vendor_id}<br>
+                        Product ID: ${saitekDevice.product_id}
+                    `;
+                } else {
+                    element.className = 'log error';
+                    element.innerHTML = `❌ Saitek X-56 non trouvé dans les données<br>Dispositifs chargés: ${data.length}`;
+                }
+                
+                return saitekDevice !== null;
+            } catch (error) {
+                document.getElementById('dataTest').className = 'log error';
+                document.getElementById('dataTest').innerHTML = `❌ Erreur chargement: ${error.message}`;
+                return false;
+            }
+        }
+
+        function testFunction() {
+            // Test avec un gamepad simulé Saitek X-56
+            const mockGamepad = {
+                id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)"
+            };
+            
+            const isKnown = checkIfDeviceIsKnown(mockGamepad);
+            const element = document.getElementById('functionTest');
+            
+            if (isKnown) {
+                element.className = 'log success';
+                element.innerHTML = '✅ Fonction checkIfDeviceIsKnown fonctionne correctement';
+            } else {
+                element.className = 'log error';
+                element.innerHTML = '❌ Fonction checkIfDeviceIsKnown ne reconnaît pas le Saitek X-56';
+            }
+            
+            return isKnown;
+        }
+
+        async function testRealGamepad() {
+            const element = document.getElementById('gamepadTest');
+            
+            try {
+                const gamepads = navigator.getGamepads();
+                let saitekFound = false;
+                let saitekRecognized = false;
+                
+                for (let i = 0; i < gamepads.length; i++) {
+                    if (gamepads[i] && gamepads[i].id.toLowerCase().includes('saitek')) {
+                        saitekFound = true;
+                        saitekRecognized = checkIfDeviceIsKnown(gamepads[i]);
+                        
+                        element.className = saitekRecognized ? 'log success' : 'log error';
+                        element.innerHTML = `
+                            ${saitekRecognized ? '✅' : '❌'} Saitek détecté: ${gamepads[i].id}<br>
+                            Reconnu par la fonction: ${saitekRecognized ? 'OUI' : 'NON'}
+                        `;
+                        break;
+                    }
+                }
+                
+                if (!saitekFound) {
+                    element.className = 'log info';
+                    element.innerHTML = '🔍 Aucun dispositif Saitek connecté actuellement';
+                }
+                
+                return saitekRecognized;
+            } catch (error) {
+                element.className = 'log error';
+                element.innerHTML = `❌ Erreur test gamepad: ${error.message}`;
+                return false;
+            }
+        }
+
+        async function runFullTest() {
+            console.log('🧪 Démarrage des tests...');
+            
+            const dataOk = await testDataLoading();
+            if (dataOk) {
+                const functionOk = testFunction();
+                await testRealGamepad();
+            }
+        }
+
+        // Lancer les tests au chargement
+        window.addEventListener('load', runFullTest);
+    </script>
+</body>
+</html>

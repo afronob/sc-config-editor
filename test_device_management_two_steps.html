@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Système de Gestion des Dispositifs en 2 Étapes</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .test-header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .test-nav {
+            display: flex;
+            background: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .test-nav button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        
+        .test-nav button.active {
+            background: white;
+            color: #007bff;
+        }
+        
+        .test-nav button:hover {
+            background: #f8f9fa;
+        }
+        
+        .test-section {
+            padding: 30px;
+            display: none;
+        }
+        
+        .test-section.active {
+            display: block;
+        }
+        
+        .mock-bindings-form {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        .test-info {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .test-success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .fas {
+            margin-right: 5px;
+        }
+        
+        /* Mock table styles */
+        #mock-bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        #mock-bindings-table th,
+        #mock-bindings-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        #mock-bindings-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        #mock-bindings-table input {
+            width: 100%;
+            border: 1px solid #ced4da;
+            padding: 4px 8px;
+            border-radius: 3px;
+        }
+    </style>
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1><i class="fas fa-cogs"></i> Test - Système de Gestion des Dispositifs en 2 Étapes</h1>
+            <p>Validation du nouveau workflow : DeviceManager + XMLDeviceModal</p>
+        </div>
+        
+        <div class="test-nav">
+            <button class="nav-btn active" data-section="overview">Vue d'ensemble</button>
+            <button class="nav-btn" data-section="step1">Étape 1 - DeviceManager</button>
+            <button class="nav-btn" data-section="step2">Étape 2 - XMLDeviceModal</button>
+            <button class="nav-btn" data-section="integration">Intégration</button>
+        </div>
+        
+        <!-- Vue d'ensemble -->
+        <div id="overview" class="test-section active">
+            <h2>Vue d'ensemble du nouveau système</h2>
+            
+            <div class="test-info">
+                <h4><i class="fas fa-info-circle"></i> Objectif</h4>
+                <p>Séparer le processus de gestion des dispositifs en 2 étapes distinctes :</p>
+                <ol>
+                    <li><strong>Étape 1</strong> : Création et gestion des mappings JSON des dispositifs</li>
+                    <li><strong>Étape 2</strong> : Modal au niveau du formulaire bindings pour ajouter les dispositifs au XML</li>
+                </ol>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step-number">1</div>
+                <div>
+                    <h4>DeviceManager</h4>
+                    <p>Interface pour créer, éditer, supprimer et exporter les configurations JSON des dispositifs</p>
+                </div>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step-number">2</div>
+                <div>
+                    <h4>XMLDeviceModal</h4>
+                    <p>Modal intégrée dans le formulaire de bindings pour ajouter des dispositifs au XML avec téléchargement</p>
+                </div>
+            </div>
+            
+            <div class="test-success">
+                <h4><i class="fas fa-check-circle"></i> Modules créés</h4>
+                <ul>
+                    <li><code>deviceManager.js</code> - Gestion des dispositifs JSON</li>
+                    <li><code>xmlDeviceModal.js</code> - Modal d'ajout au XML</li>
+                    <li><code>bindingEditorIntegration.js</code> - Orchestration des deux systèmes</li>
+                    <li>Modifications de <code>deviceSetupUI.js</code> pour supporter le mode JSON-only</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Étape 1 -->
+        <div id="step1" class="test-section">
+            <h2><i class="fas fa-cog"></i> Étape 1 - DeviceManager</h2>
+            
+            <div class="test-info">
+                <p>Le DeviceManager permet de créer et gérer les configurations JSON des dispositifs de manière indépendante.</p>
+            </div>
+            
+            <h3>Test du DeviceManager</h3>
+            <div id="device-management-container">
+                <!-- Le DeviceManager sera initialisé ici -->
+            </div>
+            
+            <div class="test-warning">
+                <h4><i class="fas fa-exclamation-triangle"></i> Actions de test</h4>
+                <ol>
+                    <li>Cliquez sur "Ajouter un nouveau dispositif"</li>
+                    <li>Configurez un dispositif test (ex: "Test Joystick")</li>
+                    <li>Terminez la configuration</li>
+                    <li>Vérifiez qu'il apparaît dans la liste</li>
+                    <li>Testez l'export JSON</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Étape 2 -->
+        <div id="step2" class="test-section">
+            <h2><i class="fas fa-plus-circle"></i> Étape 2 - XMLDeviceModal</h2>
+            
+            <div class="test-info">
+                <p>La XMLDeviceModal s'intègre dans le formulaire de bindings pour permettre l'ajout de dispositifs au XML.</p>
+            </div>
+            
+            <h3>Simulation du formulaire de bindings</h3>
+            <div class="mock-bindings-form">
+                <h4>Éditeur de keybinds XML Star Citizen (MOCK)</h4>
+                
+                <!-- Simulation des filtres existants -->
+                <div style="margin-bottom:1em;"><b>Filtres</b><br>
+                    <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+                    <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+                </div>
+                
+                <!-- Le BindingEditorIntegration ajoutera automatiquement la section de gestion des dispositifs ici -->
+                
+                <form method="post">
+                    <input type="hidden" name="save" value="1">
+                    <input type="hidden" name="xmlname" value="test_layout.xml">
+                    <input type="hidden" name="xmldata" value="<?xml version='1.0' encoding='UTF-8'?>
+<ActionMaps version='1' optionsVersion='2' profileName='TestProfile'>
+    <CustomisationUIHeader label='Test Profile' description='' image=''/>
+    <devices>
+        <joystick instance='1' product='{GUID-123}' />
+    </devices>
+    <options type='joystick' instance='js1'>
+        <invert name='invert_flight_pitch' value=''/>
+    </options>
+    <actionmap name='spaceship_movement'>
+        <action name='v_pitch'>
+            <rebind input='js1_x'/>
+        </action>
+    </actionmap>
+</ActionMaps>">
+                    
+                    <table border="1" cellpadding="4" id="bindings-table">
+                        <tr>
+                            <th>category</th>
+                            <th>action</th>
+                            <th>name</th>
+                            <th>input</th>
+                            <th>opts</th>
+                            <th>value</th>
+                        </tr>
+                        <tr>
+                            <td>spaceship_movement</td>
+                            <td>v_pitch</td>
+                            <td>Pitch</td>
+                            <td><input name="input[spaceship_movement][v_pitch][0]" value="js1_x" /></td>
+                            <td><input name="opts[spaceship_movement][v_pitch][0]" value="" /></td>
+                            <td><input name="value[spaceship_movement][v_pitch][0]" value="" /></td>
+                        </tr>
+                        <tr>
+                            <td>spaceship_movement</td>
+                            <td>v_yaw</td>
+                            <td>Yaw</td>
+                            <td><input name="input[spaceship_movement][v_yaw][0]" value="" /></td>
+                            <td><input name="opts[spaceship_movement][v_yaw][0]" value="" /></td>
+                            <td><input name="value[spaceship_movement][v_yaw][0]" value="" /></td>
+                        </tr>
+                    </table>
+                    
+                    <!-- Le bouton d'ajout de dispositif sera automatiquement ajouté ici par BindingEditorIntegration -->
+                    
+                </form>
+            </div>
+            
+            <div class="test-warning">
+                <h4><i class="fas fa-exclamation-triangle"></i> Actions de test</h4>
+                <ol>
+                    <li>Assurez-vous d'avoir créé au moins un dispositif dans l'Étape 1</li>
+                    <li>Cliquez sur le bouton "Ajouter un dispositif au XML" qui apparaîtra automatiquement</li>
+                    <li>Sélectionnez un dispositif dans la liste</li>
+                    <li>Visualisez l'aperçu des modifications XML</li>
+                    <li>Testez le téléchargement du XML modifié</li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Intégration -->
+        <div id="integration" class="test-section">
+            <h2><i class="fas fa-link"></i> Test d'Intégration Complète</h2>
+            
+            <div class="test-info">
+                <p>Cette section valide l'intégration complète des deux étapes dans l'éditeur de bindings.</p>
+            </div>
+            
+            <h3>Workflow complet</h3>
+            <div class="step-indicator">
+                <div class="step-number">1</div>
+                <div>
+                    <h4>Gestion des dispositifs</h4>
+                    <p>Le système détecte automatiquement qu'on est dans l'éditeur de bindings et ajoute les contrôles de gestion</p>
+                </div>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step-number">2</div>
+                <div>
+                    <h4>Intégration automatique</h4>
+                    <p>Les boutons et modals sont automatiquement ajoutés au formulaire existant</p>
+                </div>
+            </div>
+            
+            <div class="step-indicator">
+                <div class="step-number">3</div>
+                <div>
+                    <h4>Persistance</h4>
+                    <p>Les dispositifs configurés sont sauvegardés dans localStorage et réutilisables</p>
+                </div>
+            </div>
+            
+            <h3>État du système</h3>
+            <div id="system-status">
+                <!-- Sera rempli par JavaScript -->
+            </div>
+            
+            <h3>Actions de debug</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0;">
+                <button class="btn btn-info" onclick="debugLocalStorage()">
+                    <i class="fas fa-database"></i> Afficher localStorage
+                </button>
+                <button class="btn btn-secondary" onclick="clearDevices()">
+                    <i class="fas fa-trash"></i> Vider les dispositifs
+                </button>
+                <button class="btn btn-primary" onclick="addTestDevice()">
+                    <i class="fas fa-plus"></i> Ajouter dispositif test
+                </button>
+                <button class="btn btn-success" onclick="validateIntegration()">
+                    <i class="fas fa-check"></i> Valider intégration
+                </button>
+            </div>
+            
+            <div id="debug-output" style="background: #f8f9fa; padding: 15px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0; font-family: monospace; white-space: pre-wrap; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { DeviceManager } from '/assets/js/modules/deviceManager.js';
+        import { XMLDeviceModal } from '/assets/js/modules/xmlDeviceModal.js';
+        import { XMLDeviceInstancer } from '/assets/js/modules/xmlDeviceInstancer.js';
+        import { BindingEditorIntegration } from '/assets/js/modules/bindingEditorIntegration.js';
+
+        // Variables globales pour les tests
+        window.deviceManager = null;
+        window.xmlDeviceModal = null;
+        window.bindingEditorIntegration = null;
+
+        // Navigation entre les sections
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Mettre à jour la navigation
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.test-section').forEach(s => s.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(btn.dataset.section).classList.add('active');
+                
+                // Initialiser la section si nécessaire
+                initializeSection(btn.dataset.section);
+            });
+        });
+
+        // Initialisation des sections
+        function initializeSection(section) {
+            switch(section) {
+                case 'step1':
+                    initializeDeviceManager();
+                    break;
+                case 'step2':
+                    initializeXMLModal();
+                    break;
+                case 'integration':
+                    initializeIntegration();
+                    updateSystemStatus();
+                    break;
+            }
+        }
+
+        function initializeDeviceManager() {
+            if (!window.deviceManager) {
+                window.deviceManager = new DeviceManager();
+                window.deviceManager.initializeDeviceManagement('device-management-container');
+                console.log('✅ DeviceManager initialisé');
+            }
+        }
+
+        function initializeXMLModal() {
+            if (!window.xmlDeviceModal) {
+                const xmlInstancer = new XMLDeviceInstancer();
+                window.xmlDeviceModal = new XMLDeviceModal(xmlInstancer);
+                window.xmlDeviceModal.initialize();
+                console.log('✅ XMLDeviceModal initialisé');
+            }
+        }
+
+        function initializeIntegration() {
+            if (!window.bindingEditorIntegration) {
+                window.bindingEditorIntegration = new BindingEditorIntegration();
+                window.bindingEditorIntegration.initialize();
+                console.log('✅ BindingEditorIntegration initialisé');
+            }
+        }
+
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('system-status');
+            if (!statusDiv) return;
+
+            const deviceManager = window.deviceManager || new DeviceManager();
+            const deviceCount = deviceManager.getAllDevices().length;
+            
+            statusDiv.innerHTML = `
+                <div class="test-info">
+                    <h4><i class="fas fa-info-circle"></i> État actuel</h4>
+                    <ul>
+                        <li><strong>Dispositifs configurés :</strong> ${deviceCount}</li>
+                        <li><strong>DeviceManager :</strong> ${window.deviceManager ? '✅ Chargé' : '❌ Non chargé'}</li>
+                        <li><strong>XMLDeviceModal :</strong> ${window.xmlDeviceModal ? '✅ Chargé' : '❌ Non chargé'}</li>
+                        <li><strong>BindingEditorIntegration :</strong> ${window.bindingEditorIntegration ? '✅ Chargé' : '❌ Non chargé'}</li>
+                        <li><strong>Table bindings détectée :</strong> ${document.getElementById('bindings-table') ? '✅ Oui' : '❌ Non'}</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Fonctions de debug globales
+        window.debugLocalStorage = function() {
+            const output = document.getElementById('debug-output');
+            if (!output) return;
+
+            try {
+                const devices = localStorage.getItem('sc_devices');
+                output.textContent = devices ? JSON.stringify(JSON.parse(devices), null, 2) : 'Aucun dispositif sauvegardé';
+            } catch (error) {
+                output.textContent = 'Erreur: ' + error.message;
+            }
+        };
+
+        window.clearDevices = function() {
+            if (confirm('Supprimer tous les dispositifs configurés ?')) {
+                localStorage.removeItem('sc_devices');
+                updateSystemStatus();
+                if (window.deviceManager) {
+                    window.deviceManager.loadSavedDevices();
+                    window.deviceManager.refreshDevicesList();
+                }
+                document.getElementById('debug-output').textContent = 'Dispositifs supprimés';
+            }
+        };
+
+        window.addTestDevice = function() {
+            const deviceManager = window.deviceManager || new DeviceManager();
+            const testDevice = {
+                name: 'Test Joystick ' + Date.now(),
+                deviceType: 'joystick',
+                description: 'Dispositif de test généré automatiquement',
+                axes: {
+                    'x': 'X Axis',
+                    'y': 'Y Axis',
+                    'z': 'Z Axis'
+                },
+                buttons: {
+                    'button_1': 'Button 1',
+                    'button_2': 'Button 2'
+                },
+                hats: {
+                    'hat_1': 'POV Hat 1'
+                },
+                vendor: 'TestVendor',
+                product: 'TestProduct'
+            };
+            
+            deviceManager.saveDevice(testDevice);
+            updateSystemStatus();
+            document.getElementById('debug-output').textContent = 'Dispositif test ajouté: ' + testDevice.name;
+        };
+
+        window.validateIntegration = function() {
+            const output = document.getElementById('debug-output');
+            const results = [];
+
+            // Vérifier les modules
+            results.push('=== VALIDATION INTÉGRATION ===');
+            results.push('DeviceManager: ' + (window.deviceManager ? 'OK' : 'MANQUANT'));
+            results.push('XMLDeviceModal: ' + (window.xmlDeviceModal ? 'OK' : 'MANQUANT'));
+            results.push('BindingEditorIntegration: ' + (window.bindingEditorIntegration ? 'OK' : 'MANQUANT'));
+
+            // Vérifier les éléments DOM
+            results.push('');
+            results.push('=== ÉLÉMENTS DOM ===');
+            results.push('Table bindings: ' + (document.getElementById('bindings-table') ? 'OK' : 'MANQUANT'));
+            results.push('Section gestion dispositifs: ' + (document.querySelector('.device-management-section') ? 'OK' : 'MANQUANT'));
+            results.push('Bouton ajout dispositif: ' + (document.getElementById('add-device-to-xml') ? 'OK' : 'MANQUANT'));
+
+            // Vérifier les données
+            const deviceManager = window.deviceManager || new DeviceManager();
+            const deviceCount = deviceManager.getAllDevices().length;
+            results.push('');
+            results.push('=== DONNÉES ===');
+            results.push('Dispositifs configurés: ' + deviceCount);
+
+            // Vérifier les CSS
+            results.push('');
+            results.push('=== CSS ===');
+            results.push('Styles chargés: ' + (document.getElementById('binding-editor-integration-css') ? 'OK' : 'MANQUANT'));
+
+            output.textContent = results.join('\n');
+        };
+
+        // Initialisation au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Page de test chargée');
+            initializeSection('overview');
+        });
+    </script>
+</body>
+</html>

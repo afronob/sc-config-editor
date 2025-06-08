@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Direct Intégration</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .step { 
+            background: white; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .highlight { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            border-radius: 4px; 
+            padding: 10px; 
+            margin: 10px 0; 
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 20px; 
+            border-radius: 4px; 
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .success { background: #28a745; }
+        .warning { background: #ffc107; color: #212529; }
+        .danger { background: #dc3545; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            border: 1px solid #e9ecef; 
+            font-size: 12px; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎯 Test Direct Intégration Gestion Dispositifs</h1>
+    
+    <div class="step">
+        <h3>📋 Instructions de Test</h3>
+        <p>Ce test va ouvrir keybind_editor.php dans une nouvelle fenêtre et vous guider pour tester l'intégration.</p>
+        
+        <div class="highlight">
+            <strong>⚠️ Important :</strong> Gardez cette page ouverte et suivez les instructions étape par étape.
+        </div>
+    </div>
+
+    <div class="step">
+        <h3>🚀 Étape 1: Ouvrir l'Éditeur</h3>
+        <p>Cliquez sur le bouton ci-dessous pour ouvrir keybind_editor.php dans une nouvelle fenêtre.</p>
+        <button onclick="openEditor()">📂 Ouvrir Éditeur</button>
+        <div id="step1-status"></div>
+    </div>
+
+    <div class="step">
+        <h3>📤 Étape 2: Upload XML Test</h3>
+        <p>Dans la fenêtre de l'éditeur, uploadez le fichier XML test suivant :</p>
+        <button onclick="downloadXML()">💾 Télécharger XML Test</button>
+        <button onclick="showXMLContent()">👁️ Voir Contenu XML</button>
+        
+        <div id="xml-display" style="display: none;">
+            <h4>Contenu du fichier test_integration_xml.xml :</h4>
+            <pre id="xml-content"></pre>
+        </div>
+        
+        <div class="highlight">
+            <strong>Instructions :</strong>
+            <ol>
+                <li>Téléchargez le fichier XML test avec le bouton ci-dessus</li>
+                <li>Dans l'éditeur, cliquez sur "Choisir un fichier"</li>
+                <li>Sélectionnez le fichier test_integration_xml.xml téléchargé</li>
+                <li>Cliquez sur "Upload"</li>
+            </ol>
+        </div>
+        <div id="step2-status"></div>
+    </div>
+
+    <div class="step">
+        <h3>🔍 Étape 3: Vérifier l'Intégration</h3>
+        <p>Après l'upload, vérifiez dans la fenêtre de l'éditeur :</p>
+        
+        <div class="highlight">
+            <strong>Checklist de vérification :</strong>
+            <ul>
+                <li>✅ Le tableau de bindings est visible</li>
+                <li>✅ La section "🎮 Gestion des Dispositifs" apparaît au-dessus du tableau</li>
+                <li>✅ Le bouton "Gérer les dispositifs" est présent</li>
+                <li>✅ Le bouton "Importer JSON" est présent</li>
+                <li>✅ Le compteur "0 dispositifs configurés" est affiché</li>
+            </ul>
+        </div>
+
+        <button onclick="checkConsole()" class="warning">🔍 Instructions Debug Console</button>
+        <div id="debug-instructions" style="display: none;">
+            <h4>🐛 Debug dans la Console du Navigateur</h4>
+            <p>Dans la fenêtre de l'éditeur, ouvrez la console (F12) et vérifiez :</p>
+            <pre>
+1. Onglet "Console" - Recherchez ces messages :
+   ✅ "BindingEditorIntegration: Début initialisation..."
+   ✅ "BindingEditorIntegration: Context bindings? true"
+   ✅ "BindingEditorIntegration: ✅ Initialisé avec succès"
+
+2. Si vous voyez des erreurs, notez-les
+
+3. Dans la console, tapez :
+   >> window.bindingEditorIntegration
+   (devrait afficher l'objet d'intégration)
+
+4. Tapez aussi :
+   >> document.getElementById('bindings-table')
+   (devrait afficher la table)
+
+5. Tapez enfin :
+   >> document.querySelector('.device-management-section')
+   (devrait afficher la section ou null si absente)
+            </pre>
+        </div>
+        <div id="step3-status"></div>
+    </div>
+
+    <div class="step">
+        <h3>🎮 Étape 4: Tester la Modal</h3>
+        <p>Si la section de gestion est visible, testez l'ouverture de la modal :</p>
+        
+        <div class="highlight">
+            <strong>Test de la modal :</strong>
+            <ol>
+                <li>Cliquez sur le bouton "Gérer les dispositifs"</li>
+                <li>La modal devrait s'ouvrir avec l'interface de gestion</li>
+                <li>Vous devriez voir "Créer un nouveau dispositif" et la liste vide</li>
+                <li>Testez la fermeture avec le bouton X ou en cliquant en dehors</li>
+            </ol>
+        </div>
+        <div id="step4-status"></div>
+    </div>
+
+    <div class="step">
+        <h3>📊 Statut Final</h3>
+        <button onclick="reportSuccess()" class="success">✅ Tout Fonctionne</button>
+        <button onclick="reportPartial()" class="warning">⚠️ Partiellement Fonctionnel</button>
+        <button onclick="reportFailure()" class="danger">❌ Ne Fonctionne Pas</button>
+        
+        <div id="final-status"></div>
+    </div>
+
+</div>
+
+<script>
+let editorWindow = null;
+
+function openEditor() {
+    editorWindow = window.open('http://localhost:8080/keybind_editor.php', '_blank', 
+        'width=1200,height=800,scrollbars=yes,resizable=yes');
+    
+    if (editorWindow) {
+        document.getElementById('step1-status').innerHTML = 
+            '<div style="color: #28a745; margin-top: 10px;">✅ Éditeur ouvert dans une nouvelle fenêtre</div>';
+    } else {
+        document.getElementById('step1-status').innerHTML = 
+            '<div style="color: #dc3545; margin-top: 10px;">❌ Impossible d\'ouvrir la fenêtre (popup bloqué?)</div>';
+    }
+}
+
+function showXMLContent() {
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" profileName="layout_test">
+  <CustomisationUIHeader label="Test Integration" />
+  <actionmap name="spaceship_general">
+    <action name="v_throttle_abs">
+      <rebind input="js1_axis1" />
+    </action>
+    <action name="v_strafe_forward">
+      <rebind input="js1_button1" />
+    </action>
+  </actionmap>
+  <joystick>
+    <instance value="1" />
+    <product value="Test Joystick" />
+  </joystick>
+</ActionMaps>`;
+    
+    document.getElementById('xml-content').textContent = xmlContent;
+    document.getElementById('xml-display').style.display = 'block';
+}
+
+function downloadXML() {
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" profileName="layout_test">
+  <CustomisationUIHeader label="Test Integration" />
+  <actionmap name="spaceship_general">
+    <action name="v_throttle_abs">
+      <rebind input="js1_axis1" />
+    </action>
+    <action name="v_strafe_forward">
+      <rebind input="js1_button1" />
+    </action>
+  </actionmap>
+  <joystick>
+    <instance value="1" />
+    <product value="Test Joystick" />
+  </joystick>
+</ActionMaps>`;
+
+    const blob = new Blob([xmlContent], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'test_integration_xml.xml';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    document.getElementById('step2-status').innerHTML = 
+        '<div style="color: #28a745; margin-top: 10px;">✅ Fichier XML téléchargé</div>';
+}
+
+function checkConsole() {
+    const debugDiv = document.getElementById('debug-instructions');
+    debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
+}
+
+function reportSuccess() {
+    document.getElementById('final-status').innerHTML = `
+        <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-top: 10px;">
+            <h4>🎉 Excellent ! L'intégration fonctionne parfaitement</h4>
+            <p>✅ La section de gestion des dispositifs s'affiche correctement<br>
+            ✅ La modal s'ouvre et fonctionne<br>
+            ✅ Le système à 2 étapes est opérationnel</p>
+        </div>`;
+}
+
+function reportPartial() {
+    document.getElementById('final-status').innerHTML = `
+        <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 4px; margin-top: 10px;">
+            <h4>⚠️ Fonctionnement partiel détecté</h4>
+            <p>Veuillez vérifier la console pour les erreurs et rapporter les problèmes spécifiques.</p>
+        </div>`;
+}
+
+function reportFailure() {
+    document.getElementById('final-status').innerHTML = `
+        <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-top: 10px;">
+            <h4>❌ L'intégration ne fonctionne pas</h4>
+            <p>La section de gestion des dispositifs n'apparaît pas. Vérifiez :</p>
+            <ul>
+                <li>Les messages d'erreur dans la console</li>
+                <li>Que les fichiers JavaScript sont accessibles</li>
+                <li>Que le tableau de bindings est bien présent</li>
+            </ul>
+        </div>`;
+}
+
+// Auto-show XML content on load
+window.addEventListener('DOMContentLoaded', () => {
+    showXMLContent();
+});
+</script>
+
+</body>
+</html>

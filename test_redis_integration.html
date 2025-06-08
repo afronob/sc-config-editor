@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Redis Client Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 3px; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Test Redis Client Manager</h1>
+    
+    <div class="test-section">
+        <h2>Test de connexion</h2>
+        <button onclick="testConnection()">Tester la connexion Redis</button>
+        <div id="connection-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test CRUD Dispositifs</h2>
+        <button onclick="testDeviceCRUD()">Tester sauvegarde/récupération dispositif</button>
+        <div id="device-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test DeviceManager Redis</h2>
+        <button onclick="testDeviceManager()">Tester DeviceManager avec Redis</button>
+        <div id="devicemanager-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Fallback localStorage</h2>
+        <button onclick="testFallback()">Tester fallback vers localStorage</button>
+        <div id="fallback-result" class="result"></div>
+    </div>
+
+    <script src="assets/js/modules/redisClientManager.js"></script>
+    <script src="assets/js/modules/deviceManagerRedis.js"></script>
+    
+    <script>
+        const redis = new RedisClientManager({
+            apiUrl: 'http://localhost:8080/api/redis.php',
+            prefix: 'sc_config:',
+            fallbackToLocalStorage: true
+        });
+        
+        async function testConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            try {
+                const isConnected = await redis.isConnected();
+                resultDiv.innerHTML = `<div class="success">✅ Connexion Redis: ${isConnected ? 'OK' : 'KO'}</div>`;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDeviceCRUD() {
+            const resultDiv = document.getElementById('device-result');
+            try {
+                // Test de sauvegarde
+                const testDevice = {
+                    name: 'Test Device Redis',
+                    type: 'joystick',
+                    vendor_id: '046d',
+                    product_id: 'c626',
+                    mappings: {
+                        button_1: 'fire_primary',
+                        axis_x: 'pitch'
+                    }
+                };
+                
+                const saved = await redis.setItem('devices:config:test_client_device', testDevice);
+                
+                // Test de récupération
+                const retrieved = await redis.getItem('devices:config:test_client_device');
+                
+                let result = `<div class="success">✅ Sauvegarde: ${saved ? 'OK' : 'KO'}</div>`;
+                result += `<div class="success">✅ Récupération: ${retrieved ? 'OK' : 'KO'}</div>`;
+                
+                if (retrieved) {
+                    const parsedDevice = JSON.parse(retrieved);
+                    result += `<div>Nom du dispositif récupéré: ${parsedDevice.name}</div>`;
+                    result += `<div>Type: ${parsedDevice.type}</div>`;
+                }
+                
+                resultDiv.innerHTML = result;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDeviceManager() {
+            const resultDiv = document.getElementById('devicemanager-result');
+            try {
+                // Initialiser le DeviceManager avec Redis
+                const deviceManager = new DeviceManagerRedis();
+                await deviceManager.initialize();
+                
+                // Test de sauvegarde via DeviceManager
+                const testDevice = {
+                    id: 'test_devicemanager_device',
+                    name: 'Test DeviceManager',
+                    type: 'gamepad',
+                    vendor_id: '045e',
+                    product_id: '028e',
+                    mappings: {
+                        button_0: 'weapon_fire',
+                        axis_0: 'roll'
+                    }
+                };
+                
+                const saved = await deviceManager.saveDevice(testDevice);
+                const devices = await deviceManager.getAllDevices();
+                
+                let result = `<div class="success">✅ DeviceManager sauvegarde: ${saved ? 'OK' : 'KO'}</div>`;
+                result += `<div>Nombre de dispositifs: ${Object.keys(devices).length}</div>`;
+                
+                resultDiv.innerHTML = result;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+        
+        async function testFallback() {
+            const resultDiv = document.getElementById('fallback-result');
+            try {
+                // Créer un RedisClient avec fallback
+                const redisWithFallback = new RedisClientManager({
+                    apiUrl: 'http://localhost:8080/api/redis_inexistant.php', // URL inexistante pour forcer le fallback
+                    prefix: 'sc_config:',
+                    fallbackToLocalStorage: true
+                });
+                
+                // Test de sauvegarde (devrait aller vers localStorage)
+                const testData = { test: 'fallback data', timestamp: Date.now() };
+                const saved = await redisWithFallback.setItem('test:fallback:data', testData);
+                const retrieved = await redisWithFallback.getItem('test:fallback:data');
+                
+                let result = `<div class="success">✅ Fallback sauvegarde: ${saved ? 'OK' : 'KO'}</div>`;
+                result += `<div class="success">✅ Fallback récupération: ${retrieved ? 'OK' : 'KO'}</div>`;
+                
+                // Vérifier si c'est bien dans localStorage
+                const localStorageValue = localStorage.getItem('sc_config:test:fallback:data');
+                result += `<div>Présent dans localStorage: ${localStorageValue ? 'Oui' : 'Non'}</div>`;
+                
+                resultDiv.innerHTML = result;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

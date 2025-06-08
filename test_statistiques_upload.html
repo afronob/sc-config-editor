@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload - Vérification des statistiques</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 900px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            background: #f8f9fa;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        h1 { 
+            color: #333; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            border-bottom: 3px solid #007acc;
+            padding-bottom: 15px;
+        }
+        .test-info {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #007acc;
+        }
+        .upload-form { 
+            text-align: center; 
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        input[type="file"] { 
+            margin: 15px; 
+            padding: 12px; 
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button { 
+            background: #28a745; 
+            color: white; 
+            padding: 15px 30px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 18px;
+            font-weight: bold;
+        }
+        button:hover { background: #218838; }
+        .expected {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .steps {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .quick-links {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .quick-links a {
+            display: inline-block;
+            margin: 10px;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .link-main { background: #007acc; }
+        .link-analysis { background: #6f42c1; }
+        .link-validation { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test de vérification des statistiques XML</h1>
+        
+        <div class="test-info">
+            <h3>📋 Objectif du test</h3>
+            <p>Vérifier que les statistiques d'actions apparaissent bien dans l'étape 1 après l'upload d'un fichier XML, 
+            <strong>au même endroit où le nom du fichier est affiché</strong>.</p>
+        </div>
+        
+        <div class="expected">
+            <h4>✅ Résultat attendu :</h4>
+            <ul>
+                <li>Après upload, <strong>rester sur l'étape 1</strong></li>
+                <li>Afficher le nom du fichier XML</li>
+                <li>Afficher le <strong>nombre total d'actions trouvées</strong></li>
+                <li>Afficher le <strong>nombre d'actions configurées</strong></li>
+                <li>Afficher le <strong>pourcentage d'actions configurées</strong></li>
+                <li>Bouton pour continuer vers l'étape 2</li>
+            </ul>
+        </div>
+        
+        <div class="steps">
+            <h4>📝 Instructions :</h4>
+            <ol>
+                <li>Cliquez sur "Parcourir" et sélectionnez le fichier <code>test_config.xml</code></li>
+                <li>Cliquez sur "Uploader et tester"</li>
+                <li>Vérifiez que vous <strong>restez sur l'étape 1</strong></li>
+                <li>Vérifiez que les statistiques apparaissent (<strong>10 actions totales, 6 configurées, 60%</strong>)</li>
+            </ol>
+        </div>
+        
+        <div class="upload-form">
+            <h3>📤 Upload de test</h3>
+            <form action="step_by_step_handler.php" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="step" value="1">
+                <input type="hidden" name="action" value="upload">
+                <div style="margin: 20px 0;">
+                    <label for="xmlfile" style="display: block; margin-bottom: 10px; font-weight: bold;">
+                        Sélectionnez le fichier test_config.xml :
+                    </label>
+                    <input type="file" 
+                           id="xmlfile" 
+                           name="xmlfile" 
+                           accept=".xml" 
+                           required>
+                </div>
+                <button type="submit">🚀 Uploader et tester</button>
+            </form>
+        </div>
+        
+        <div class="quick-links">
+            <h3>🔗 Liens rapides</h3>
+            <a href="step_by_step_handler.php?step=1" class="link-main">
+                🏠 Aller à l'étape 1
+            </a>
+            <a href="test_edge_cases_analysis.php" class="link-analysis">
+                📊 Analyse des cas limites
+            </a>
+            <a href="validation_finale.php" class="link-validation">
+                ✅ Validation complète
+            </a>
+        </div>
+        
+        <div class="test-info">
+            <h4>🔍 Points à vérifier après upload :</h4>
+            <ul>
+                <li>✅ Message de succès "Fichier XML chargé avec succès"</li>
+                <li>✅ Section "📄 Fichier chargé avec succès" visible</li>
+                <li>✅ Nom du fichier affiché</li>
+                <li>✅ "Actions trouvées: 10"</li>
+                <li>✅ "Actions configurées: 6"</li>
+                <li>✅ "Pourcentage configuré: 60%"</li>
+                <li>✅ Bouton "Continuer vers l'étape 2 →"</li>
+                <li>✅ Section d'upload masquée ou remplacée</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

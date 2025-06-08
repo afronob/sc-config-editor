@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Test Réel - Simulation Upload XML</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover { background: #0056b3; }
+        .test-button.success { background: #28a745; }
+        .test-button.success:hover { background: #218838; }
+        .iframe-container {
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            height: 700px;
+            margin-top: 20px;
+        }
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .step {
+            background: #e9ecef;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .step.active {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .step.completed {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test Réel - Workflow Upload XML</h1>
+        <p>Ce test simule exactement le workflow utilisateur pour vérifier l'apparition de la section "Gestion des dispositifs"</p>
+
+        <div class="test-section">
+            <h2>📋 Plan de Test</h2>
+            <div class="step" id="step-1">
+                <strong>Étape 1:</strong> Charger la page initiale (formulaire d'upload)
+                <button class="test-button" id="load-editor">🚀 Charger Éditeur</button>
+            </div>
+            <div class="step" id="step-2">
+                <strong>Étape 2:</strong> Préparer le fichier XML de test
+                <button class="test-button" id="prepare-xml">📄 Préparer XML</button>
+            </div>
+            <div class="step" id="step-3">
+                <strong>Étape 3:</strong> Simuler l'upload (POST avec FormData)
+                <button class="test-button" id="simulate-upload">📤 Simuler Upload</button>
+            </div>
+            <div class="step" id="step-4">
+                <strong>Étape 4:</strong> Vérifier l'apparition du tableau
+                <button class="test-button" id="check-table">🔍 Vérifier Tableau</button>
+            </div>
+            <div class="step" id="step-5">
+                <strong>Étape 5:</strong> <strong style="color: #dc3545;">CRITÈRE PRINCIPAL</strong> - Détecter la section "Gestion des dispositifs"
+                <button class="test-button" id="check-section">🎯 Vérifier Section</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🤖 Contrôles Automatiques</h2>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="test-button" id="auto-full-test">🚀 Test Complet Auto</button>
+                <button class="test-button" id="manual-test">👤 Test Manuel Guidé</button>
+                <button class="test-button" id="debug-integration">🔬 Debug Intégration</button>
+                <button class="test-button" id="reset-test">🔄 Reset</button>
+            </div>
+            <div id="test-status" class="status info">
+                En attente de démarrage...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Logs de Test</h2>
+            <div id="log-container" class="log-container">
+                <div style="color: #007bff;">[INFO] Système de test initialisé</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🖥️ Interface de Test</h2>
+            <div class="iframe-container">
+                <iframe id="test-iframe" src="about:blank"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RealWorkflowTest {
+            constructor() {
+                this.iframe = document.getElementById('test-iframe');
+                this.logContainer = document.getElementById('log-container');
+                this.currentStep = 0;
+                this.testResults = {
+                    editorLoaded: false,
+                    xmlPrepared: false,
+                    uploadSimulated: false,
+                    tableDetected: false,
+                    sectionDetected: false
+                };
+
+                this.bindEvents();
+                this.log('🎯 Test de workflow réel initialisé', 'info');
+            }
+
+            bindEvents() {
+                document.getElementById('load-editor').addEventListener('click', () => this.loadEditor());
+                document.getElementById('prepare-xml').addEventListener('click', () => this.prepareXML());
+                document.getElementById('simulate-upload').addEventListener('click', () => this.simulateUpload());
+                document.getElementById('check-table').addEventListener('click', () => this.checkTable());
+                document.getElementById('check-section').addEventListener('click', () => this.checkSection());
+                
+                document.getElementById('auto-full-test').addEventListener('click', () => this.runFullAutoTest());
+                document.getElementById('manual-test').addEventListener('click', () => this.startManualTest());
+                document.getElementById('debug-integration').addEventListener('click', () => this.debugIntegration());
+                document.getElementById('reset-test').addEventListener('click', () => this.resetTest());
+            }
+
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const colors = {
+                    info: '#007bff',
+                    success: '#28a745',
+                    error: '#dc3545',
+                    warning: '#ffc107'
+                };
+
+                const logEntry = document.createElement('div');
+                logEntry.style.color = colors[type] || '#000';
+                logEntry.innerHTML = `[${timestamp}] ${message}`;
+                this.logContainer.appendChild(logEntry);
+                this.logContainer.scrollTop = this.logContainer.scrollHeight;
+            }
+
+            setStepStatus(stepNumber, status) {
+                const step = document.getElementById(`step-${stepNumber}`);
+                step.className = `step ${status}`;
+            }
+
+            updateTestStatus(message, type = 'info') {
+                const statusEl = document.getElementById('test-status');
+                statusEl.className = `status ${type}`;
+                statusEl.textContent = message;
+            }
+
+            async loadEditor() {
+                this.log('🚀 Chargement de l\'éditeur...', 'info');
+                this.setStepStatus(1, 'active');
+
+                try {
+                    this.iframe.src = 'keybind_editor.php';
+                    
+                    // Attendre le chargement
+                    await this.waitForIframeLoad();
+                    
+                    this.testResults.editorLoaded = true;
+                    this.setStepStatus(1, 'completed');
+                    this.log('✅ Éditeur chargé avec succès', 'success');
+                    this.currentStep = 1;
+                    
+                } catch (error) {
+                    this.log(`❌ Erreur chargement éditeur: ${error.message}`, 'error');
+                    this.setStepStatus(1, 'error');
+                }
+            }
+
+            async prepareXML() {
+                this.log('📄 Préparation du fichier XML...', 'info');
+                this.setStepStatus(2, 'active');
+
+                try {
+                    // Vérifier que le fichier XML existe
+                    const response = await fetch('test_integration_xml.xml');
+                    if (response.ok) {
+                        const xmlContent = await response.text();
+                        this.xmlContent = xmlContent;
+                        this.testResults.xmlPrepared = true;
+                        this.setStepStatus(2, 'completed');
+                        this.log('✅ Fichier XML préparé', 'success');
+                        this.currentStep = 2;
+                    } else {
+                        throw new Error('Fichier XML non trouvé');
+                    }
+                } catch (error) {
+                    this.log(`❌ Erreur préparation XML: ${error.message}`, 'error');
+                    this.setStepStatus(2, 'error');
+                }
+            }
+
+            async simulateUpload() {
+                this.log('📤 Simulation de l\'upload...', 'info');
+                this.setStepStatus(3, 'active');
+
+                try {
+                    if (!this.xmlContent) {
+                        throw new Error('XML non préparé');
+                    }
+
+                    // Créer un FormData avec le fichier XML
+                    const formData = new FormData();
+                    const blob = new Blob([this.xmlContent], { type: 'application/xml' });
+                    formData.append('xmlfile', blob, 'test_integration_xml.xml');
+
+                    // Envoyer la requête POST
+                    const response = await fetch('keybind_editor.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const html = await response.text();
+                        
+                        // Injecter le HTML de réponse dans l'iframe
+                        const doc = this.iframe.contentDocument;
+                        doc.open();
+                        doc.write(html);
+                        doc.close();
+
+                        this.testResults.uploadSimulated = true;
+                        this.setStepStatus(3, 'completed');
+                        this.log('✅ Upload simulé avec succès', 'success');
+                        this.currentStep = 3;
+
+                        // Attendre un peu pour que les scripts se chargent
+                        setTimeout(() => {
+                            this.checkTable();
+                        }, 2000);
+
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                } catch (error) {
+                    this.log(`❌ Erreur simulation upload: ${error.message}`, 'error');
+                    this.setStepStatus(3, 'error');
+                }
+            }
+
+            async checkTable() {
+                this.log('🔍 Vérification du tableau de bindings...', 'info');
+                this.setStepStatus(4, 'active');
+
+                try {
+                    const doc = this.iframe.contentDocument;
+                    const table = doc.getElementById('bindings-table');
+
+                    if (table) {
+                        this.testResults.tableDetected = true;
+                        this.setStepStatus(4, 'completed');
+                        this.log('✅ Tableau de bindings détecté', 'success');
+                        this.log(`📊 Tableau contient ${table.rows.length} lignes`, 'info');
+                        this.currentStep = 4;
+
+                        // Automatiquement vérifier la section
+                        setTimeout(() => {
+                            this.checkSection();
+                        }, 1000);
+
+                    } else {
+                        throw new Error('Tableau bindings-table non trouvé');
+                    }
+
+                } catch (error) {
+                    this.log(`❌ Erreur vérification tableau: ${error.message}`, 'error');
+                    this.setStepStatus(4, 'error');
+                }
+            }
+
+            async checkSection() {
+                this.log('🎯 VÉRIFICATION CRITIQUE: Section Gestion des dispositifs...', 'warning');
+                this.setStepStatus(5, 'active');
+
+                try {
+                    const doc = this.iframe.contentDocument;
+                    
+                    // Chercher la section de gestion des dispositifs
+                    const deviceSection = doc.querySelector('.device-management-section');
+                    const deviceButton = doc.getElementById('open-device-manager');
+                    const deviceHeader = doc.querySelector('h4:contains("Gestion des Dispositifs")');
+                    
+                    // Chercher par contenu textuel
+                    const allElements = doc.querySelectorAll('*');
+                    let foundDeviceManagement = false;
+                    
+                    for (let element of allElements) {
+                        if (element.textContent && element.textContent.includes('Gestion des dispositifs')) {
+                            foundDeviceManagement = true;
+                            this.log(`✅ Section trouvée dans: ${element.tagName}`, 'success');
+                            break;
+                        }
+                    }
+
+                    if (foundDeviceManagement || deviceSection || deviceButton) {
+                        this.testResults.sectionDetected = true;
+                        this.setStepStatus(5, 'completed');
+                        this.log('🎉 SUCCÈS! Section "Gestion des dispositifs" détectée!', 'success');
+                        this.updateTestStatus('✅ TEST RÉUSSI - Section détectée!', 'success');
+                        this.currentStep = 5;
+
+                        // Vérifier les éléments de la section
+                        this.inspectDeviceSection(doc);
+
+                    } else {
+                        this.log('❌ Section "Gestion des dispositifs" NON détectée', 'error');
+                        this.log('🔍 Inspection du DOM pour diagnostic...', 'warning');
+                        this.inspectDOM(doc);
+                        this.setStepStatus(5, 'error');
+                        this.updateTestStatus('❌ ÉCHEC - Section non détectée', 'error');
+                    }
+
+                } catch (error) {
+                    this.log(`❌ Erreur vérification section: ${error.message}`, 'error');
+                    this.setStepStatus(5, 'error');
+                }
+            }
+
+            inspectDeviceSection(doc) {
+                this.log('🔍 Inspection de la section détectée...', 'info');
+                
+                const deviceButton = doc.getElementById('open-device-manager');
+                if (deviceButton) {
+                    this.log('✅ Bouton "Gérer les dispositifs" trouvé', 'success');
+                }
+
+                const importButton = doc.getElementById('import-device-json');
+                if (importButton) {
+                    this.log('✅ Bouton "Importer JSON" trouvé', 'success');
+                }
+
+                const deviceCount = doc.getElementById('device-count');
+                if (deviceCount) {
+                    this.log(`✅ Compteur de dispositifs: ${deviceCount.textContent}`, 'success');
+                }
+            }
+
+            inspectDOM(doc) {
+                this.log('🔍 Diagnostic DOM...', 'warning');
+                
+                // Vérifier si les scripts sont chargés
+                const scripts = doc.querySelectorAll('script[src*="bindingEditor"]');
+                this.log(`📝 Scripts bindingEditor trouvés: ${scripts.length}`, 'info');
+
+                // Vérifier l'objet global
+                const iframeWindow = this.iframe.contentWindow;
+                if (iframeWindow.bindingEditorIntegration) {
+                    const integration = iframeWindow.bindingEditorIntegration;
+                    this.log(`🔧 BindingEditorIntegration présent: ${!!integration}`, 'info');
+                    this.log(`🔧 Est initialisé: ${integration.isInitialized}`, 'info');
+                } else {
+                    this.log('❌ BindingEditorIntegration non trouvé', 'error');
+                }
+
+                // Vérifier la structure DOM après les filtres
+                const filterDiv = doc.getElementById('filter-nonempty');
+                if (filterDiv) {
+                    this.log('✅ Élément filter-nonempty trouvé', 'success');
+                    const parent = filterDiv.parentElement;
+                    if (parent) {
+                        this.log(`📊 Parent du filtre: ${parent.tagName}.${parent.className}`, 'info');
+                        this.log(`📊 Éléments suivants: ${parent.nextElementSibling ? parent.nextElementSibling.tagName : 'aucun'}`, 'info');
+                    }
+                } else {
+                    this.log('❌ Élément filter-nonempty non trouvé', 'error');
+                }
+            }
+
+            async runFullAutoTest() {
+                this.log('🚀 Démarrage du test complet automatique...', 'info');
+                this.updateTestStatus('🔄 Test automatique en cours...', 'warning');
+
+                try {
+                    await this.loadEditor();
+                    await this.delay(1000);
+                    await this.prepareXML();
+                    await this.delay(500);
+                    await this.simulateUpload();
+                    await this.delay(3000); // Attendre que les scripts s'exécutent
+                    
+                    this.log('🎯 Test automatique terminé', 'info');
+                    
+                } catch (error) {
+                    this.log(`❌ Erreur dans le test automatique: ${error.message}`, 'error');
+                    this.updateTestStatus('❌ Test automatique échoué', 'error');
+                }
+            }
+
+            startManualTest() {
+                this.log('👤 Démarrage du test manuel guidé...', 'info');
+                this.updateTestStatus('📋 Test manuel - Suivez les étapes', 'info');
+                
+                // Ouvrir l'éditeur dans l'iframe
+                this.iframe.src = 'keybind_editor.php';
+                
+                this.log('📋 INSTRUCTIONS MANUELLES:', 'warning');
+                this.log('1. Dans l\'iframe, cliquez sur "Choisir un fichier"', 'info');
+                this.log('2. Sélectionnez le fichier test_integration_xml.xml', 'info');
+                this.log('3. Attendez l\'affichage du tableau de bindings', 'info');
+                this.log('4. CHERCHEZ la section "Gestion des dispositifs"', 'warning');
+            }
+
+            debugIntegration() {
+                window.open('test_advanced_debug.html', '_blank');
+                this.log('🔬 Interface de debug ouverte dans un nouvel onglet', 'info');
+            }
+
+            resetTest() {
+                this.currentStep = 0;
+                this.testResults = {
+                    editorLoaded: false,
+                    xmlPrepared: false,
+                    uploadSimulated: false,
+                    tableDetected: false,
+                    sectionDetected: false
+                };
+
+                for (let i = 1; i <= 5; i++) {
+                    this.setStepStatus(i, '');
+                }
+
+                this.iframe.src = 'about:blank';
+                this.updateTestStatus('🔄 Test réinitialisé', 'info');
+                this.log('🔄 Test réinitialisé - Prêt pour nouveau test', 'warning');
+            }
+
+            waitForIframeLoad() {
+                return new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('Timeout chargement iframe'));
+                    }, 10000);
+
+                    this.iframe.onload = () => {
+                        clearTimeout(timeout);
+                        resolve();
+                    };
+                });
+            }
+
+            delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialisation automatique
+        document.addEventListener('DOMContentLoaded', () => {
+            new RealWorkflowTest();
+        });
+    </script>
+</body>
+</html>

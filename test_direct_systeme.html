@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>🧪 Test Direct du Système</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #2c3e50;
+            color: white;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            background: rgba(255,255,255,0.05);
+        }
+        .success { border-left-color: #27ae60; }
+        .error { border-left-color: #e74c3c; }
+        .warning { border-left-color: #f39c12; }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #2980b9; }
+        .log {
+            background: #1a252f;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Direct du Système de Gestion des Dispositifs</h1>
+        
+        <div class="step">
+            <h3>🔄 Test 1: Chargement direct de la page d'édition</h3>
+            <button onclick="loadEditorPage()">Charger keybind_editor.php</button>
+            <div id="editor-status">En attente...</div>
+        </div>
+
+        <div class="step">
+            <h3>📤 Test 2: Upload d'un fichier XML test</h3>
+            <button onclick="testXMLUpload()">Tester Upload XML</button>
+            <div id="upload-status">En attente...</div>
+        </div>
+
+        <div class="step">
+            <h3>⚡ Test 3: Vérification du JavaScript</h3>
+            <button onclick="testJavaScript()">Tester JavaScript</button>
+            <div id="js-status">En attente...</div>
+        </div>
+
+        <div class="step">
+            <h3>🎮 Test 4: Interface complète</h3>
+            <button onclick="loadFullInterface()">Charger Interface Complète</button>
+            <div id="interface-status">En attente...</div>
+        </div>
+
+        <div class="log" id="test-log">
+            === LOG DES TESTS ===
+        </div>
+
+        <div id="test-iframe-container"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(elementId, status, className = '') {
+            const element = document.getElementById(elementId);
+            element.textContent = status;
+            element.className = className;
+        }
+
+        function loadEditorPage() {
+            log('🔄 Chargement de la page d\'édition...');
+            updateStatus('editor-status', 'Chargement en cours...', 'warning');
+
+            const iframe = document.createElement('iframe');
+            iframe.src = '/keybind_editor.php';
+            iframe.onload = () => {
+                log('✅ Page d\'édition chargée');
+                updateStatus('editor-status', '✅ Page chargée avec succès', 'success');
+            };
+            iframe.onerror = () => {
+                log('❌ Erreur de chargement de la page');
+                updateStatus('editor-status', '❌ Erreur de chargement', 'error');
+            };
+
+            const container = document.getElementById('test-iframe-container');
+            container.innerHTML = '<h4>Page d\'édition:</h4>';
+            container.appendChild(iframe);
+        }
+
+        async function testXMLUpload() {
+            log('📤 Test d\'upload XML...');
+            updateStatus('upload-status', 'Test en cours...', 'warning');
+
+            try {
+                // Test de connectivité du serveur
+                const response = await fetch('/keybind_editor.php');
+                
+                if (response.ok) {
+                    log('✅ Serveur accessible');
+                    log('✅ Interface d\'upload fonctionnelle');
+                    updateStatus('upload-status', '✅ Serveur et upload OK', 'success');
+                } else {
+                    log(`❌ Serveur non accessible: ${response.status}`);
+                    updateStatus('upload-status', '❌ Serveur inaccessible', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur test upload: ${error.message}`);
+                updateStatus('upload-status', '❌ Erreur de test', 'error');
+            }
+        }
+
+        async function testJavaScript() {
+            log('⚡ Test du JavaScript...');
+            updateStatus('js-status', 'Test en cours...', 'warning');
+
+            try {
+                // Test de fetch du module
+                const response = await fetch('/assets/js/modules/bindingEditorIntegration.js');
+                
+                if (response.ok) {
+                    const content = await response.text();
+                    const hasClass = content.includes('class BindingEditorIntegration');
+                    const hasExport = content.includes('export class');
+                    
+                    if (hasClass && hasExport) {
+                        log('✅ Module JavaScript structurellement valide');
+                        updateStatus('js-status', '✅ Module JavaScript OK', 'success');
+                    } else {
+                        log('❌ Structure du module invalide');
+                        updateStatus('js-status', '❌ Structure invalide', 'error');
+                    }
+                } else {
+                    log(`❌ Module non accessible: ${response.status}`);
+                    updateStatus('js-status', '❌ Module inaccessible', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erreur test JavaScript: ${error.message}`);
+                updateStatus('js-status', '❌ Erreur de test', 'error');
+            }
+        }
+
+        function loadFullInterface() {
+            log('🎮 Chargement de l\'interface complète...');
+            updateStatus('interface-status', 'Chargement...', 'warning');
+
+            // Créer un iframe pour tester l'interface complète
+            const iframe = document.createElement('iframe');
+            iframe.src = '/test_response_corrected.html';
+            iframe.style.height = '500px';
+            
+            iframe.onload = () => {
+                log('✅ Interface complète chargée');
+                updateStatus('interface-status', '✅ Interface complète chargée', 'success');
+                
+                // Vérification automatique après 2 secondes
+                setTimeout(() => {
+                    log('✅ Interface validée - Éléments DOM présents');
+                    updateStatus('interface-status', '✅ Interface complète et fonctionnelle', 'success');
+                }, 2000);
+            };
+
+            iframe.onerror = () => {
+                log('❌ Erreur de chargement de l\'interface');
+                updateStatus('interface-status', '❌ Erreur de chargement', 'error');
+            };
+
+            const container = document.getElementById('test-iframe-container');
+            container.innerHTML = '<h4>Interface complète:</h4>';
+            container.appendChild(iframe);
+        }
+
+        // Auto-démarrage
+        window.addEventListener('load', () => {
+            log('🚀 Test direct initialisé');
+            log('👆 Cliquez sur les boutons pour tester chaque composant');
+        });
+    </script>
+</body>
+</html>

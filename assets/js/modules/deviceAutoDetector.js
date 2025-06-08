@@ -177,6 +177,13 @@ export class DeviceAutoDetection {
         return deviceInfo;
     }
 
+    clearUnknownDevices() {
+        this.unknownDevices.clear();
+        this.isSetupMode = false;
+        this.currentSetupDevice = null;
+        console.log('🧹 Dispositifs inconnus nettoyés');
+    }
+
     generateDeviceMapping(deviceKey, userConfig = {}) {
         const deviceInfo = this.unknownDevices.get(deviceKey);
         if (!deviceInfo) {

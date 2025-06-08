@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Upload Statistiques XML</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        .result { background: #e8f5e8; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #f8e8e8; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        iframe { width: 100%; height: 600px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test des Statistiques d'Actions XML</h1>
+    
+    <div class="test-section">
+        <h2>📋 Plan de Test</h2>
+        <ol>
+            <li>Charger l'étape 1 sans fichier uploadé</li>
+            <li>Simuler un upload de fichier XML</li>
+            <li>Vérifier l'affichage des statistiques d'actions</li>
+            <li>Tester le lien de navigation vers l'étape 2</li>
+        </ol>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Tests Automatisés</h2>
+        <button onclick="testStep1Empty()">1. Tester étape 1 (vide)</button>
+        <button onclick="testUploadSimulation()">2. Simuler upload XML</button>
+        <button onclick="testStatisticsDisplay()">3. Vérifier statistiques</button>
+        <button onclick="runFullTest()">🎯 Test complet</button>
+        
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📱 Interface en Direct</h2>
+        <iframe id="test-iframe" src="step_by_step_handler.php?step=1"></iframe>
+    </div>
+
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function log(message, type = 'result') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+        }
+        
+        async function testStep1Empty() {
+            log('🔍 Test: Chargement étape 1 sans fichier...', 'result');
+            
+            try {
+                const response = await fetch('step_by_step_handler.php?step=1');
+                const html = await response.text();
+                
+                if (html.includes('upload-section')) {
+                    log('✅ Section upload présente', 'result');
+                } else {
+                    log('❌ Section upload manquante', 'error');
+                }
+                
+                if (!html.includes('file-uploaded-info')) {
+                    log('✅ Section statistiques cachée (normal)', 'result');
+                } else {
+                    log('⚠️ Section statistiques visible (inattendu)', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUploadSimulation() {
+            log('🚀 Test: Simulation upload XML...', 'result');
+            
+            try {
+                // Créer un FormData avec notre fichier de test
+                const formData = new FormData();
+                
+                // Créer un fichier blob avec notre contenu XML de test
+                const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="test">
+  <actionmap name="spaceship_general">
+    <action name="v_power_throttle">
+      <rebind input="js1_button1"/>
+    </action>
+    <action name="v_power_shields">
+      <rebind input="js1_button2" ActivationMode="hold"/>
+    </action>
+    <action name="v_weapon_arm_missile">
+    </action>
+  </actionmap>
+</ActionMaps>`;
+                
+                const file = new Blob([xmlContent], { type: 'application/xml' });
+                formData.append('xmlfile', file, 'test_config.xml');
+                
+                const response = await fetch('step_by_step_handler.php?step=1&action=upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.redirected) {
+                    log('✅ Upload réussi (redirection détectée)', 'result');
+                    
+                    // Tester la nouvelle page après redirection
+                    setTimeout(() => testStatisticsDisplay(), 1000);
+                } else {
+                    const html = await response.text();
+                    if (html.includes('error') || html.includes('erreur')) {
+                        log('❌ Erreur durant upload', 'error');
+                    } else {
+                        log('⚠️ Upload sans redirection', 'result');
+                    }
+                }
+                
+            } catch (error) {
+                log(`❌ Erreur upload: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testStatisticsDisplay() {
+            log('📊 Test: Vérification affichage statistiques...', 'result');
+            
+            // Créer une session avec des données XML manuellement
+            try {
+                const testData = {
+                    xmlName: 'test_config.xml',
+                    xmlStats: { total: 4, used: 3 }
+                };
+                
+                const response = await fetch('step_by_step_handler.php?step=1', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html'
+                    }
+                });
+                
+                const html = await response.text();
+                
+                if (html.includes('file-uploaded-info')) {
+                    log('✅ Section statistiques détectée', 'result');
+                } else {
+                    log('ℹ️ Section statistiques non visible (session vide)', 'result');
+                }
+                
+                // Rafraîchir l'iframe pour voir les changements
+                document.getElementById('test-iframe').src = 'step_by_step_handler.php?step=1&t=' + Date.now();
+                
+            } catch (error) {
+                log(`❌ Erreur test statistiques: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runFullTest() {
+            log('🎯 DÉBUT DU TEST COMPLET', 'result');
+            
+            await testStep1Empty();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testUploadSimulation();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testStatisticsDisplay();
+            
+            log('🏁 TEST COMPLET TERMINÉ', 'result');
+        }
+        
+        // Démarrer automatiquement le test de l'étape 1 vide
+        setTimeout(() => testStep1Empty(), 1000);
+    </script>
+</body>
+</html>

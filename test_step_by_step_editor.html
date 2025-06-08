@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Éditeur Étape par Étape</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .test-link {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 5px 10px 5px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .test-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .test-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .steps-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .step-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .step-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .step-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .step-description {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ready {
+            background: #28a745;
+        }
+        
+        .status-warning {
+            background: #ffc107;
+        }
+        
+        .status-error {
+            background: #dc3545;
+        }
+        
+        .requirements {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .requirements h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        
+        .requirements ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .requirements li {
+            margin-bottom: 8px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Test de l'Éditeur Étape par Étape</h1>
+            <p>Interface de test pour valider le nouveau workflow en 4 étapes</p>
+        </div>
+        
+        <!-- Vue d'ensemble des étapes -->
+        <div class="steps-overview">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-title">Upload XML</div>
+                <div class="step-description">
+                    Téléchargement du fichier de configuration Star Citizen avec validation en temps réel
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-title">Reconnaissance Dispositifs</div>
+                <div class="step-description">
+                    Détection automatique des dispositifs connectés et configuration des nouveaux
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-title">Édition Configuration</div>
+                <div class="step-description">
+                    Interface d'édition des mappings avec gestionnaire de bindings intégré
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div class="step-title">Résumé & Téléchargement</div>
+                <div class="step-description">
+                    Aperçu de la configuration finale et téléchargement des fichiers
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tests individuels -->
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-ready"></span>
+                Test du Workflow Complet
+            </div>
+            <div class="test-description">
+                Tester l'ensemble du processus en 4 étapes, de l'upload à la génération du fichier final.
+            </div>
+            <a href="step_by_step_handler.php?step=1" class="test-link">
+                🚀 Commencer le Test Complet
+            </a>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-ready"></span>
+                Tests des Étapes Individuelles
+            </div>
+            <div class="test-description">
+                Tester chaque étape individuellement pour valider leur fonctionnement.
+            </div>
+            <a href="step_by_step_handler.php?step=1" class="test-link">Étape 1: Upload</a>
+            <a href="step_by_step_handler.php?step=2" class="test-link">Étape 2: Dispositifs</a>
+            <a href="step_by_step_handler.php?step=3" class="test-link">Étape 3: Édition</a>
+            <a href="step_by_step_handler.php?step=4" class="test-link">Étape 4: Résumé</a>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-warning"></span>
+                Test de Robustesse
+            </div>
+            <div class="test-description">
+                Tester les cas d'erreur, la validation des données et la gestion des sessions.
+            </div>
+            <a href="javascript:testSessionReset()" class="test-link">Reset Session</a>
+            <a href="javascript:testDirectAccess()" class="test-link">Accès Direct Étapes</a>
+            <a href="javascript:testErrorHandling()" class="test-link">Gestion d'Erreurs</a>
+        </div>
+        
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-ready"></span>
+                Comparaison avec l'Ancien Système
+            </div>
+            <div class="test-description">
+                Comparer l'efficacité et l'expérience utilisateur entre l'ancien et le nouveau système.
+            </div>
+            <a href="keybind_editor.php" class="test-link">Ancien Éditeur</a>
+            <a href="step_by_step_handler.php?step=1" class="test-link">Nouvel Éditeur</a>
+        </div>
+        
+        <!-- Prérequis et informations -->
+        <div class="requirements">
+            <h3>📋 Prérequis pour les Tests</h3>
+            <ul>
+                <li>Fichier XML de configuration Star Citizen valide</li>
+                <li>Au moins un dispositif de jeu connecté (joystick, throttle, etc.)</li>
+                <li>Session PHP fonctionnelle</li>
+                <li>Classes XMLProcessor et DeviceManager disponibles</li>
+                <li>Dossiers de templates créés avec les bons permissions</li>
+            </ul>
+        </div>
+        
+        <!-- Informations sur l'état du système -->
+        <div class="test-section">
+            <div class="test-title">
+                <span class="status-indicator status-ready"></span>
+                État du Système
+            </div>
+            <div class="test-description">
+                Vérifications automatiques de l'état des composants du système.
+            </div>
+            <div id="systemStatus">
+                <p>🔄 Chargement des vérifications...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Tests JavaScript pour la robustesse
+        function testSessionReset() {
+            if (confirm('Réinitialiser la session de test ?')) {
+                window.location.href = 'step_by_step_handler.php?action=restart';
+            }
+        }
+        
+        function testDirectAccess() {
+            const step = prompt('Numéro d\'étape à tester directement (1-4):', '3');
+            if (step && step >= 1 && step <= 4) {
+                window.location.href = `step_by_step_handler.php?step=${step}`;
+            }
+        }
+        
+        function testErrorHandling() {
+            // Tester différents cas d'erreur
+            const tests = [
+                'step_by_step_handler.php?step=999', // Étape invalide
+                'step_by_step_handler.php?action=invalid', // Action invalide
+                'step_by_step_handler.php?step=4' // Accès direct à l'étape 4 sans données
+            ];
+            
+            const choice = prompt(
+                'Choisir un test d\'erreur:\n' +
+                '1. Étape invalide\n' +
+                '2. Action invalide\n' +
+                '3. Accès sans données\n' +
+                'Entrez 1, 2 ou 3:'
+            );
+            
+            if (choice && tests[choice - 1]) {
+                window.location.href = tests[choice - 1];
+            }
+        }
+        
+        // Vérification de l'état du système
+        async function checkSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            let statusHTML = '';
+            
+            // Vérifier la disponibilité des endpoints
+            try {
+                const checks = [
+                    { name: 'Handler principal', url: 'step_by_step_handler.php?step=1', expected: 200 },
+                    { name: 'Étape 1 (Upload)', url: 'templates/step_by_step/step1_upload.php', expected: [200, 404] },
+                    { name: 'Étape 2 (Dispositifs)', url: 'templates/step_by_step/step2_devices.php', expected: [200, 404] },
+                    { name: 'Étape 3 (Édition)', url: 'templates/step_by_step/step3_edit.php', expected: [200, 404] },
+                    { name: 'Étape 4 (Résumé)', url: 'templates/step_by_step/step4_summary.php', expected: [200, 404] }
+                ];
+                
+                for (const check of checks) {
+                    try {
+                        const response = await fetch(check.url, { method: 'HEAD' });
+                        const isExpected = Array.isArray(check.expected) 
+                            ? check.expected.includes(response.status)
+                            : response.status === check.expected;
+                        
+                        const icon = isExpected ? '✅' : '❌';
+                        const status = isExpected ? 'OK' : 'ERREUR';
+                        statusHTML += `<p>${icon} ${check.name}: ${status} (${response.status})</p>`;
+                    } catch (error) {
+                        statusHTML += `<p>❌ ${check.name}: ERREUR (${error.message})</p>`;
+                    }
+                }
+                
+                statusDiv.innerHTML = statusHTML;
+                
+            } catch (error) {
+                statusDiv.innerHTML = '<p>❌ Erreur lors de la vérification du système</p>';
+            }
+        }
+        
+        // Lancer les vérifications au chargement
+        document.addEventListener('DOMContentLoaded', checkSystemStatus);
+        
+        // Actualiser les vérifications toutes les 30 secondes
+        setInterval(checkSystemStatus, 30000);
+    </script>
+</body>
+</html>

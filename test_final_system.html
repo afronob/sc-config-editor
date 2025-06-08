@@ -270,7 +270,7 @@
                 testResults.detection = true;
                 updateStatus('detectionStatus', 'success', '✓ Opérationnel');
 
-                setupUI = new DeviceSetupUI(autoDetection);
+                setupUI = new DeviceSetupUI(null, autoDetection);
                 updateProgress(50);
                 log('✓ Module DeviceSetupUI initialisé', 'SUCCESS');
                 testResults.ui = true;

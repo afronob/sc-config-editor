@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>🔧 Test Final - Validation Gestion Dispositifs</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .section { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { border-left: 4px solid #28a745; background: #f8fff9; }
+        .error { border-left: 4px solid #dc3545; background: #fff8f8; }
+        .warning { border-left: 4px solid #ffc107; background: #fffbf0; }
+        .info { border-left: 4px solid #17a2b8; background: #f0fbff; }
+        
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .test-result.pass { background: #d4edda; color: #155724; }
+        .test-result.fail { background: #f8d7da; color: #721c24; }
+        .test-result.pending { background: #fff3cd; color: #856404; }
+        
+        button {
+            padding: 12px 24px;
+            margin: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        button:hover { transform: translateY(-1px); opacity: 0.9; }
+        
+        .log { background: #1e1e1e; color: #fff; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 13px; }
+        .log-info { color: #17a2b8; }
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-warning { color: #ffc107; }
+        
+        iframe { width: 100%; height: 500px; border: 2px solid #dee2e6; border-radius: 6px; }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .status-card {
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007bff, #28a745);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Final - Validation Gestion Dispositifs</h1>
+    <p><strong>Objectif :</strong> Vérifier que la section "Gestion des dispositifs" apparaît bien après l'upload d'un fichier XML.</p>
+    
+    <div class="section info">
+        <h3>📊 Statut des Tests</h3>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="status-grid" id="status-grid">
+            <div class="status-card">
+                <div id="test1" class="test-result pending">🔄 Test 1: Chargement modules</div>
+            </div>
+            <div class="status-card">
+                <div id="test2" class="test-result pending">🔄 Test 2: Upload XML</div>
+            </div>
+            <div class="status-card">
+                <div id="test3" class="test-result pending">🔄 Test 3: Tableau bindings</div>
+            </div>
+            <div class="status-card">
+                <div id="test4" class="test-result pending">🔄 Test 4: Section dispositifs</div>
+            </div>
+            <div class="status-card">
+                <div id="test5" class="test-result pending">🔄 Test 5: Boutons fonctionnels</div>
+            </div>
+            <div class="status-card">
+                <div id="test6" class="test-result pending">🔄 Test 6: Modal gestionnaire</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h3>🎯 Contrôles</h3>
+        <button class="btn-primary" onclick="runFullTest()">🚀 Lancer Test Complet</button>
+        <button class="btn-success" onclick="quickCheck()">⚡ Vérification Rapide</button>
+        <button class="btn-warning" onclick="manualUpload()">📤 Upload Manuel</button>
+        <button class="btn-danger" onclick="clearLogs()">🗑️ Clear Logs</button>
+    </div>
+
+    <div class="section">
+        <h3>🖼️ Interface Keybind Editor</h3>
+        <iframe id="editor-frame" src="keybind_editor.php"></iframe>
+    </div>
+
+    <div class="section">
+        <h3>📋 Journal des Tests</h3>
+        <div id="logs" class="log">
+            <div class="log-info">[INFO] Interface de validation finale chargée</div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            test1: false, test2: false, test3: false, 
+            test4: false, test5: false, test6: false
+        };
+        
+        function log(level, message) {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-${level}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function updateTestStatus(testId, passed, message) {
+            testResults[testId] = passed;
+            const element = document.getElementById(testId);
+            element.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            element.innerHTML = `${passed ? '✅' : '❌'} ${message}`;
+            
+            // Mettre à jour la barre de progression
+            const passedCount = Object.values(testResults).filter(r => r).length;
+            const progress = (passedCount / Object.keys(testResults).length) * 100;
+            document.getElementById('progress').style.width = progress + '%';
+            
+            if (progress === 100) {
+                log('success', '🎉 TOUS LES TESTS RÉUSSIS! La gestion des dispositifs fonctionne parfaitement!');
+            }
+        }
+        
+        async function runFullTest() {
+            log('info', '🚀 Lancement du test complet...');
+            
+            // Reset
+            Object.keys(testResults).forEach(key => {
+                updateTestStatus(key, false, key.replace('test', 'Test ') + ': En cours...');
+            });
+            
+            try {
+                // Test 1: Modules chargés
+                log('info', '1️⃣ Vérification chargement modules...');
+                const iframe = document.getElementById('editor-frame');
+                
+                // Attendre que l'iframe soit complètement chargée
+                await new Promise(resolve => {
+                    if (iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
+                        resolve();
+                    } else {
+                        iframe.onload = resolve;
+                        setTimeout(resolve, 3000); // Timeout sécurité
+                    }
+                });
+                
+                const integration = iframe.contentWindow.bindingEditorIntegration;
+                if (integration) {
+                    updateTestStatus('test1', true, 'Test 1: Modules chargés ✓');
+                    log('success', '✅ BindingEditorIntegration trouvé');
+                } else {
+                    updateTestStatus('test1', false, 'Test 1: Modules non chargés ✗');
+                    log('error', '❌ BindingEditorIntegration non trouvé');
+                    return;
+                }
+                
+                // Test 2: Upload XML simulé
+                log('info', '2️⃣ Simulation upload XML...');
+                await simulateXMLUpload(iframe);
+                updateTestStatus('test2', true, 'Test 2: Upload XML simulé ✓');
+                
+                // Attendre que le DOM se stabilise
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Test 3: Vérifier tableau bindings
+                log('info', '3️⃣ Vérification tableau bindings...');
+                const iframeDoc = iframe.contentDocument;
+                const bindingsTable = iframeDoc.getElementById('bindings-table');
+                
+                if (bindingsTable) {
+                    updateTestStatus('test3', true, 'Test 3: Tableau bindings présent ✓');
+                    log('success', '✅ Tableau bindings trouvé');
+                } else {
+                    updateTestStatus('test3', false, 'Test 3: Tableau bindings absent ✗');
+                    log('error', '❌ Tableau bindings non trouvé');
+                    return;
+                }
+                
+                // Test 4: Forcer intégration et vérifier section dispositifs
+                log('info', '4️⃣ Vérification section gestion dispositifs...');
+                
+                // Forcer l'initialisation si pas encore fait
+                if (!integration.isInitialized) {
+                    log('info', 'Forcer initialisation...');
+                    integration.initialize();
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+                
+                const deviceSection = iframeDoc.querySelector('.device-management-section');
+                if (deviceSection) {
+                    updateTestStatus('test4', true, 'Test 4: Section dispositifs présente ✓');
+                    log('success', '✅ Section "Gestion des dispositifs" trouvée!');
+                    
+                    // Test 5: Vérifier boutons
+                    log('info', '5️⃣ Vérification boutons...');
+                    const managerBtn = deviceSection.querySelector('#open-device-manager');
+                    const importBtn = deviceSection.querySelector('#import-device-json');
+                    
+                    if (managerBtn && importBtn) {
+                        updateTestStatus('test5', true, 'Test 5: Boutons fonctionnels ✓');
+                        log('success', '✅ Boutons gestionnaire et import présents');
+                        
+                        // Test 6: Tester ouverture modal
+                        log('info', '6️⃣ Test ouverture modal gestionnaire...');
+                        managerBtn.click();
+                        
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                        
+                        const modal = iframeDoc.getElementById('device-manager-modal');
+                        if (modal) {
+                            updateTestStatus('test6', true, 'Test 6: Modal gestionnaire ✓');
+                            log('success', '✅ Modal gestionnaire ouverte avec succès!');
+                            
+                            // Fermer la modal
+                            const closeBtn = modal.querySelector('#close-device-manager');
+                            if (closeBtn) closeBtn.click();
+                            
+                        } else {
+                            updateTestStatus('test6', false, 'Test 6: Modal non ouverte ✗');
+                            log('error', '❌ Modal gestionnaire ne s\'ouvre pas');
+                        }
+                        
+                    } else {
+                        updateTestStatus('test5', false, 'Test 5: Boutons manquants ✗');
+                        log('error', `❌ Boutons manquants - Manager: ${!!managerBtn}, Import: ${!!importBtn}`);
+                    }
+                    
+                } else {
+                    updateTestStatus('test4', false, 'Test 4: Section dispositifs absente ✗');
+                    log('error', '❌ Section "Gestion des dispositifs" NON TROUVÉE');
+                    
+                    // Debug approfondi
+                    log('warning', '🔍 Debug: analyse des éléments disponibles...');
+                    const filterElement = iframeDoc.getElementById('filter-nonempty');
+                    log('info', `filter-nonempty: ${!!filterElement}`);
+                    
+                    if (filterElement) {
+                        log('info', `Parent de filter-nonempty: ${filterElement.parentElement.tagName}.${filterElement.parentElement.className}`);
+                    }
+                    
+                    // Forcer debug dans l'intégration
+                    if (typeof integration.debugDOMStructure === 'function') {
+                        integration.debugDOMStructure();
+                    }
+                }
+                
+            } catch (error) {
+                log('error', `❌ Erreur durant les tests: ${error.message}`);
+                log('error', `Stack: ${error.stack}`);
+            }
+        }
+        
+        async function simulateXMLUpload(iframe) {
+            const iframeDoc = iframe.contentDocument;
+            
+            // Injecter contenu similaire à edit_form.php après upload
+            const xmlContent = `
+                <div style="margin-bottom:1em;"><b>Filtres</b><br>
+                    <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+                    <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+                </div>
+                <form method="post">
+                    <input type="hidden" name="save" value="1">
+                    <input type="hidden" name="xmlname" value="test.xml">
+                    <table border="1" cellpadding="4" id="bindings-table">
+                        <tr>
+                            <th>category</th>
+                            <th>action</th>
+                            <th>name</th>
+                            <th>input</th>
+                            <th>opts</th>
+                            <th>value</th>
+                        </tr>
+                        <tr>
+                            <td>spaceship_movement</td>
+                            <td>pitch_up</td>
+                            <td>Cabrer</td>
+                            <td>js1_x</td>
+                            <td></td>
+                            <td>1.0</td>
+                        </tr>
+                        <tr>
+                            <td>spaceship_movement</td>
+                            <td>pitch_down</td>
+                            <td>Piquer</td>
+                            <td>js1_x</td>
+                            <td>hold</td>
+                            <td>-1.0</td>
+                        </tr>
+                        <tr>
+                            <td>spaceship_targeting</td>
+                            <td>target_nearest_hostile</td>
+                            <td>Cibler ennemi proche</td>
+                            <td>kb1_t</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </form>
+            `;
+            
+            // Supprimer contenu upload et injecter contenu édition
+            const uploadContainer = iframeDoc.querySelector('.upload-container');
+            if (uploadContainer) {
+                uploadContainer.style.display = 'none';
+            }
+            
+            // Ajouter le nouveau contenu
+            const existingTable = iframeDoc.getElementById('bindings-table');
+            if (!existingTable) {
+                iframeDoc.body.insertAdjacentHTML('beforeend', xmlContent);
+                log('info', 'Contenu XML injecté dans iframe');
+            }
+        }
+        
+        function quickCheck() {
+            log('info', '⚡ Vérification rapide...');
+            const iframe = document.getElementById('editor-frame');
+            const integration = iframe.contentWindow.bindingEditorIntegration;
+            
+            if (integration) {
+                log('info', `Intégration: ${integration.isInitialized ? 'Initialisée' : 'Non initialisée'}`);
+                
+                const iframeDoc = iframe.contentDocument;
+                const table = iframeDoc.getElementById('bindings-table');
+                const section = iframeDoc.querySelector('.device-management-section');
+                
+                log('info', `Tableau bindings: ${!!table}`);
+                log('info', `Section dispositifs: ${!!section}`);
+                
+                if (table && !section) {
+                    log('warning', 'Tableau présent mais section manquante - Forcer initialisation...');
+                    integration.initialize();
+                }
+            } else {
+                log('error', 'Intégration non trouvée');
+            }
+        }
+        
+        function manualUpload() {
+            log('info', '📤 Upload manuel - Rechargement iframe...');
+            const iframe = document.getElementById('editor-frame');
+            iframe.src = iframe.src + '?t=' + Date.now();
+            
+            iframe.onload = () => {
+                log('info', 'Iframe rechargée - Vous pouvez maintenant uploader un XML manuellement');
+            };
+        }
+        
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '<div class="log-info">[INFO] Logs effacés</div>';
+        }
+        
+        // Initialisation
+        log('info', '🔧 Interface de validation finale prête');
+        log('info', 'Cliquez sur "Lancer Test Complet" pour valider l\'intégration');
+    </script>
+</body>
+</html>

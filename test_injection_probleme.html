@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Injection - Problème Gestion Dispositifs</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f5f5f5;
+        }
+        .debug-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .success { border-left-color: #28a745; }
+        .error { border-left-color: #dc3545; }
+        .warning { border-left-color: #ffc107; }
+        
+        /* Simuler la structure réelle de edit_form.php */
+        #filter-nonempty { margin-right: 5px; }
+        .filters-section {
+            margin-bottom: 1em;
+            background: #f8f9fa;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        
+        #bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        #bindings-table th, #bindings-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #bindings-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .log-container {
+            background: #1e1e1e;
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+        .log-info { color: #17a2b8; }
+        .log-success { color: #28a745; }
+        .log-error { color: #dc3545; }
+        .log-debug { color: #6c757d; }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Test Injection - Diagnostic Problème Gestion Dispositifs</h1>
+    
+    <div class="debug-section">
+        <h3>Contrôles de Test</h3>
+        <button class="btn-primary" onclick="testDOMStructure()">1️⃣ Analyser Structure DOM</button>
+        <button class="btn-primary" onclick="testFindFilterElement()">2️⃣ Chercher Élément Filter</button>
+        <button class="btn-success" onclick="testInjectSection()">3️⃣ Tester Injection</button>
+        <button class="btn-warning" onclick="simulateFullWorkflow()">4️⃣ Workflow Complet</button>
+        <button class="btn-danger" onclick="clearLogs()">🗑️ Clear Logs</button>
+    </div>
+
+    <!-- Structure simulant edit_form.php -->
+    <div class="debug-section">
+        <h3>Structure Simulée (edit_form.php)</h3>
+        
+        <!-- Filtres (ligne 51 dans edit_form.php) -->
+        <div class="filters-section">
+            <b>Filtres</b><br>
+            <label><input type="checkbox" id="filter-nonempty"> Afficher seulement les bindings non vides</label><br>
+            <label><input type="checkbox" id="filter-hold"> Afficher seulement les inputs en mode Hold</label>
+        </div>
+
+        <!-- Tableau bindings (ligne 72 dans edit_form.php) -->
+        <table id="bindings-table">
+            <tr>
+                <th>category</th>
+                <th>action</th>
+                <th>name</th>
+                <th>input</th>
+                <th>opts</th>
+                <th>value</th>
+            </tr>
+            <tr>
+                <td>spaceship_movement</td>
+                <td>pitch_up</td>
+                <td>Cabrer</td>
+                <td>js1_x</td>
+                <td></td>
+                <td>1.0</td>
+            </tr>
+            <tr>
+                <td>spaceship_movement</td>
+                <td>pitch_down</td>
+                <td>Piquer</td>
+                <td>js1_x</td>
+                <td></td>
+                <td>-1.0</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="debug-section">
+        <h3>📋 Logs de Diagnostic</h3>
+        <div id="log-container" class="log-container">
+            <div class="log-entry log-info">📊 Prêt pour les tests de diagnostic...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { BindingEditorIntegration } from './assets/js/modules/bindingEditorIntegration.js';
+        import logger from './assets/js/modules/globalLogger.js';
+
+        // Configuration du logger pour affichage dans la page
+        logger.setOutput((level, message, module) => {
+            const logContainer = document.getElementById('log-container');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${level}`;
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] [${module || 'Test'}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        });
+
+        // Instance de l'intégration pour les tests
+        window.testIntegration = new BindingEditorIntegration();
+
+        // Fonctions de test
+        window.testDOMStructure = function() {
+            logger.info('=== ANALYSE STRUCTURE DOM ===', 'Test');
+            
+            // Vérifier les éléments clés
+            const filterElement = document.getElementById('filter-nonempty');
+            const tableElement = document.getElementById('bindings-table');
+            const filtersDiv = document.querySelector('.filters-section');
+            
+            logger.info(`filter-nonempty trouvé: ${!!filterElement}`, 'Test');
+            logger.info(`bindings-table trouvé: ${!!tableElement}`, 'Test');
+            logger.info(`filters-section trouvé: ${!!filtersDiv}`, 'Test');
+            
+            if (filterElement) {
+                logger.info(`filter-nonempty parent: ${filterElement.parentElement.tagName}.${filterElement.parentElement.className}`, 'Test');
+                logger.info(`filter-nonempty parent HTML: ${filterElement.parentElement.outerHTML.substring(0, 100)}...`, 'Test');
+            }
+            
+            // Afficher tous les éléments avec ID
+            const elementsWithId = document.querySelectorAll('[id]');
+            logger.info(`Éléments avec ID: ${Array.from(elementsWithId).map(el => el.id).join(', ')}`, 'Test');
+            
+            logger.success('✅ Analyse structure terminée', 'Test');
+        };
+
+        window.testFindFilterElement = function() {
+            logger.info('=== TEST RECHERCHE ÉLÉMENT FILTER ===', 'Test');
+            
+            // Méthode 1: getElementById direct
+            let filtersDiv = document.getElementById('filter-nonempty')?.parentElement;
+            logger.info(`Méthode 1 (filter-nonempty parent): ${!!filtersDiv}`, 'Test');
+            
+            if (!filtersDiv) {
+                // Méthode 2: chercher une div contenant "Filtres"
+                const divs = document.getElementsByTagName('div');
+                logger.info(`Méthode 2: Recherche dans ${divs.length} divs...`, 'Test');
+                
+                for (let div of divs) {
+                    if (div.innerHTML && div.innerHTML.includes('Filtres')) {
+                        filtersDiv = div;
+                        logger.info(`Méthode 2: Trouvé div avec "Filtres"`, 'Test');
+                        break;
+                    }
+                }
+            }
+            
+            if (!filtersDiv) {
+                // Méthode 3: chercher près du tableau
+                const bindingsTable = document.getElementById('bindings-table');
+                if (bindingsTable && bindingsTable.previousElementSibling) {
+                    filtersDiv = bindingsTable.previousElementSibling;
+                    logger.info(`Méthode 3: Trouvé élément avant table`, 'Test');
+                }
+            }
+            
+            if (filtersDiv) {
+                logger.success(`✅ Élément trouvé: ${filtersDiv.tagName}.${filtersDiv.className}`, 'Test');
+                logger.info(`Contenu: ${filtersDiv.innerHTML.substring(0, 200)}...`, 'Test');
+            } else {
+                logger.error('❌ Aucun élément trouvé pour injection', 'Test');
+            }
+        };
+
+        window.testInjectSection = function() {
+            logger.info('=== TEST INJECTION SECTION ===', 'Test');
+            
+            // Supprimer toute section existante
+            const existingSection = document.querySelector('.device-management-section');
+            if (existingSection) {
+                existingSection.remove();
+                logger.info('Section existante supprimée', 'Test');
+            }
+            
+            // Appeler la méthode d'injection
+            try {
+                window.testIntegration.addDeviceManagementLinks();
+                
+                // Vérifier le résultat
+                const newSection = document.querySelector('.device-management-section');
+                if (newSection) {
+                    logger.success('✅ Section "Gestion des dispositifs" injectée avec succès!', 'Test');
+                    logger.info(`Position: après ${newSection.previousElementSibling?.tagName || 'N/A'}`, 'Test');
+                    
+                    // Vérifier les boutons
+                    const managerBtn = newSection.querySelector('#open-device-manager');
+                    const importBtn = newSection.querySelector('#import-device-json');
+                    logger.info(`Bouton gestionnaire: ${!!managerBtn}`, 'Test');
+                    logger.info(`Bouton import: ${!!importBtn}`, 'Test');
+                    
+                } else {
+                    logger.error('❌ Échec de l\'injection de la section', 'Test');
+                }
+                
+            } catch (error) {
+                logger.error(`❌ Erreur lors de l'injection: ${error.message}`, 'Test');
+                logger.error(`Stack: ${error.stack}`, 'Test');
+            }
+        };
+
+        window.simulateFullWorkflow = function() {
+            logger.info('=== SIMULATION WORKFLOW COMPLET ===', 'Test');
+            
+            // 1. Vérification contexte
+            logger.info('1️⃣ Vérification contexte...', 'Test');
+            const hasContext = window.testIntegration.isInBindingEditor();
+            logger.info(`Contexte binding editor: ${hasContext}`, 'Test');
+            
+            // 2. Injection CSS
+            logger.info('2️⃣ Injection CSS...', 'Test');
+            window.testIntegration.injectCSS();
+            
+            // 3. Initialisation modal
+            logger.info('3️⃣ Initialisation modal XML...', 'Test');
+            window.testIntegration.initializeXMLModal();
+            
+            // 4. Injection liens
+            logger.info('4️⃣ Injection liens gestion...', 'Test');
+            window.testIntegration.addDeviceManagementLinks();
+            
+            // 5. Vérification finale
+            logger.info('5️⃣ Vérification finale...', 'Test');
+            const section = document.querySelector('.device-management-section');
+            const managerBtn = document.querySelector('#open-device-manager');
+            const importBtn = document.querySelector('#import-device-json');
+            
+            if (section && managerBtn && importBtn) {
+                logger.success('🎉 WORKFLOW COMPLET RÉUSSI!', 'Test');
+                logger.success('✅ Section visible avec tous les boutons fonctionnels', 'Test');
+                
+                // Test d'un clic sur le bouton gestionnaire
+                logger.info('Test clic bouton gestionnaire...', 'Test');
+                managerBtn.click();
+                
+                setTimeout(() => {
+                    const modal = document.getElementById('device-manager-modal');
+                    if (modal) {
+                        logger.success('✅ Modal gestionnaire ouverte!', 'Test');
+                        
+                        // Fermer la modal
+                        setTimeout(() => {
+                            const closeBtn = document.getElementById('close-device-manager');
+                            if (closeBtn) {
+                                closeBtn.click();
+                                logger.info('Modal fermée', 'Test');
+                            }
+                        }, 2000);
+                    } else {
+                        logger.error('❌ Modal gestionnaire non ouverte', 'Test');
+                    }
+                }, 500);
+                
+            } else {
+                logger.error('❌ ÉCHEC DU WORKFLOW', 'Test');
+                logger.error(`Section: ${!!section}, Manager btn: ${!!managerBtn}, Import btn: ${!!importBtn}`, 'Test');
+            }
+        };
+
+        window.clearLogs = function() {
+            document.getElementById('log-container').innerHTML = 
+                '<div class="log-entry log-info">📊 Logs effacés - Prêt pour nouveaux tests...</div>';
+        };
+
+        // Auto-test au chargement
+        setTimeout(() => {
+            logger.info('🚀 Page chargée - Prêt pour les tests', 'Test');
+            logger.info('Utilisez les boutons ci-dessus pour diagnostiquer le problème', 'Test');
+        }, 500);
+    </script>
+</body>
+</html>

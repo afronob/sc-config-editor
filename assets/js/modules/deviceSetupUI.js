@@ -1,17 +1,63 @@
 // Interface utilisateur pour la configuration des nouveaux devices
+import { XMLDeviceInstancer } from './xmlDeviceInstancer.js';
+
 export class DeviceSetupUI {
-    constructor(autoDetection) {
+    constructor(containerId = null, autoDetection = null) {
         this.autoDetection = autoDetection;
+        this.containerId = containerId;
         this.currentDeviceKey = null;
-        this.setupSteps = ['info', 'axes', 'hats', 'confirm'];
+        this.mode = 'full'; // 'full' ou 'json-only'
+        this.setupSteps = ['info', 'axes', 'hats', 'confirm', 'xml'];
         this.currentStep = 0;
         this.userConfig = {
             axesMapping: {},
             hatsConfig: {}
         };
         
-        this.createUI();
-        this.bindEvents();
+        // Callbacks externes
+        this.onComplete = null;
+        this.onCancel = null;
+        
+        // Initialiser le module d'instanciation XML (seulement en mode full)
+        if (this.mode === 'full') {
+            this.xmlInstancer = new XMLDeviceInstancer();
+        }
+        
+        // Si un containerId est fourni, c'est probablement pour le mode json-only
+        if (containerId) {
+            this.mode = 'json-only';
+            this.setupSteps = ['info', 'axes', 'hats', 'confirm']; // Sans l'étape XML
+        } else {
+            this.createUI();
+            this.bindEvents();
+        }
+    }
+
+    /**
+     * Méthode helper pour récupérer de manière sécurisée les informations du device
+     * @param {string} deviceKey - Clé du device (optionnel, utilise currentDeviceKey par défaut)
+     * @returns {Object|null} - Informations du device ou null
+     */
+    getDeviceInfo(deviceKey = null) {
+        const key = deviceKey || this.currentDeviceKey;
+        
+        if (!this.autoDetection) {
+            console.error('❌ Système de détection non initialisé');
+            return null;
+        }
+        
+        if (!this.autoDetection.unknownDevices) {
+            console.error('❌ Liste des dispositifs inconnus non disponible');
+            return null;
+        }
+        
+        const deviceInfo = this.autoDetection.unknownDevices.get(key);
+        if (!deviceInfo) {
+            console.error('❌ Device inconnu non trouvé:', key);
+            return null;
+        }
+        
+        return deviceInfo;
     }
 
     createUI() {
@@ -41,6 +87,10 @@ export class DeviceSetupUI {
                             <div class="step" data-step="3">
                                 <div class="step-number">4</div>
                                 <div class="step-label">Confirmation</div>
+                            </div>
+                            <div class="step" data-step="4">
+                                <div class="step-number">5</div>
+                                <div class="step-label">Intégration XML</div>
                             </div>
                         </div>
                     </div>
@@ -122,6 +172,45 @@ export class DeviceSetupUI {
                                 </div>
                             </div>
                             <p>Voulez-vous sauvegarder cette configuration ?</p>
+                        </div>
+                        
+                        <!-- Étape 5: Intégration XML -->
+                        <div id="setupStep4" class="setup-step">
+                            <h3>🎯 Intégration dans votre XML Star Citizen</h3>
+                            <div class="xml-integration-section">
+                                <div class="integration-info">
+                                    <h4>✨ Instanciation automatique du device</h4>
+                                    <p>Votre nouveau device peut être automatiquement ajouté à votre fichier XML Star Citizen :</p>
+                                    
+                                    <div class="xml-device-preview" id="xmlDevicePreview">
+                                        <!-- Preview des modifications XML -->
+                                    </div>
+                                    
+                                    <div class="xml-integration-options">
+                                        <label class="xml-option">
+                                            <input type="radio" name="xmlIntegration" value="download" checked>
+                                            <strong>📥 Télécharger XML modifié</strong>
+                                            <span class="option-description">Télécharge votre XML avec le nouveau device instancié automatiquement</span>
+                                        </label>
+                                        
+                                        <label class="xml-option">
+                                            <input type="radio" name="xmlIntegration" value="manual">
+                                            <strong>✋ Configuration manuelle</strong>
+                                            <span class="option-description">Affiche les instructions pour ajouter le device manuellement</span>
+                                        </label>
+                                        
+                                        <label class="xml-option">
+                                            <input type="radio" name="xmlIntegration" value="skip">
+                                            <strong>⏭️ Ignorer pour l'instant</strong>
+                                            <span class="option-description">Sauvegarde uniquement la configuration du device</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="xml-status" id="xmlStatus">
+                                    <!-- Status de l'analyse XML -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -348,6 +437,88 @@ export class DeviceSetupUI {
                     margin-top: 15px;
                     text-align: right;
                 }
+                
+                .xml-integration-section {
+                    background: #f8f9fa;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }
+                
+                .xml-device-preview {
+                    background: #e9ecef;
+                    padding: 15px;
+                    border-radius: 5px;
+                    font-family: monospace;
+                    max-height: 200px;
+                    overflow-y: auto;
+                    margin: 15px 0;
+                }
+                
+                .xml-integration-options {
+                    margin: 15px 0;
+                }
+                
+                .xml-option {
+                    display: block;
+                    margin-bottom: 10px;
+                }
+                
+                .xml-option input {
+                    margin-right: 10px;
+                }
+                
+                .option-description {
+                    font-size: 0.9em;
+                    color: #666;
+                }
+                
+                .xml-status {
+                    margin-top: 15px;
+                    padding: 10px;
+                    border-radius: 5px;
+                    display: none;
+                }
+                
+                .xml-status.success {
+                    background: #d4edda;
+                    color: #155724;
+                }
+                
+                .xml-status.error {
+                    background: #f8d7da;
+                    color: #721c24;
+                }
+                
+                .xml-preview-content {
+                    margin: 15px 0;
+                }
+                
+                .xml-preview-content code {
+                    display: block;
+                    background: #f8f9fa;
+                    padding: 8px 12px;
+                    border-radius: 4px;
+                    margin: 5px 0;
+                    font-family: 'Courier New', monospace;
+                    border-left: 3px solid #007cba;
+                }
+                
+                .xml-preview-content h6 {
+                    margin: 15px 0 5px 0;
+                    color: #495057;
+                    font-size: 0.9em;
+                    font-weight: bold;
+                }
+                
+                .xml-preview-content p {
+                    margin: 8px 0;
+                }
+                
+                .xml-preview-content .error {
+                    color: #dc3545;
+                    font-weight: bold;
+                }
             </style>
         `;
         
@@ -377,6 +548,13 @@ export class DeviceSetupUI {
                 hatTest.style.display = 'none';
                 this.userConfig.hatsConfig = {};
             }
+        });
+        
+        // Event listeners pour l'intégration XML
+        document.querySelectorAll('input[name="xmlIntegration"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.handleXMLIntegrationChange(e.target.value);
+            });
         });
         
         // Écouter les détections de nouveaux devices
@@ -444,11 +622,24 @@ export class DeviceSetupUI {
 
     startSetup(deviceKey) {
         this.currentDeviceKey = deviceKey;
+        
+        // Vérifier que l'autoDetection est disponible
+        if (!this.autoDetection) {
+            console.error('❌ Système de détection non initialisé');
+            throw new Error('Système de détection non initialisé');
+        }
+        
+        // Vérifier que unknownDevices est disponible
+        if (!this.autoDetection.unknownDevices) {
+            console.error('❌ Liste des dispositifs inconnus non disponible');
+            throw new Error('Liste des dispositifs inconnus non disponible');
+        }
+        
         const deviceInfo = this.autoDetection.unknownDevices.get(deviceKey);
         
         if (!deviceInfo) {
-            console.error('Device non trouvé pour la configuration:', deviceKey);
-            return;
+            console.error('❌ Device inconnu non trouvé pour la configuration:', deviceKey);
+            throw new Error(`Device inconnu non trouvé: ${deviceKey}`);
         }
         
         // Réinitialiser l'état du setup
@@ -579,7 +770,7 @@ export class DeviceSetupUI {
         container.appendChild(hatConfig);
         
         // Remplir les options avec les axes disponibles
-        const deviceInfo = this.autoDetection.unknownDevices.get(this.currentDeviceKey);
+        const deviceInfo = this.getDeviceInfo();
         if (deviceInfo) {
             const selectX = document.getElementById('hatAxisXSelect');
             const selectY = document.getElementById('hatAxisYSelect');
@@ -682,9 +873,18 @@ export class DeviceSetupUI {
             this.currentStep++;
             this.updateStepDisplay();
             
-            if (this.currentStep === this.setupSteps.length - 1) {
-                // Dernière étape - générer le résumé
+            // Si on arrive à l'étape de confirmation, générer le résumé
+            if (this.currentStep === 3) { // Étape 4: Confirmation
                 this.generateConfigSummary();
+            }
+            
+            // Si on arrive à l'étape XML, initialiser l'intégration
+            if (this.currentStep === 4) { // Étape 5: XML Integration
+                this.initializeXMLIntegration();
+            }
+            
+            // Si c'est la dernière étape, changer le bouton
+            if (this.currentStep === this.setupSteps.length - 1) {
                 document.getElementById('setupNextBtn').style.display = 'none';
                 document.getElementById('setupSaveBtn').style.display = 'inline-block';
             }
@@ -733,7 +933,12 @@ export class DeviceSetupUI {
 
     generateConfigSummary() {
         const container = document.getElementById('configSummary');
-        const deviceInfo = this.autoDetection.unknownDevices.get(this.currentDeviceKey);
+        const deviceInfo = this.getDeviceInfo();
+        
+        if (!deviceInfo) {
+            container.innerHTML = '<p class="text-danger">❌ Erreur: Informations du device non disponibles</p>';
+            return;
+        }
         
         let summary = `
             <div class="summary-section">
@@ -767,21 +972,176 @@ export class DeviceSetupUI {
         container.innerHTML = summary;
     }
 
+    /**
+     * Initialise l'intégration XML quand on arrive à l'étape XML
+     */
+    async initializeXMLIntegration() {
+        console.log('🎯 Initialisation de l\'intégration XML');
+        
+        const statusDiv = document.getElementById('xmlStatus');
+        const previewDiv = document.getElementById('xmlDevicePreview');
+        
+        try {
+            // Vérifier si un XML est chargé dans l'éditeur
+            const xmlContent = this.getCurrentXMLContent();
+            
+            if (!xmlContent) {
+                this.showXMLStatus('Aucun fichier XML Star Citizen chargé. Vous devrez configurer manuellement.', 'error');
+                this.disableXMLDownloadOption();
+                return;
+            }
+            
+            // Initialiser l'instancer avec le XML
+            const initialized = this.xmlInstancer.initialize(xmlContent);
+            
+            if (!initialized) {
+                this.showXMLStatus('Erreur lors de l\'analyse du XML. Configuration manuelle recommandée.', 'error');
+                this.disableXMLDownloadOption();
+                return;
+            }
+            
+            // Générer l'aperçu des modifications
+            await this.generateXMLPreview();
+            this.showXMLStatus('XML analysé avec succès. Prêt pour l\'intégration automatique.', 'success');
+            
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation XML:', error);
+            this.showXMLStatus(`Erreur: ${error.message}`, 'error');
+            this.disableXMLDownloadOption();
+        }
+    }
+
+    /**
+     * Récupère le contenu XML actuel depuis l'éditeur principal
+     */
+    getCurrentXMLContent() {
+        // Essayer de récupérer le XML depuis l'éditeur principal
+        if (window.scConfigEditor && window.scConfigEditor.currentXMLContent) {
+            return window.scConfigEditor.currentXMLContent;
+        }
+        
+        // Fallback: essayer de récupérer depuis localStorage ou autre source
+        const storedXML = localStorage.getItem('currentXMLContent');
+        if (storedXML) {
+            return storedXML;
+        }
+        
+        return null;
+    }
+
+    /**
+     * Génère l'aperçu des modifications XML
+     */
+    async generateXMLPreview() {
+        const deviceInfo = this.getDeviceInfo();
+        const previewDiv = document.getElementById('xmlDevicePreview');
+        
+        if (!deviceInfo) {
+            previewDiv.innerHTML = '<p class="text-danger">❌ Erreur: Informations du device non disponibles</p>';
+            return;
+        }
+        
+        try {
+            // Obtenir la prochaine instance
+            const nextInstance = this.xmlInstancer.getNextAvailableInstance();
+            
+            // Générer les informations du device pour XML
+            const deviceXMLInfo = this.xmlInstancer.generateDeviceXMLInfo(deviceInfo, nextInstance);
+            
+            // Créer l'aperçu
+            const previewHTML = `
+                <h5>📋 Modifications qui seront apportées :</h5>
+                <div class="xml-preview-content">
+                    <p><strong>Instance assignée:</strong> ${nextInstance}</p>
+                    <p><strong>Device ID XML:</strong> ${deviceXMLInfo.xmlId}</p>
+                    
+                    <h6>Déclaration dans &lt;devices&gt; :</h6>
+                    <code>&lt;joystick instance="${nextInstance}"/&gt;</code>
+                    
+                    <h6>Section d'options :</h6>
+                    <code>&lt;options type="joystick" instance="${nextInstance}" Product="${deviceXMLInfo.productName}"/&gt;</code>
+                </div>
+            `;
+            
+            previewDiv.innerHTML = previewHTML;
+            
+        } catch (error) {
+            console.error('Erreur lors de la génération de l\'aperçu:', error);
+            previewDiv.innerHTML = `<p class="error">Erreur lors de la génération de l'aperçu: ${error.message}</p>`;
+        }
+    }
+
+    /**
+     * Gère le changement d'option d'intégration XML
+     */
+    handleXMLIntegrationChange(option) {
+        console.log('🔄 Option d\'intégration XML changée:', option);
+        
+        const statusDiv = document.getElementById('xmlStatus');
+        
+        switch (option) {
+            case 'download':
+                this.showXMLStatus('Téléchargement automatique sélectionné. Le XML modifié sera proposé au téléchargement.', 'success');
+                break;
+            case 'manual':
+                this.showXMLStatus('Configuration manuelle sélectionnée. Les instructions seront affichées.', 'info');
+                break;
+            case 'skip':
+                this.showXMLStatus('Intégration XML ignorée. Seule la configuration du device sera sauvegardée.', 'info');
+                break;
+        }
+    }
+
+    /**
+     * Affiche le statut de l'intégration XML
+     */
+    showXMLStatus(message, type = 'info') {
+        const statusDiv = document.getElementById('xmlStatus');
+        statusDiv.textContent = message;
+        statusDiv.className = `xml-status ${type}`;
+        statusDiv.style.display = 'block';
+    }
+
+    /**
+     * Désactive l'option de téléchargement XML si elle n'est pas disponible
+     */
+    disableXMLDownloadOption() {
+        const downloadOption = document.querySelector('input[name="xmlIntegration"][value="download"]');
+        const manualOption = document.querySelector('input[name="xmlIntegration"][value="manual"]');
+        
+        if (downloadOption) {
+            downloadOption.disabled = true;
+            // Sélectionner l'option manuelle par défaut
+            if (manualOption) {
+                manualOption.checked = true;
+                this.handleXMLIntegrationChange('manual');
+            }
+        }
+    }
+
     async saveConfiguration() {
         try {
             document.getElementById('setupSaveBtn').disabled = true;
             document.getElementById('setupSaveBtn').textContent = 'Sauvegarde...';
             
+            // 1. Sauvegarder la configuration du device
             const result = await this.autoDetection.saveDeviceMapping(this.currentDeviceKey, this.userConfig);
             
-            if (result.success) {
-                alert(`Configuration sauvegardée avec succès!\nFichier: ${result.fileName}`);
-                this.closeModal();
-                
-                // Rafraîchir les données globales si nécessaire
-                if (window.scConfigEditor && window.scConfigEditor.loadDevicesData) {
-                    window.scConfigEditor.loadDevicesData();
-                }
+            if (!result.success) {
+                throw new Error('Échec de la sauvegarde de la configuration');
+            }
+            
+            // 2. Traiter l'intégration XML selon l'option sélectionnée
+            const xmlOption = document.querySelector('input[name="xmlIntegration"]:checked')?.value || 'skip';
+            await this.processXMLIntegration(xmlOption);
+            
+            // 3. Succès complet
+            alert(`Configuration sauvegardée avec succès!\nFichier: ${result.fileName}`);
+            this.closeModal();
+            
+            // Rafraîchir les données globales si nécessaire
+            if (window.scConfigEditor && window.scConfigEditor.loadDevicesData) {
+                window.scConfigEditor.loadDevicesData();
             }
             
         } catch (error) {
@@ -791,6 +1151,106 @@ export class DeviceSetupUI {
             document.getElementById('setupSaveBtn').disabled = false;
             document.getElementById('setupSaveBtn').textContent = 'Sauvegarder';
         }
+    }
+
+    /**
+     * Traite l'intégration XML selon l'option choisie
+     */
+    async processXMLIntegration(option) {
+        console.log('🎯 Traitement de l\'intégration XML:', option);
+        
+        switch (option) {
+            case 'download':
+                await this.downloadModifiedXML();
+                break;
+            case 'manual':
+                this.showManualInstructions();
+                break;
+            case 'skip':
+                console.log('✅ Intégration XML ignorée par l\'utilisateur');
+                break;
+        }
+    }
+
+    /**
+     * Génère et propose le téléchargement du XML modifié
+     */
+    async downloadModifiedXML() {
+        try {
+            const deviceInfo = this.getDeviceInfo();
+            if (!deviceInfo) {
+                throw new Error('Informations du device non disponibles');
+            }
+            const nextInstance = this.xmlInstancer.getNextAvailableInstance();
+            const deviceXMLInfo = this.xmlInstancer.generateDeviceXMLInfo(deviceInfo, nextInstance);
+            
+            // Générer le XML modifié
+            const modifiedXML = this.xmlInstancer.generateModifiedXML(deviceXMLInfo);
+            const newFilename = this.xmlInstancer.generateModifiedFilename();
+            
+            // Valider le XML
+            const isValid = this.xmlInstancer.validateModifiedXML(modifiedXML);
+            if (!isValid) {
+                throw new Error('Le XML généré n\'est pas valide');
+            }
+            
+            // Créer et déclencher le téléchargement
+            const blob = new Blob([modifiedXML], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = newFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            console.log('✅ XML modifié téléchargé:', newFilename);
+            
+            // Afficher un message de succès avec instructions
+            setTimeout(() => {
+                alert(`✅ XML modifié téléchargé avec succès!\n\nFichier: ${newFilename}\n\n📖 Instructions:\n1. Remplacez votre fichier XML Star Citizen actuel\n2. Redémarrez Star Citizen\n3. Votre nouveau device sera disponible en instance ${nextInstance}`);
+            }, 500);
+            
+        } catch (error) {
+            console.error('Erreur lors du téléchargement XML:', error);
+            alert(`Erreur lors de la génération du XML: ${error.message}\n\nVeuillez utiliser la configuration manuelle.`);
+        }
+    }
+
+    /**
+     * Affiche les instructions de configuration manuelle
+     */
+    showManualInstructions() {
+        const deviceInfo = this.getDeviceInfo();
+        if (!deviceInfo) {
+            alert('❌ Erreur: Informations du device non disponibles pour la configuration manuelle.');
+            return;
+        }
+        const nextInstance = this.xmlInstancer.getNextAvailableInstance();
+        const deviceXMLInfo = this.xmlInstancer.generateDeviceXMLInfo(deviceInfo, nextInstance);
+        
+        const instructions = `
+📋 Instructions de Configuration Manuelle
+
+Pour ajouter votre device "${deviceInfo.id}" à votre XML Star Citizen :
+
+1️⃣ Ouvrez votre fichier XML Star Citizen dans un éditeur de texte
+
+2️⃣ Dans la section <devices>, ajoutez :
+   <joystick instance="${nextInstance}"/>
+
+3️⃣ Ajoutez une nouvelle section d'options :
+   <options type="joystick" instance="${nextInstance}" Product="${deviceXMLInfo.productName}">
+   </options>
+
+4️⃣ Sauvegardez le fichier et redémarrez Star Citizen
+
+✅ Votre device sera disponible en instance ${nextInstance}
+        `;
+        
+        alert(instructions);
     }
 
     cancelSetup() {
@@ -819,6 +1279,107 @@ export class DeviceSetupUI {
         document.querySelectorAll('.device-notification').forEach(notification => {
             notification.remove();
         });
+    }
+
+    /**
+     * Configure le mode d'opération
+     */
+    setMode(mode) {
+        this.mode = mode;
+        if (mode === 'json-only') {
+            this.setupSteps = ['info', 'axes', 'hats', 'confirm'];
+        } else {
+            this.setupSteps = ['info', 'axes', 'hats', 'confirm', 'xml'];
+            if (!this.xmlInstancer) {
+                this.xmlInstancer = new XMLDeviceInstancer();
+            }
+        }
+    }
+
+    /**
+     * Initialise le UI dans un conteneur spécifique (mode json-only)
+     */
+    initializeInContainer(containerId) {
+        this.containerId = containerId;
+        this.mode = 'json-only';
+        this.setupSteps = ['info', 'axes', 'hats', 'confirm'];
+        
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Container ${containerId} not found`);
+            return;
+        }
+
+        // Créer l'interface dans le conteneur
+        container.innerHTML = this.generateInlineSetupHTML();
+        this.bindInlineEvents(container);
+    }
+
+    /**
+     * Génère le HTML pour l'interface inline (sans modal)
+     */
+    generateInlineSetupHTML() {
+        return `
+            <div class="device-setup-inline">
+                <div class="setup-progress">
+                    <div class="progress-steps">
+                        ${this.setupSteps.map((step, index) => `
+                            <div class="step ${index === 0 ? 'active' : ''}" data-step="${index}">
+                                <div class="step-number">${index + 1}</div>
+                                <div class="step-label">${this.getStepLabel(step)}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="setup-content">
+                    ${this.generateStepContent()}
+                </div>
+                
+                <div class="setup-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelSetup">Annuler</button>
+                    <button type="button" class="btn btn-secondary" id="prevStep" style="display: none;">Précédent</button>
+                    <button type="button" class="btn btn-primary" id="nextStep">Suivant</button>
+                    <button type="button" class="btn btn-success" id="completeSetup" style="display: none;">Terminer</button>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Retourne le libellé d'une étape
+     */
+    getStepLabel(step) {
+        const labels = {
+            'info': 'Informations',
+            'axes': 'Axes',
+            'hats': 'Hats/POV',
+            'confirm': 'Confirmation',
+            'xml': 'Intégration XML'
+        };
+        return labels[step] || step;
+    }
+
+    /**
+     * Charge des données de dispositif existantes (pour édition)
+     */
+    loadDeviceData(deviceData) {
+        this.currentDeviceData = deviceData;
+        
+        // Remplir les champs du formulaire
+        setTimeout(() => {
+            const nameInput = document.getElementById('deviceNameInput');
+            const typeInput = document.getElementById('deviceTypeInput');
+            const descInput = document.getElementById('deviceDescInput');
+
+            if (nameInput) nameInput.value = deviceData.name || '';
+            if (typeInput) typeInput.value = deviceData.deviceType || '';
+            if (descInput) descInput.value = deviceData.description || '';
+
+            // Charger la configuration des axes et hats
+            this.userConfig.axesMapping = deviceData.axes || {};
+            this.userConfig.hatsConfig = deviceData.hats || {};
+        }, 100);
     }
 }
 

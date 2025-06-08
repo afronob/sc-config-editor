@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Validation Final - Gestion des Dispositifs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success { background: #28a745; color: white; }
+        .status.error { background: #dc3545; color: white; }
+        .status.pending { background: #ffc107; color: black; }
+        .button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Test de Validation Final - Gestion des Dispositifs</h1>
+        <p>Ce test vérifie que la section "Gestion des dispositifs" s'affiche correctement après l'upload d'un fichier XML.</p>
+
+        <div class="step">
+            <h3>📋 Étapes de Validation</h3>
+            <div id="step1">1. Upload du fichier XML de test <span class="status pending" id="status1">EN ATTENTE</span></div>
+            <div id="step2">2. Vérification de la génération du tableau <span class="status pending" id="status2">EN ATTENTE</span></div>
+            <div id="step3">3. Détection de la section Gestion des dispositifs <span class="status pending" id="status3">EN ATTENTE</span></div>
+        </div>
+
+        <div class="step">
+            <h3>🎮 Contrôles</h3>
+            <button class="button" onclick="runValidationTest()">🚀 Lancer Test Complet</button>
+            <button class="button" onclick="testManualUpload()">📤 Test Manuel</button>
+            <button class="button" onclick="clearResults()">🔄 Reset</button>
+        </div>
+
+        <div class="step">
+            <h3>📊 Résultats du Test</h3>
+            <iframe id="testFrame" src="about:blank"></iframe>
+        </div>
+
+        <div class="step">
+            <h3>📝 Logs</h3>
+            <div class="log" id="logContainer"></div>
+        </div>
+
+        <div class="step" id="finalResults" style="display: none;">
+            <h3>🎯 Résultat Final</h3>
+            <div id="finalResultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const timestamp = new Date().toLocaleTimeString();
+            const typeIcon = type === 'error' ? '❌' : type === 'success' ? '✅' : '📝';
+            logContainer.innerHTML += `<div>[${timestamp}] ${typeIcon} ${message}</div>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateStatus(step, status) {
+            const statusElement = document.getElementById(`status${step}`);
+            statusElement.className = `status ${status}`;
+            statusElement.textContent = status === 'pending' ? 'EN ATTENTE' :
+                                      status === 'success' ? 'RÉUSSI' : 'ÉCHEC';
+        }
+
+        async function runValidationTest() {
+            log('🚀 Démarrage du test de validation complet', 'info');
+            clearResults();
+
+            try {
+                // Étape 1: Upload automatique
+                updateStatus(1, 'pending');
+                log('📤 Upload automatique du fichier XML de test...', 'info');
+                
+                const uploadSuccess = await performXMLUpload();
+                if (uploadSuccess) {
+                    updateStatus(1, 'success');
+                    log('✅ Upload réussi', 'success');
+                    
+                    // Attendre que la page se charge
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Étape 2: Vérifier tableau
+                    updateStatus(2, 'pending');
+                    log('🔍 Vérification de la génération du tableau...', 'info');
+                    
+                    const tableFound = checkForBindingsTable();
+                    if (tableFound) {
+                        updateStatus(2, 'success');
+                        log('✅ Tableau de bindings détecté', 'success');
+                        
+                        // Étape 3: Vérifier section dispositifs
+                        updateStatus(3, 'pending');
+                        log('🔍 Recherche de la section Gestion des dispositifs...', 'info');
+                        
+                        // Attendre un peu plus pour que les scripts s'exécutent
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        
+                        const deviceSectionFound = checkForDeviceSection();
+                        if (deviceSectionFound) {
+                            updateStatus(3, 'success');
+                            log('🎉 Section Gestion des dispositifs détectée!', 'success');
+                            showFinalResults(true);
+                        } else {
+                            updateStatus(3, 'error');
+                            log('❌ Section Gestion des dispositifs non trouvée', 'error');
+                            showFinalResults(false);
+                        }
+                    } else {
+                        updateStatus(2, 'error');
+                        log('❌ Tableau de bindings non trouvé', 'error');
+                        showFinalResults(false);
+                    }
+                } else {
+                    updateStatus(1, 'error');
+                    log('❌ Échec de l\'upload', 'error');
+                    showFinalResults(false);
+                }
+
+            } catch (error) {
+                log(`❌ Erreur durant le test: ${error.message}`, 'error');
+                showFinalResults(false);
+            }
+        }
+
+        async function performXMLUpload() {
+            try {
+                const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" profileName="layout_test">
+  <CustomisationUIHeader label="Test Integration Dispositifs"/>
+  <actionmap name="spaceship_general">
+    <action name="v_throttle_abs">
+      <rebind input="js1_axis1"/>
+    </action>
+    <action name="v_strafe_forward">
+      <rebind input="js1_button1"/>
+    </action>
+  </actionmap>
+  <actionmap name="spaceship_targeting">
+    <action name="target_nearest_hostile">
+      <rebind input="js1_button2"/>
+    </action>
+  </actionmap>
+  <joystick>
+    <instance value="1"/>
+    <product value="Test Joystick"/>
+  </joystick>
+</ActionMaps>`;
+
+                // Créer FormData pour simuler upload
+                const formData = new FormData();
+                const blob = new Blob([xmlContent], { type: 'application/xml' });
+                formData.append('xmlfile', blob, 'test_validation.xml');
+
+                const response = await fetch('keybind_editor.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const html = await response.text();
+                    const iframe = document.getElementById('testFrame');
+                    
+                    // Créer une URL pour le HTML généré
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    iframe.src = url;
+                    
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+            } catch (error) {
+                log(`Erreur upload: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function checkForBindingsTable() {
+            try {
+                const iframe = document.getElementById('testFrame');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (!iframeDoc) {
+                    log('Impossible d\'accéder au contenu de l\'iframe', 'error');
+                    return false;
+                }
+                
+                const table = iframeDoc.getElementById('bindings-table');
+                if (table) {
+                    log(`Tableau trouvé avec ${table.rows.length} lignes`, 'info');
+                    return true;
+                }
+                
+                return false;
+            } catch (error) {
+                log(`Erreur lors de la vérification du tableau: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function checkForDeviceSection() {
+            try {
+                const iframe = document.getElementById('testFrame');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                if (!iframeDoc) {
+                    log('Impossible d\'accéder au contenu de l\'iframe', 'error');
+                    return false;
+                }
+
+                // Chercher la section de gestion des dispositifs
+                const deviceSection = iframeDoc.querySelector('.device-management-section');
+                if (deviceSection) {
+                    log('Section .device-management-section trouvée!', 'success');
+                    return true;
+                }
+
+                // Chercher d'autres indicateurs
+                const deviceButton = iframeDoc.querySelector('#open-device-manager') ||
+                                   iframeDoc.querySelector('button[id*="device"]') ||
+                                   iframeDoc.querySelector('*[class*="device-management"]');
+
+                if (deviceButton) {
+                    log('Élément de gestion des dispositifs trouvé!', 'success');
+                    return true;
+                }
+
+                // Debug: lister tous les éléments avec "device" dans leur ID ou classe
+                const allElements = iframeDoc.querySelectorAll('*');
+                let deviceElements = 0;
+                for (let el of allElements) {
+                    if ((el.id && el.id.includes('device')) || 
+                        (el.className && el.className.includes('device'))) {
+                        deviceElements++;
+                        log(`Élément trouvé: ${el.tagName}.${el.className}#${el.id}`, 'info');
+                    }
+                }
+                
+                log(`${deviceElements} éléments contenant "device" trouvés`, 'info');
+                
+                // Chercher le texte "Gestion des dispositifs"
+                const textContent = iframeDoc.body.textContent || '';
+                if (textContent.includes('Gestion des dispositifs') || textContent.includes('Gérer les dispositifs')) {
+                    log('Texte "Gestion des dispositifs" trouvé!', 'success');
+                    return true;
+                }
+
+                return false;
+            } catch (error) {
+                log(`Erreur lors de la vérification des dispositifs: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        function testManualUpload() {
+            log('📤 Chargement de l\'interface d\'upload manuelle...', 'info');
+            const iframe = document.getElementById('testFrame');
+            iframe.src = 'keybind_editor.php';
+        }
+
+        function clearResults() {
+            document.getElementById('logContainer').innerHTML = '';
+            document.getElementById('finalResults').style.display = 'none';
+            updateStatus(1, 'pending');
+            updateStatus(2, 'pending');
+            updateStatus(3, 'pending');
+            log('🔄 Test reseté', 'info');
+        }
+
+        function showFinalResults(success) {
+            const finalResults = document.getElementById('finalResults');
+            const content = document.getElementById('finalResultsContent');
+            
+            finalResults.style.display = 'block';
+            
+            if (success) {
+                content.innerHTML = `
+                    <div style="background: rgba(40, 167, 69, 0.2); padding: 20px; border-radius: 10px; border-left: 4px solid #28a745;">
+                        <h4>🎉 SUCCÈS COMPLET!</h4>
+                        <p><strong>La section "Gestion des dispositifs" s'affiche correctement!</strong></p>
+                        <p>✅ Le système d'intégration avec 6 stratégies d'injection fonctionne parfaitement.</p>
+                        <p>✅ L'objectif principal a été atteint : la gestion des dispositifs est maintenant accessible après l'upload XML.</p>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div style="background: rgba(220, 53, 69, 0.2); padding: 20px; border-radius: 10px; border-left: 4px solid #dc3545;">
+                        <h4>❌ Test Incomplet</h4>
+                        <p><strong>La section "Gestion des dispositifs" n'a pas été détectée.</strong></p>
+                        <p>🔧 Vérifiez les logs pour identifier le problème.</p>
+                        <p>🔍 Il est possible que le système d'injection nécessite des ajustements supplémentaires.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Interface de validation finale prête', 'info');
+            log('📋 Cliquez sur "Lancer Test Complet" pour commencer', 'info');
+        });
+    </script>
+</body>
+</html>

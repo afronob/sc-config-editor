@@ -195,7 +195,7 @@
                 // Initialiser DeviceSetupUI
                 addLog('🎨 Initialisation DeviceSetupUI...', 'info');
                 const { DeviceSetupUI } = await import('./assets/js/modules/deviceSetupUI.js');
-                window.deviceSetupUI = new DeviceSetupUI(window.deviceAutoDetection);
+                window.deviceSetupUI = new DeviceSetupUI(null, window.deviceAutoDetection);
                 addLog('✅ DeviceSetupUI initialisé', 'success');
                 
                 addLog('🎉 Initialisation terminée!', 'success');

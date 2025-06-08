@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test d'Intégration - Système de Proposition de Configuration</title>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .status.success { color: #28a745; }
+        .status.error { color: #dc3545; }
+        .status.warning { color: #ffc107; }
+        .status.info { color: #17a2b8; }
+        
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        
+        .test-button:hover { background: #005a8b; }
+        .test-button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .bindings-table th,
+        .bindings-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .bindings-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .results-summary {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Test d'Intégration - Système de Proposition de Configuration</h1>
+        
+        <div class="status-section">
+            <h3>État du Système</h3>
+            <div id="systemStatus"></div>
+        </div>
+        
+        <div class="status-section">
+            <h3>Contrôles de Test</h3>
+            <button class="test-button" onclick="testCompleteIntegration()">
+                🚀 Test d'Intégration Complète
+            </button>
+            <button class="test-button" onclick="simulateUnconfiguredDevice()">
+                🎮 Simuler Device Non Configuré
+            </button>
+            <button class="test-button" onclick="clearAll()">
+                🧹 Nettoyer Tout
+            </button>
+        </div>
+        
+        <!-- Tableau de bindings minimal pour les tests -->
+        <table id="bindings-table" class="bindings-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Action</th>
+                    <th>Input</th>
+                    <th>Opts</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Flight</td>
+                    <td>Pitch</td>
+                    <td><input type="text" name="input[0]" value="js1_button1"></td>
+                    <td><input type="text" name="opts[0]" value=""></td>
+                    <td><input type="text" name="value[0]" value=""></td>
+                </tr>
+                <tr>
+                    <td>Flight</td>
+                    <td>Roll</td>
+                    <td><input type="text" name="input[1]" value="js1_axis1"></td>
+                    <td><input type="text" name="opts[1]" value=""></td>
+                    <td><input type="text" name="value[1]" value=""></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="status-section">
+            <h3>Log des Tests</h3>
+            <div id="testLog" style="background: #000; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+        
+        <div class="results-summary">
+            <h3>Résultats des Tests</h3>
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SimplifiedBindingsHandler } from './assets/js/modules/simplifiedBindingsHandler.js';
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetection.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let handler;
+        let deviceAutoDetection;
+        let deviceSetupUI;
+        let testResults = {};
+
+        // Configuration des devices de test
+        window.devicesDataJs = [
+            {
+                id: "VKB Gladiator EVO R (Configuré)",
+                product: "VKBSim Gladiator EVO R",
+                vendor_id: "0x231d",
+                product_id: "0x0200",
+                xml_instance: "1" // Instance 1 configurée
+            }
+            // Instance 2+ non configurées intentionnellement
+        ];
+
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.textContent = `[${now}] ${message}`;
+            document.getElementById('testLog').appendChild(logEntry);
+            document.getElementById('testLog').scrollTop = document.getElementById('testLog').scrollHeight;
+            console.log(`[IntegrationTest] ${message}`);
+        }
+
+        function updateSystemStatus() {
+            const status = document.getElementById('systemStatus');
+            let html = '';
+            
+            // Vérifier les composants
+            const hasSimplifiedHandler = !!handler;
+            const hasDeviceAutoDetection = !!window.deviceAutoDetection;
+            const hasDeviceSetupUI = !!window.deviceSetupUI;
+            const hasDevicesData = !!(window.devicesDataJs && window.devicesDataJs.length > 0);
+            
+            html += `<div class="status ${hasSimplifiedHandler ? 'success' : 'error'}">
+                ✓ SimplifiedBindingsHandler: ${hasSimplifiedHandler ? 'Initialisé' : 'Non disponible'}
+            </div>`;
+            
+            html += `<div class="status ${hasDeviceAutoDetection ? 'success' : 'error'}">
+                ✓ DeviceAutoDetection: ${hasDeviceAutoDetection ? 'Disponible' : 'Non disponible'}
+            </div>`;
+            
+            html += `<div class="status ${hasDeviceSetupUI ? 'success' : 'error'}">
+                ✓ DeviceSetupUI: ${hasDeviceSetupUI ? 'Disponible' : 'Non disponible'}
+            </div>`;
+            
+            html += `<div class="status ${hasDevicesData ? 'success' : 'error'}">
+                ✓ DevicesData: ${hasDevicesData ? `${window.devicesDataJs.length} devices` : 'Non disponible'}
+            </div>`;
+            
+            status.innerHTML = html;
+        }
+
+        function recordTestResult(testName, passed, details) {
+            testResults[testName] = { passed, details };
+            updateTestResults();
+        }
+
+        function updateTestResults() {
+            const container = document.getElementById('testResults');
+            let html = '';
+            
+            for (const [testName, result] of Object.entries(testResults)) {
+                const statusClass = result.passed ? 'success' : 'error';
+                const statusIcon = result.passed ? '✅' : '❌';
+                html += `<div class="status ${statusClass}">
+                    ${statusIcon} ${testName}: ${result.details}
+                </div>`;
+            }
+            
+            container.innerHTML = html || '<div class="status info">Aucun test exécuté</div>';
+        }
+
+        window.testCompleteIntegration = async function() {
+            log('🚀 Démarrage du test d\'intégration complète...', 'info');
+            testResults = {}; // Réinitialiser les résultats
+            
+            try {
+                // 1. Initialiser le système complet
+                log('🔧 Initialisation des composants...', 'info');
+                
+                deviceAutoDetection = new DeviceAutoDetection();
+                window.deviceAutoDetection = deviceAutoDetection;
+                
+                deviceSetupUI = new DeviceSetupUI(null, deviceAutoDetection);
+                window.deviceSetupUI = deviceSetupUI;
+                
+                handler = new SimplifiedBindingsHandler();
+                
+                log('✅ Tous les composants initialisés', 'success');
+                updateSystemStatus();
+                
+                // 2. Tester la validation d'instance
+                log('🧪 Test de validation d\'instance...', 'info');
+                const validInstance = handler.isDeviceInstanceValid(1);
+                const invalidInstance = handler.isDeviceInstanceValid(2);
+                
+                recordTestResult('Validation Instance Valide', validInstance, 'Instance 1 reconnue comme valide');
+                recordTestResult('Validation Instance Invalide', !invalidInstance, 'Instance 2 reconnue comme invalide');
+                
+                // 3. Tester la proposition de configuration
+                log('🎯 Test de proposition de configuration...', 'info');
+                
+                // Créer un gamepad mock pour l'instance 2
+                const mockGamepad = {
+                    id: "Test Controller (Non Configuré)",
+                    index: 1, // Instance 2
+                    buttons: Array(16).fill().map(() => ({ pressed: false, value: 0 })),
+                    axes: Array(4).fill(0),
+                    timestamp: Date.now()
+                };
+                
+                // Mock de navigator.getGamepads()
+                const originalGetGamepads = navigator.getGamepads;
+                navigator.getGamepads = () => [null, mockGamepad]; // Index 1 = Instance 2
+                
+                // Tester la proposition
+                const result = handler.anchorToInput('button', 2, 'button1', '');
+                
+                // Vérifier qu'aucun ancrage n'a eu lieu (device non configuré)
+                recordTestResult('Ancrage Bloqué', result === null, 'Ancrage correctement bloqué pour instance non configurée');
+                
+                // Vérifier qu'un overlay de proposition a été créé
+                setTimeout(() => {
+                    const proposalOverlay = document.querySelector('.gamepad-overlay-config-proposal');
+                    const hasProposal = proposalOverlay && proposalOverlay.style.opacity === '1';
+                    recordTestResult('Overlay Proposition', hasProposal, hasProposal ? 'Overlay de proposition affiché' : 'Overlay non trouvé');
+                    
+                    // Restaurer getGamepads original
+                    navigator.getGamepads = originalGetGamepads;
+                    
+                    log('✅ Test d\'intégration complète terminé', 'success');
+                }, 200);
+                
+            } catch (error) {
+                log(`❌ Erreur lors du test d'intégration: ${error.message}`, 'error');
+                recordTestResult('Test Integration', false, `Erreur: ${error.message}`);
+            }
+        };
+
+        window.simulateUnconfiguredDevice = function() {
+            log('🎮 Simulation d\'un device non configuré...', 'info');
+            
+            if (!handler) {
+                log('❌ SimplifiedBindingsHandler non initialisé', 'error');
+                return;
+            }
+            
+            // Simuler l'usage d'un bouton sur l'instance 3 (non configurée)
+            const result = handler.anchorToInput('button', 3, 'button5', '');
+            log(`Résultat ancrage instance 3: ${result ? 'succès' : 'bloqué'}`, result ? 'error' : 'success');
+        };
+
+        window.clearAll = function() {
+            // Nettoyer tous les overlays
+            document.querySelectorAll('[class*="gamepad-overlay"]').forEach(el => el.remove());
+            document.querySelectorAll('.device-notification').forEach(el => el.remove());
+            
+            // Réinitialiser les résultats
+            testResults = {};
+            updateTestResults();
+            
+            // Nettoyer le log
+            document.getElementById('testLog').innerHTML = '';
+            
+            log('🧹 Nettoyage effectué', 'info');
+        };
+
+        // Initialisation
+        updateSystemStatus();
+        log('🎯 Test d\'intégration prêt', 'info');
+        log('💡 Cliquez sur "Test d\'Intégration Complète" pour commencer', 'info');
+    </script>
+</body>
+</html>

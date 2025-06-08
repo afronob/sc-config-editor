@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correction Bouton Configurer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .test-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .test-info {
+            background: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Correction Bouton "Configurer"</h1>
+        <p><strong>Objectif :</strong> Vérifier que le bouton "Configurer" fonctionne maintenant sans erreur.</p>
+        
+        <div class="test-section test-info">
+            <h3>📋 Instructions de test</h3>
+            <ol>
+                <li><strong>Connectez votre joystick/manette</strong></li>
+                <li><strong>Cliquez sur "Charger Step 2"</strong> ci-dessous</li>
+                <li><strong>Cliquez sur "Détecter les dispositifs connectés"</strong></li>
+                <li><strong>Cliquez sur "Configurer"</strong> pour votre dispositif</li>
+                <li><strong>Vérifiez le message</strong> qui apparaît</li>
+            </ol>
+            
+            <div class="test-section">
+                <h4>✅ Résultat attendu :</h4>
+                <p>Message : <em>"Configuration du dispositif: [Nom du dispositif] - Cette fonctionnalité sera bientôt disponible."</em></p>
+            </div>
+            
+            <div class="test-section">
+                <h4>❌ Problème précédent :</h4>
+                <p>Message : <em>"Ce dispositif n'est plus disponible. Voulez-vous actualiser la page pour mettre à jour la liste ?"</em></p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🖥️ Interface de test</h3>
+            <div style="margin: 10px 0;">
+                <button onclick="loadStep2()">Charger Step 2</button>
+                <button onclick="checkConsole()">Vérifier Console</button>
+                <button onclick="showInstructions()">Afficher Instructions</button>
+            </div>
+            <iframe id="test-iframe" src="about:blank"></iframe>
+        </div>
+
+        <div class="test-section" id="results">
+            <h3>📊 Journal des tests</h3>
+            <div id="test-log" class="log">
+                Aucun test effectué pour le moment.
+                
+Connectez votre joystick et cliquez sur "Charger Step 2" pour commencer.
+            </div>
+        </div>
+
+        <div class="test-section test-info">
+            <h3>🔧 Correction apportée</h3>
+            <p>Le problème venait de la fonction <code>addDeviceToNewDevicesSection()</code> qui :</p>
+            <ul>
+                <li>✅ Affichait le dispositif dans l'interface HTML</li>
+                <li>❌ <strong>N'ajoutait PAS</strong> le dispositif à <code>deviceAutoDetection.unknownDevices</code></li>
+            </ul>
+            
+            <p><strong>Solution :</strong> Maintenant la fonction ajoute aussi le dispositif au module :</p>
+            <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px;">
+// CORRECTION: Ajouter le dispositif au module DeviceAutoDetection
+if (deviceAutoDetection) {
+    const deviceInfo = { /* infos du dispositif */ };
+    deviceAutoDetection.unknownDevices.set(deviceKey, deviceInfo);
+    console.log(`📝 Dispositif ajouté au module: ${deviceKey}`, deviceInfo);
+}
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://localhost:8080';
+
+        function log(message) {
+            const logElement = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            logElement.textContent += logMessage;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function loadStep2() {
+            log('🚀 Chargement de l\'étape 2...');
+            document.getElementById('test-iframe').src = `${SERVER_URL}/step_by_step_handler.php?step=2`;
+            
+            // Attendre un peu puis donner des instructions
+            setTimeout(() => {
+                log('✅ Step 2 chargé - Cliquez sur "Détecter les dispositifs connectés"');
+            }, 2000);
+        }
+
+        function checkConsole() {
+            log('🔍 Vérification console...');
+            log('Ouvrez les outils de développement (F12) et vérifiez la console');
+            log('Recherchez les messages: "📝 Dispositif ajouté au module"');
+        }
+
+        function showInstructions() {
+            log('📋 Instructions détaillées:');
+            log('1. Assurez-vous que votre joystick/manette est connecté');
+            log('2. Dans l\'iframe ci-dessus, cliquez sur "Détecter les dispositifs connectés"');
+            log('3. Votre dispositif devrait apparaître avec un bouton "Configurer"');
+            log('4. Cliquez sur "Configurer"');
+            log('5. Vous devriez voir un message de confirmation de configuration');
+            log('6. Si vous voyez encore l\'erreur "Ce dispositif n\'est plus disponible", reportez le problème');
+        }
+
+        // Auto-chargement de Step 2 au démarrage
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🧪 Interface de test chargée');
+            log('📡 Serveur cible: ' + SERVER_URL);
+            log('👆 Cliquez sur "Charger Step 2" pour commencer le test');
+        });
+    </script>
+</body>
+</html>

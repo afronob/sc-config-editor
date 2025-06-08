@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => 'sc-config-editor/redis-integration',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '9bbdc4af47c4963fa45fb1b57650ff0ab28323d7',
+        'type' => 'project',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        'phpstan/phpstan' => array(
+            'pretty_version' => '1.12.27',
+            'version' => '1.12.27.0',
+            'reference' => '3a6e423c076ab39dfedc307e2ac627ef579db162',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpstan/phpstan',
+            'aliases' => array(),
+            'dev_requirement' => true,
+        ),
+        'predis/predis' => array(
+            'pretty_version' => 'v2.4.0',
+            'version' => '2.4.0.0',
+            'reference' => 'f49e13ee3a2a825631562aa0223ac922ec5d058b',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../predis/predis',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'sc-config-editor/redis-integration' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '9bbdc4af47c4963fa45fb1b57650ff0ab28323d7',
+            'type' => 'project',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);

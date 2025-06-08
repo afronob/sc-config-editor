@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Saitek X-56 - Après Correction</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .success { color: #22c55e; font-weight: bold; }
+        .error { color: #ef4444; font-weight: bold; }
+        .test-result { padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid; }
+        .test-success { background: #f0f9ff; border-color: #22c55e; }
+        .test-error { background: #fef2f2; border-color: #ef4444; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+        button { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #2563eb; }
+        .device-info { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Test Saitek X-56 - Après Correction du Mapping</h1>
+        
+        <div id="results"></div>
+        
+        <button onclick="runTests()">▶️ Lancer les Tests</button>
+        <button onclick="testRealTimeDetection()">🔍 Test Détection Temps Réel</button>
+        <button onclick="clearResults()">🗑️ Vider</button>
+    </div>
+
+    <script>
+        let deviceData = null;
+
+        function log(message, isError = false) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${isError ? 'test-error' : 'test-success'}`;
+            div.innerHTML = `<span class="${isError ? 'error' : 'success'}">${isError ? '❌' : '✅'}</span> ${message}`;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function loadDeviceData() {
+            try {
+                const response = await fetch('/get_devices_data.php');
+                deviceData = await response.json();
+                log(`Données des dispositifs chargées : ${deviceData.length} dispositifs trouvés`);
+                return true;
+            } catch (error) {
+                log(`Erreur lors du chargement des données : ${error.message}`, true);
+                return false;
+            }
+        }
+
+        async function loadSaitekMapping() {
+            try {
+                const response = await fetch('/mappings/devices/0738_a221_map.json');
+                const mapping = await response.json();
+                log('Mapping Saitek chargé avec succès');
+                
+                // Vérifier la structure
+                const hasProduct = mapping.hasOwnProperty('product');
+                const hasCorrectAxesMap = mapping.axes_map && typeof mapping.axes_map === 'object' && !Array.isArray(mapping.axes_map);
+                
+                if (hasProduct) {
+                    log(`✅ Champ "product" présent : "${mapping.product}"`);
+                } else {
+                    log('❌ Champ "product" manquant', true);
+                }
+                
+                if (hasCorrectAxesMap) {
+                    log(`✅ Structure "axes_map" correcte (objet avec ${Object.keys(mapping.axes_map).length} axes)`);
+                } else {
+                    log('❌ Structure "axes_map" incorrecte', true);
+                }
+                
+                return mapping;
+            } catch (error) {
+                log(`Erreur lors du chargement du mapping Saitek : ${error.message}`, true);
+                return null;
+            }
+        }
+
+        function isDeviceKnown(gamepad, devices) {
+            const gamepadVendorId = `0x${gamepad.id.match(/Vendor: ([0-9a-fA-F]{4})/)?.[1]?.toLowerCase() || ''}`;
+            const gamepadProductId = `0x${gamepad.id.match(/Product: ([0-9a-fA-F]{4})/)?.[1]?.toLowerCase() || ''}`;
+            
+            log(`Recherche dispositif - Vendor: ${gamepadVendorId}, Product: ${gamepadProductId}`);
+            
+            return devices.some(device => {
+                const match = device.vendor_id.toLowerCase() === gamepadVendorId && 
+                             device.product_id.toLowerCase() === gamepadProductId;
+                
+                if (match) {
+                    log(`✅ Dispositif trouvé : ${device.id}`);
+                }
+                
+                return match;
+            });
+        }
+
+        async function testSaitekDetection() {
+            log('--- Test de détection du Saitek X-56 ---');
+            
+            // Simuler un gamepad Saitek X-56
+            const mockSaitekGamepad = {
+                id: "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)",
+                index: 0,
+                connected: true,
+                mapping: "standard",
+                axes: [0, 0, 0, 0, 0, 0, 0, 0],
+                buttons: []
+            };
+            
+            const isKnown = isDeviceKnown(mockSaitekGamepad, deviceData);
+            
+            if (isKnown) {
+                log('🎉 LE SAITEK X-56 EST MAINTENANT RECONNU !');
+            } else {
+                log('❌ Le Saitek X-56 n\'est toujours pas reconnu', true);
+            }
+            
+            return isKnown;
+        }
+
+        async function runTests() {
+            clearResults();
+            log('🚀 Démarrage des tests...');
+            
+            // Test 1 : Chargement des données
+            const dataLoaded = await loadDeviceData();
+            if (!dataLoaded) return;
+            
+            // Test 2 : Vérification du mapping Saitek
+            const saitekMapping = await loadSaitekMapping();
+            if (!saitekMapping) return;
+            
+            // Test 3 : Test de détection
+            const detectionOk = await testSaitekDetection();
+            
+            // Résumé
+            if (detectionOk) {
+                log('🎉 TOUS LES TESTS RÉUSSIS ! Le problème du Saitek X-56 est résolu !');
+            } else {
+                log('❌ Des problèmes persistent', true);
+            }
+        }
+
+        async function testRealTimeDetection() {
+            log('--- Test de détection en temps réel ---');
+            
+            if (!deviceData) {
+                await loadDeviceData();
+            }
+            
+            const gamepads = navigator.getGamepads();
+            let saitekFound = false;
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                const gamepad = gamepads[i];
+                if (gamepad) {
+                    log(`Gamepad détecté : ${gamepad.id}`);
+                    
+                    if (gamepad.id.includes('0738') && gamepad.id.includes('a221')) {
+                        saitekFound = true;
+                        const isKnown = isDeviceKnown(gamepad, deviceData);
+                        
+                        if (isKnown) {
+                            log('🎉 Saitek X-56 connecté ET reconnu !');
+                        } else {
+                            log('⚠️ Saitek X-56 connecté mais non reconnu', true);
+                        }
+                    }
+                }
+            }
+            
+            if (!saitekFound) {
+                log('ℹ️ Aucun Saitek X-56 physiquement connecté détecté');
+                log('💡 Connectez votre Saitek X-56 et relancez ce test');
+            }
+        }
+
+        // Test automatique au chargement
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Bouton Configurer - Step2 Devices</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        
+        .device-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .device-info h4 { margin: 0 0 5px 0; }
+        .device-details { font-size: 0.9em; color: #666; }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Bouton "Configurer" - Step2 Devices</h1>
+    
+    <div class="test-container">
+        <h2>📋 Statut du Système</h2>
+        <div id="systemStatus">Initialisation...</div>
+    </div>
+    
+    <div class="test-container">
+        <h2>🎮 Dispositifs Détectés</h2>
+        <button class="btn btn-primary" onclick="detectDevices()">🔍 Détecter les Dispositifs</button>
+        <div id="devicesContainer">
+            <p><em>Cliquez sur "Détecter" pour voir les dispositifs connectés</em></p>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>📊 Journal des Actions</h2>
+        <button class="btn btn-success" onclick="clearLog()">🧹 Effacer</button>
+        <div id="logOutput" class="log">Initialisation du test...\n</div>
+    </div>
+
+    <script type="module">
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetection.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+        
+        let deviceAutoDetection = null;
+        let deviceSetupUI = null;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logOutput = document.getElementById('logOutput');
+            logOutput.textContent += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(`[Test] ${message}`);
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+        
+        async function initializeSystem() {
+            try {
+                log('🔧 Chargement des données des dispositifs...');
+                
+                // Charger les données des dispositifs comme dans step2_devices.php
+                const response = await fetch('get_devices_data.php');
+                const devicesData = await response.json();
+                window.devicesDataJs = devicesData;
+                log(`✅ ${devicesData.length} dispositifs chargés`);
+                
+                // Initialiser le système de détection
+                deviceAutoDetection = new DeviceAutoDetection();
+                log('✅ DeviceAutoDetection initialisé');
+                
+                // Initialiser l'interface utilisateur de configuration
+                deviceSetupUI = new DeviceSetupUI(deviceAutoDetection);
+                log('✅ DeviceSetupUI initialisé');
+                
+                // Rendre disponible globalement (comme dans step2_devices.php)
+                window.deviceSetupUI = deviceSetupUI;
+                window.deviceAutoDetection = deviceAutoDetection;
+                
+                updateStatus('✅ Système initialisé avec succès', 'success');
+                log('🎉 Système complètement initialisé - Prêt pour les tests');
+                
+            } catch (error) {
+                log(`❌ Erreur d'initialisation: ${error.message}`, 'error');
+                updateStatus('❌ Erreur d\'initialisation', 'error');
+                console.error('Erreur:', error);
+            }
+        }
+        
+        // Reproduire exactement la fonction detectDevices de step2_devices.php
+        window.detectDevices = function() {
+            log('🔍 Début de la détection des dispositifs...');
+            
+            const devicesContainer = document.getElementById('devicesContainer');
+            devicesContainer.innerHTML = '<p><em>Détection en cours...</em></p>';
+            
+            // Vérifier les gamepads connectés via l'API Gamepad
+            const gamepads = navigator.getGamepads();
+            let devicesFound = 0;
+            let unknownDevicesFound = 0;
+            let htmlContent = '';
+            
+            log(`📊 ${gamepads.length} slots de gamepad vérifiés`);
+            
+            for (let i = 0; i < gamepads.length; i++) {
+                if (gamepads[i]) {
+                    devicesFound++;
+                    const gamepad = gamepads[i];
+                    log(`🎮 Dispositif trouvé: ${gamepad.id}`);
+                    
+                    // Vérifier si le dispositif est connu (même logique que step2_devices.php)
+                    const isKnown = checkIfDeviceIsKnown(gamepad);
+                    
+                    if (!isKnown) {
+                        unknownDevicesFound++;
+                        
+                        // Extraire les IDs vendor/product (même logique que step2_devices.php)
+                        const extractVendorProductId = (gamepadId) => {
+                            const vendor = gamepadId.match(/Vendor:\\s*([0-9a-fA-F]{4})/);
+                            const product = gamepadId.match(/Product:\\s*([0-9a-fA-F]{4})/);
+                            return {
+                                vendor: vendor ? vendor[1] : null,
+                                product: product ? product[1] : null
+                            };
+                        };
+                        
+                        const ids = extractVendorProductId(gamepad.id);
+                        const deviceKey = ids.vendor && ids.product ? `${ids.vendor}_${ids.product}` : gamepad.id;
+                        
+                        // Ajouter le dispositif au module DeviceAutoDetection (même logique que step2_devices.php)
+                        if (deviceAutoDetection) {
+                            const deviceInfo = {
+                                id: gamepad.id,
+                                name: gamepad.id,
+                                vendor_id: ids.vendor ? `0x${ids.vendor.toLowerCase()}` : null,
+                                product_id: ids.product ? `0x${ids.product.toLowerCase()}` : null,
+                                buttons: gamepad.buttons.length,
+                                axes: gamepad.axes.length,
+                                gamepad: gamepad
+                            };
+                            
+                            deviceAutoDetection.unknownDevices.set(deviceKey, deviceInfo);
+                            log(`📝 Dispositif ajouté au module: ${deviceKey}`);
+                        }
+                        
+                        // Générer le HTML pour ce dispositif
+                        htmlContent += `
+                            <div class="device-item">
+                                <div class="device-info">
+                                    <h4>${gamepad.id}</h4>
+                                    <div class="device-details">
+                                        Vendor ID: ${ids.vendor ? `0x${ids.vendor}` : 'N/A'}<br>
+                                        Product ID: ${ids.product ? `0x${ids.product}` : 'N/A'}<br>
+                                        Boutons: ${gamepad.buttons.length}, Axes: ${gamepad.axes.length}
+                                    </div>
+                                </div>
+                                <div>
+                                    <span style="background: #ffc107; color: black; padding: 4px 8px; border-radius: 4px; margin-right: 10px;">❓ Nouveau</span>
+                                    <button class="btn btn-warning" onclick="startDeviceSetup('${deviceKey}')">
+                                        🔧 Configurer
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Dispositif connu
+                        htmlContent += `
+                            <div class="device-item">
+                                <div class="device-info">
+                                    <h4>${gamepad.id}</h4>
+                                    <div class="device-details">Dispositif reconnu et configuré</div>
+                                </div>
+                                <div>
+                                    <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px;">✅ Configuré</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            }
+            
+            if (devicesFound === 0) {
+                htmlContent = '<p><em>❌ Aucun dispositif de jeu détecté. Vérifiez que vos manettes sont bien connectées.</em></p>';
+            }
+            
+            devicesContainer.innerHTML = htmlContent;
+            
+            log(`📊 Résultat: ${devicesFound} dispositifs trouvés, ${unknownDevicesFound} nouveaux`);
+            updateStatus(`🎮 ${devicesFound} dispositifs détectés, ${unknownDevicesFound} à configurer`, devicesFound > 0 ? 'success' : 'warning');
+        };
+        
+        // Reproduire exactement la fonction checkIfDeviceIsKnown de step2_devices.php
+        function checkIfDeviceIsKnown(gamepad) {
+            if (!window.devicesDataJs || !Array.isArray(window.devicesDataJs)) {
+                log('⚠️ Données des dispositifs non disponibles, tous considérés comme nouveaux');
+                return false;
+            }
+            
+            // Extraire vendor_id et product_id du gamepad (même logique que deviceAutoDetection.js)
+            const vendorMatch = gamepad.id.match(/Vendor:\\s*([0-9a-fA-F]{4})/i);
+            const productMatch = gamepad.id.match(/Product:\\s*([0-9a-fA-F]{4})/i);
+            
+            if (vendorMatch && productMatch) {
+                const gamepadVendor = `0x${vendorMatch[1].toLowerCase()}`;
+                const gamepadProduct = `0x${productMatch[1].toLowerCase()}`;
+                
+                // Vérifier par vendor/product ID
+                const found = window.devicesDataJs.find(device => {
+                    return device.vendor_id && device.product_id &&
+                           device.vendor_id.toLowerCase() === gamepadVendor &&
+                           device.product_id.toLowerCase() === gamepadProduct;
+                });
+                
+                if (found) {
+                    log(`✅ Dispositif reconnu par ID: ${gamepad.id} -> ${found.id}`);
+                    return true;
+                }
+            }
+            
+            // Fallback : recherche par nom
+            const gamepadIdSimple = gamepad.id.replace(/\\(Vendor:.*$/, '').trim().toLowerCase();
+            const foundByName = window.devicesDataJs.find(device => {
+                if (!device.id) return false;
+                
+                const deviceIdSimple = device.id.replace(/\\(Vendor:.*$/, '').trim().toLowerCase();
+                return gamepadIdSimple.includes(deviceIdSimple) || deviceIdSimple.includes(gamepadIdSimple);
+            });
+            
+            if (foundByName) {
+                log(`✅ Dispositif reconnu par nom: ${gamepad.id} -> ${foundByName.id}`);
+                return true;
+            }
+            
+            log(`❓ Dispositif non reconnu: ${gamepad.id}`);
+            return false;
+        }
+        
+        // Reproduire exactement la fonction startDeviceSetup de step2_devices.php
+        window.startDeviceSetup = function(deviceKey) {
+            log(`🔧 Tentative de configuration pour: ${deviceKey}`);
+            
+            if (!deviceAutoDetection) {
+                log('❌ Système de détection non initialisé');
+                alert('Système de détection non initialisé');
+                return;
+            }
+            
+            if (!deviceSetupUI) {
+                log('❌ Interface de configuration non initialisée');
+                alert('Interface de configuration non initialisée');
+                return;
+            }
+            
+            try {
+                log(`🔍 Recherche du dispositif: ${deviceKey}`);
+                
+                // Vérifier que le dispositif existe dans les dispositifs inconnus
+                const deviceInfo = deviceAutoDetection.unknownDevices.get(deviceKey);
+                if (!deviceInfo) {
+                    log(`⚠️ Dispositif non trouvé dans les dispositifs inconnus: ${deviceKey}`);
+                    
+                    // Lister les dispositifs disponibles pour debug
+                    const availableDevices = Array.from(deviceAutoDetection.unknownDevices.keys());
+                    log(`📋 Dispositifs disponibles: [${availableDevices.join(', ')}]`);
+                    
+                    if (confirm('Ce dispositif n\\'est plus disponible. Voulez-vous actualiser la page pour mettre à jour la liste ?')) {
+                        window.location.reload();
+                    }
+                    return;
+                }
+                
+                log(`✅ Dispositif trouvé: ${deviceInfo.id}`);
+                log(`🚀 Lancement de l'interface de configuration...`);
+                
+                // Lancer l'interface de configuration
+                deviceSetupUI.startSetup(deviceKey);
+                
+                log(`🎉 Interface de configuration lancée avec succès !`);
+                updateStatus('🔧 Interface de configuration ouverte', 'success');
+                
+            } catch (error) {
+                log(`❌ Erreur lors du démarrage de la configuration: ${error.message}`);
+                console.error('Erreur complète:', error);
+                alert('Erreur lors du démarrage de la configuration: ' + error.message);
+            }
+        };
+        
+        window.clearLog = function() {
+            document.getElementById('logOutput').textContent = 'Log effacé...\n';
+        };
+        
+        // Initialiser au chargement de la page
+        initializeSystem();
+    </script>
+</body>
+</html>

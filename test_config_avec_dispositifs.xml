@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="test_avec_dispositifs">
+  <CustomisationUIHeader label="Test Profile" description="Profile de test avec dispositifs" image=""/>
+  
+  <!-- Définition des dispositifs -->
+  <options type="joystick" instance="js1" Product="VKB Gladiator NXT R {231D0200-0000-0000-0000-504944564944}"/>
+  <options type="joystick" instance="js2" Product="Thrustmaster T.16000M FCS {044F-B10A-0000-0000-504944564944}"/>
+  
+  <!-- Actions configurées -->
+  <actionmap name="spaceship_general">
+    <action name="v_power_throttle">
+      <rebind input="js1_button1"/>
+    </action>
+    <action name="v_power_shields">
+      <rebind input="js1_button2" ActivationMode="hold"/>
+    </action>
+    <action name="v_power_weapons">
+      <rebind input="js2_button1"/>
+    </action>
+    <action name="v_toggle_landing_system">
+      <rebind input="js2_button2"/>
+    </action>
+    <action name="v_weapon_arm_missile">
+    </action>
+    <action name="v_weapon_launch_missile">
+    </action>
+  </actionmap>
+  
+  <actionmap name="spaceship_movement">
+    <action name="v_pitch">
+      <rebind input="js1_x"/>
+    </action>
+    <action name="v_yaw">
+      <rebind input="js1_y"/>
+    </action>
+    <action name="v_roll">
+      <rebind input="js2_x"/>
+    </action>
+    <action name="v_strafe_longitudinal">
+    </action>
+  </actionmap>
+  
+  <actionmap name="spaceship_weapons">
+    <action name="v_attack1">
+      <rebind input="js1_button3"/>
+    </action>
+    <action name="v_attack2">
+    </action>
+  </actionmap>
+</ActionMaps>

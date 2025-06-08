@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Stockage Redis - Sessions Step-by-Step</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 5px solid #007bff;
+        }
+        .test-results {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .button.secondary {
+            background: #6c757d;
+        }
+        .button.success {
+            background: #28a745;
+        }
+        .button.danger {
+            background: #dc3545;
+        }
+        .status {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.info { background: #d1ecf1; color: #0c5460; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .workflow {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .step {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            text-align: center;
+        }
+        .step.active {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        .step.completed {
+            border-color: #28a745;
+            background: #f8fff9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Démonstration du Stockage Redis</h1>
+            <h2>Sessions Step-by-Step pour Star Citizen Config Editor</h2>
+            <p>Test du système de stockage hybride Redis + Sessions PHP</p>
+        </div>
+
+        <div class="workflow">
+            <div class="step" id="step1">
+                <h3>1️⃣ Étape 1</h3>
+                <p>Upload XML</p>
+                <button class="button" onclick="simulateStep1()">🔄 Simuler Upload</button>
+            </div>
+            <div class="step" id="step2">
+                <h3>2️⃣ Étape 2</h3>
+                <p>Détection Devices</p>
+                <button class="button" onclick="simulateStep2()">🎮 Détecter Devices</button>
+            </div>
+            <div class="step" id="step3">
+                <h3>3️⃣ Étape 3</h3>
+                <p>Édition Config</p>
+                <button class="button" onclick="simulateStep3()">✏️ Éditer Config</button>
+            </div>
+            <div class="step" id="step4">
+                <h3>4️⃣ Étape 4</h3>
+                <p>Téléchargement</p>
+                <button class="button" onclick="simulateStep4()">⬇️ Télécharger</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 État du Stockage Redis</h3>
+            <div class="status" id="redis-status">🔄 Vérification...</div>
+            <button class="button" onclick="checkRedisStatus()">📊 Vérifier Redis</button>
+            <button class="button secondary" onclick="viewRedisKeys()">🔑 Voir les Clés</button>
+            <button class="button danger" onclick="clearRedisData()">🗑️ Nettoyer</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Données de Session</h3>
+            <div id="session-data" class="test-results">Aucune donnée de session chargée</div>
+            <button class="button" onclick="loadSessionData()">📖 Charger Données</button>
+            <button class="button secondary" onclick="simulateFullWorkflow()">🚀 Workflow Complet</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Journal des Opérations</h3>
+            <div id="operation-log" class="test-results">Prêt pour les tests...\n</div>
+            <button class="button secondary" onclick="clearLog()">🧹 Effacer Log</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let sessionData = {};
+
+        function log(message) {
+            const logDiv = document.getElementById('operation-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(element, message, type = 'info') {
+            const statusDiv = document.getElementById(element);
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+        }
+
+        async function checkRedisStatus() {
+            log('🔍 Vérification du statut Redis...');
+            try {
+                const response = await fetch('/api/redis.php/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.connected) {
+                        updateStatus('redis-status', '✅ Redis connecté et opérationnel', 'success');
+                        log('✅ Redis Status: Connecté');
+                    } else {
+                        updateStatus('redis-status', '❌ Redis déconnecté', 'error');
+                        log('❌ Redis Status: Déconnecté');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                updateStatus('redis-status', '❌ Erreur de connexion Redis', 'error');
+                log(`❌ Erreur Redis: ${error.message}`);
+            }
+        }
+
+        async function viewRedisKeys() {
+            log('🔑 Récupération des clés Redis...');
+            try {
+                const response = await fetch('/api/redis.php/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`📊 Statistics Redis:`);
+                    log(`  - Devices: ${data.devices || 0}`);
+                    log(`  - Sessions: ${data.sessions || 0}`);
+                    log(`  - Configs temporaires: ${data.temp_configs || 0}`);
+                    log(`  - Cache XML: ${data.xml_cache || 0}`);
+                    
+                    document.getElementById('session-data').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur récupération clés: ${error.message}`);
+            }
+        }
+
+        async function simulateStep1() {
+            log('📤 Simulation Étape 1: Upload XML...');
+            document.getElementById('step1').className = 'step active';
+            
+            // Simuler l'upload d'un XML
+            const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="test_redis_demo">
+    <actionmap name="spaceship_movement">
+        <action name="v_pitch">
+            <rebind input="js1_x"/>
+        </action>
+    </actionmap>
+</ActionMaps>`;
+
+            try {
+                // Sauvegarder dans Redis via l'API
+                const response = await fetch('/api/redis.php/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: `sessions:stepbystep:demo_${Date.now()}`,
+                        value: {
+                            currentStep: 1,
+                            xmlData: xmlContent,
+                            xmlName: 'test_redis_demo.xml',
+                            devices: [],
+                            modifications: [],
+                            created_at: new Date().toISOString()
+                        }
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('step1').className = 'step completed';
+                    log('✅ Étape 1 terminée - XML stocké dans Redis');
+                    currentStep = 2;
+                    sessionData.xmlData = xmlContent;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur Étape 1: ${error.message}`);
+            }
+        }
+
+        async function simulateStep2() {
+            if (currentStep < 2) {
+                log('⚠️ Veuillez d\'abord terminer l\'Étape 1');
+                return;
+            }
+
+            log('🎮 Simulation Étape 2: Détection des dispositifs...');
+            document.getElementById('step2').className = 'step active';
+
+            // Simuler la détection de dispositifs
+            const devices = [
+                { name: 'VKB Gladiator NXT', type: 'joystick', instance: 1 },
+                { name: 'Thrustmaster T16000M', type: 'joystick', instance: 2 }
+            ];
+
+            sessionData.devices = devices;
+            sessionData.currentStep = 2;
+
+            try {
+                // Mettre à jour dans Redis
+                const response = await fetch('/api/redis.php/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: `sessions:stepbystep:demo_current`,
+                        value: sessionData
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('step2').className = 'step completed';
+                    log('✅ Étape 2 terminée - Dispositifs détectés et stockés');
+                    log(`  - ${devices.length} dispositifs trouvés`);
+                    currentStep = 3;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur Étape 2: ${error.message}`);
+            }
+        }
+
+        async function simulateStep3() {
+            if (currentStep < 3) {
+                log('⚠️ Veuillez d\'abord terminer les étapes précédentes');
+                return;
+            }
+
+            log('✏️ Simulation Étape 3: Édition de la configuration...');
+            document.getElementById('step3').className = 'step active';
+
+            // Simuler des modifications
+            const modifications = [
+                { action: 'v_pitch', device: 'js1', input: 'js1_x', timestamp: Date.now() },
+                { action: 'v_yaw', device: 'js1', input: 'js1_y', timestamp: Date.now() }
+            ];
+
+            sessionData.modifications = modifications;
+            sessionData.currentStep = 3;
+
+            try {
+                const response = await fetch('/api/redis.php/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: `sessions:stepbystep:demo_current`,
+                        value: sessionData
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('step3').className = 'step completed';
+                    log('✅ Étape 3 terminée - Configuration éditée');
+                    log(`  - ${modifications.length} modifications apportées`);
+                    currentStep = 4;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur Étape 3: ${error.message}`);
+            }
+        }
+
+        async function simulateStep4() {
+            if (currentStep < 4) {
+                log('⚠️ Veuillez d\'abord terminer les étapes précédentes');
+                return;
+            }
+
+            log('⬇️ Simulation Étape 4: Finalisation...');
+            document.getElementById('step4').className = 'step active';
+
+            sessionData.completed = true;
+            sessionData.currentStep = 4;
+            sessionData.completed_at = new Date().toISOString();
+
+            try {
+                const response = await fetch('/api/redis.php/set', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: `sessions:stepbystep:demo_current`,
+                        value: sessionData
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('step4').className = 'step completed';
+                    log('✅ Workflow complet terminé !');
+                    log('🎉 Toutes les données ont été persistées dans Redis');
+                    
+                    // Afficher un résumé
+                    document.getElementById('session-data').textContent = JSON.stringify(sessionData, null, 2);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur Étape 4: ${error.message}`);
+            }
+        }
+
+        async function loadSessionData() {
+            log('📖 Chargement des données de session depuis Redis...');
+            try {
+                const response = await fetch('/api/redis.php/get', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        key: 'sessions:stepbystep:demo_current'
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.value) {
+                        sessionData = data.value;
+                        document.getElementById('session-data').textContent = JSON.stringify(sessionData, null, 2);
+                        log('✅ Données de session chargées depuis Redis');
+                        
+                        // Mettre à jour l'affichage des étapes
+                        for (let i = 1; i <= sessionData.currentStep; i++) {
+                            document.getElementById(`step${i}`).className = 'step completed';
+                        }
+                    } else {
+                        log('ℹ️ Aucune session active trouvée');
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur chargement session: ${error.message}`);
+            }
+        }
+
+        async function simulateFullWorkflow() {
+            log('🚀 Démarrage du workflow complet...');
+            currentStep = 1;
+            
+            // Reset visual state
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`step${i}`).className = 'step';
+            }
+
+            await simulateStep1();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await simulateStep2();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await simulateStep3();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await simulateStep4();
+            
+            log('🎯 Workflow automatique terminé !');
+        }
+
+        async function clearRedisData() {
+            log('🗑️ Nettoyage des données Redis...');
+            try {
+                const response = await fetch('/api/redis.php/clear', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        pattern: 'sessions:stepbystep:demo*'
+                    })
+                });
+
+                if (response.ok) {
+                    log('✅ Données Redis nettoyées');
+                    sessionData = {};
+                    document.getElementById('session-data').textContent = 'Aucune donnée de session';
+                    
+                    // Reset steps
+                    for (let i = 1; i <= 4; i++) {
+                        document.getElementById(`step${i}`).className = 'step';
+                    }
+                    currentStep = 1;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ Erreur nettoyage: ${error.message}`);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('operation-log').textContent = 'Log effacé...\n';
+        }
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎮 Interface de démonstration Redis initialisée');
+            log('💡 Utilisez les boutons pour tester le stockage des sessions');
+            checkRedisStatus();
+        });
+    </script>
+</body>
+</html>

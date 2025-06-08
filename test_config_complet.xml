@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActionMaps version="1" optionsVersion="2" rebindVersion="2" profileName="Test Profile">
+    <actionmap name="spaceship_movement">
+        <action name="v_pitch">
+            <rebind device="js1" input="js1_x" />
+        </action>
+        <action name="v_yaw">
+            <rebind device="js1" input="js1_y" />
+        </action>
+        <action name="v_roll">
+            <rebind device="js1" input="js1_z" />
+        </action>
+        <action name="v_strafe_vertical">
+            <rebind device="js2" input="js2_z" />
+        </action>
+        <action name="v_strafe_lateral">
+            <rebind device="js2" input="js2_x" />
+        </action>
+    </actionmap>
+    
+    <actionmap name="spaceship_weapons">
+        <action name="v_attack1">
+            <rebind device="js1" input="js1_button1" />
+        </action>
+        <action name="v_attack2">
+            <rebind device="js1" input="js1_button2" />
+        </action>
+        <action name="v_weapon_group_1">
+            <rebind device="js1" input="js1_button3" />
+        </action>
+        <action name="v_weapon_group_2">
+            <rebind device="js1" input="js1_button4" />
+        </action>
+        <action name="v_target_nearest_hostile">
+            <rebind device="js2" input="js2_button1" />
+        </action>
+    </actionmap>
+    
+    <actionmap name="spaceship_targeting">
+        <action name="v_target_cycle_hostile_fwd">
+            <rebind device="js2" input="js2_button2" />
+        </action>
+        <action name="v_target_cycle_friendly_fwd">
+            <rebind device="js2" input="js2_button3" />
+        </action>
+        <action name="v_target_lock_selected">
+            <rebind device="js2" input="js2_button4" />
+        </action>
+    </actionmap>
+    
+    <actionmap name="spaceship_power">
+        <action name="v_power_preset_1" />
+        <action name="v_power_preset_2" />
+        <action name="v_power_preset_3" />
+        <action name="v_increase_power_to_shields" />
+        <action name="v_increase_power_to_weapons" />
+        <action name="v_increase_power_to_engines" />
+    </actionmap>
+    
+    <options>
+        <deviceoptions type="joystick" instance="1" Product="VKB-Sim Gladiator NXT R" />
+        <deviceoptions type="joystick" instance="2" Product="Thrustmaster T.16000M FCS" />
+        <deviceoptions type="joystick" instance="3" Product="Saitek Pro Flight X-56 Rhino Stick" />
+    </options>
+</ActionMaps>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Saitek X-56 - Détection en Temps Réel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .log-info { background-color: #e3f2fd; color: #1976d2; }
+        .log-success { background-color: #e8f5e8; color: #388e3c; }
+        .log-error { background-color: #ffebee; color: #d32f2f; }
+        .log-warning { background-color: #fff3e0; color: #f57c00; }
+        
+        .device-info {
+            background: #f0f8ff;
+            border: 1px solid #add8e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .device-info.success { background: #f0fff0; border-color: #90ee90; }
+        .device-info.error { background: #fff0f0; border-color: #ffb6c1; }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Saitek X-56 - Détection en Temps Réel</h1>
+    
+    <div class="card">
+        <h3>🎯 État du Système</h3>
+        <div id="systemStatus">Initialisation en cours...</div>
+        
+        <div class="buttons">
+            <button class="btn btn-primary" onclick="testLoadDevicesData()">🔄 Recharger Données</button>
+            <button class="btn btn-success" onclick="testSaitekDetection()">🎮 Tester Saitek</button>
+            <button class="btn btn-warning" onclick="showDevicesData()">📋 Voir Données</button>
+            <button class="btn btn-danger" onclick="clearLogs()">🗑️ Effacer Logs</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>🧪 Résultats des Tests</h3>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="card">
+        <h3>📋 Log System</h3>
+        <div id="logOutput"></div>
+    </div>
+
+    <script>
+        let systemReady = false;
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('logOutput');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLogs() {
+            document.getElementById('logOutput').innerHTML = '';
+        }
+        
+        // Fonction pour charger les données depuis le serveur PHP
+        async function testLoadDevicesData() {
+            log('📡 Chargement des données devices depuis le serveur...', 'info');
+            
+            try {
+                const response = await fetch('get_devices_data.php');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const devicesData = await response.json();
+                log(`✅ Données reçues: ${devicesData.length} devices`, 'success');
+                
+                // Stocker dans window.devicesDataJs
+                window.devicesDataJs = devicesData;
+                
+                // Vérifier si le Saitek est dans les données
+                const saitekDevice = devicesData.find(device => 
+                    device.vendor_id === '0x0738' && device.product_id === '0xa221'
+                );
+                
+                if (saitekDevice) {
+                    log(`✅ Saitek X-56 trouvé dans les données: ${saitekDevice.id}`, 'success');
+                    document.getElementById('testResults').innerHTML = `
+                        <div class="device-info success">
+                            <strong>✅ Saitek X-56 présent dans les données</strong><br>
+                            ID: ${saitekDevice.id}<br>
+                            Vendor: ${saitekDevice.vendor_id}<br>
+                            Product: ${saitekDevice.product_id}<br>
+                            XML Instance: ${saitekDevice.xml_instance || 'N/A'}
+                        </div>
+                    `;
+                } else {
+                    log('❌ Saitek X-56 NON trouvé dans les données chargées', 'error');
+                    document.getElementById('testResults').innerHTML = `
+                        <div class="device-info error">
+                            <strong>❌ Saitek X-56 non trouvé</strong><br>
+                            Le device n'est pas dans les données chargées du serveur
+                        </div>
+                    `;
+                }
+                
+                updateSystemStatus();
+                
+            } catch (error) {
+                log(`❌ Erreur lors du chargement: ${error.message}`, 'error');
+                document.getElementById('testResults').innerHTML = `
+                    <div class="device-info error">
+                        <strong>❌ Erreur de chargement</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Test de détection avec un gamepad simulé
+        function testSaitekDetection() {
+            log('🧪 Test de détection du Saitek X-56...', 'info');
+            
+            if (!window.devicesDataJs) {
+                log('❌ Données devices non chargées', 'error');
+                return;
+            }
+            
+            // Simuler le gamepad Saitek
+            const mockSaitekGamepad = {
+                id: 'Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)',
+                index: 0,
+                connected: true,
+                buttons: Array(32).fill({ pressed: false, value: 0 }),
+                axes: Array(8).fill(0)
+            };
+            
+            log(`🔍 Test avec gamepad simulé: ${mockSaitekGamepad.id}`, 'info');
+            
+            // Fonction isDeviceKnown (copie de la logique)
+            function isDeviceKnown(gamepad, devicesData) {
+                if (!devicesData || !Array.isArray(devicesData)) {
+                    return false;
+                }
+
+                // Extraire vendor/product ID
+                let vendor = null, product = null;
+                let m = gamepad.id.match(/Vendor:\s*([0-9a-fA-F]{4})/);
+                if (m) vendor = m[1].toLowerCase();
+                m = gamepad.id.match(/Product:\s*([0-9a-fA-F]{4})/);
+                if (m) product = m[1].toLowerCase();
+                
+                log(`🔍 IDs extraits: vendor=${vendor}, product=${product}`, 'info');
+                
+                // Vérifier par vendor/product ID
+                if (vendor && product) {
+                    const found = devicesData.find(dev => {
+                        const devVendor = dev.vendor_id ? dev.vendor_id.replace(/^0x/, '').toLowerCase() : null;
+                        const devProduct = dev.product_id ? dev.product_id.replace(/^0x/, '').toLowerCase() : null;
+                        
+                        return dev.vendor_id && dev.product_id &&
+                               devVendor === vendor &&
+                               devProduct === product;
+                    });
+                    
+                    if (found) {
+                        log(`✅ Device trouvé par vendor/product ID: ${found.id}`, 'success');
+                        return true;
+                    }
+                }
+                
+                // Vérifier par nom (fallback)
+                const gamepadIdSimple = gamepad.id.replace(/\(Vendor:.*$/, '').trim();
+                const foundByName = devicesData.find(dev => {
+                    const devIdSimple = dev.id.replace(/\(Vendor:.*$/, '').trim();
+                    return gamepadIdSimple && devIdSimple && 
+                           (gamepadIdSimple.indexOf(devIdSimple) !== -1 || 
+                            devIdSimple.indexOf(gamepadIdSimple) !== -1);
+                });
+                
+                if (foundByName) {
+                    log(`✅ Device trouvé par nom: ${foundByName.id}`, 'success');
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            // Test de détection
+            const isKnown = isDeviceKnown(mockSaitekGamepad, window.devicesDataJs);
+            
+            if (isKnown) {
+                log('🎉 Saitek X-56 correctement détecté comme CONNU!', 'success');
+                document.getElementById('testResults').innerHTML = `
+                    <div class="device-info success">
+                        <strong>✅ TEST RÉUSSI</strong><br>
+                        Le Saitek X-56 est correctement détecté comme device connu
+                    </div>
+                `;
+            } else {
+                log('❌ Saitek X-56 détecté comme INCONNU', 'error');
+                document.getElementById('testResults').innerHTML = `
+                    <div class="device-info error">
+                        <strong>❌ TEST ÉCHOUÉ</strong><br>
+                        Le Saitek X-56 n'est pas reconnu par le système de détection
+                    </div>
+                `;
+            }
+        }
+        
+        function showDevicesData() {
+            if (!window.devicesDataJs) {
+                log('❌ Aucune donnée device disponible', 'error');
+                return;
+            }
+            
+            log(`📋 Affichage des ${window.devicesDataJs.length} devices chargés`, 'info');
+            
+            let html = '<h4>Devices chargés:</h4><pre>';
+            window.devicesDataJs.forEach((device, index) => {
+                html += `${index + 1}. ${device.id}\n`;
+                html += `   Vendor: ${device.vendor_id || 'N/A'}\n`;
+                html += `   Product: ${device.product_id || 'N/A'}\n`;
+                html += `   XML Instance: ${device.xml_instance || 'N/A'}\n\n`;
+            });
+            html += '</pre>';
+            
+            document.getElementById('testResults').innerHTML = html;
+        }
+        
+        function updateSystemStatus() {
+            const hasDevicesData = window.devicesDataJs && Array.isArray(window.devicesDataJs);
+            const gamepadSupport = !!navigator.getGamepads;
+            
+            document.getElementById('systemStatus').innerHTML = `
+                <div class="device-info ${hasDevicesData && gamepadSupport ? 'success' : 'error'}">
+                    <strong>État du système:</strong><br>
+                    devicesDataJs: ${hasDevicesData ? `✅ ${window.devicesDataJs.length} devices` : '❌ Non chargé'}<br>
+                    Gamepad API: ${gamepadSupport ? '✅ Supporté' : '❌ Non supporté'}<br>
+                    Système: ${hasDevicesData && gamepadSupport ? '✅ Prêt' : '❌ Non prêt'}
+                </div>
+            `;
+        }
+        
+        // Initialisation automatique
+        async function init() {
+            log('🚀 Initialisation du test Saitek X-56...', 'info');
+            updateSystemStatus();
+            
+            // Charger automatiquement les données
+            await testLoadDevicesData();
+            
+            log('✅ Initialisation terminée', 'success');
+            systemReady = true;
+        }
+        
+        // Démarrer automatiquement
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

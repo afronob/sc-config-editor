@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Proposition Configuration Device Non Instancié</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+
+        .bindings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .bindings-table th,
+        .bindings-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .bindings-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .gamepad-highlight {
+            background-color: #fffacd !important;
+            border: 2px solid #ffa500 !important;
+        }
+
+        .test-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+
+        .test-button:hover {
+            background: #005a8b;
+        }
+
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .log-section {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .scenario-container {
+            border: 2px solid #007cba;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .scenario-header {
+            background: #007cba;
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .scenario-content {
+            padding: 20px;
+        }
+
+        .device-info {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .result-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            background: white;
+        }
+
+        .result-card h4 {
+            margin-top: 0;
+            color: #007cba;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎯 Test - Proposition Configuration Device Non Instancié</h1>
+        
+        <div class="test-section">
+            <h2>📋 Description du Test</h2>
+            <p>Ce test valide le nouveau système qui propose automatiquement la configuration d'un device quand :</p>
+            <ul>
+                <li>✅ Un XML est chargé</li>
+                <li>❌ L'instance du device n'est <strong>pas</strong> configurée dans le XML</li>
+                <li>🎮 Un input est détecté sur ce device non configuré</li>
+            </ul>
+            <p><strong>Comportement attendu :</strong> Proposition de configuration au lieu de bloquer l'ancrage</p>
+        </div>
+
+        <!-- Scénario 1: Device configuré (contrôle) -->
+        <div class="scenario-container" id="scenario-1">
+            <div class="scenario-header">
+                🟢 Scénario 1: Device Configuré (Contrôle)
+            </div>
+            <div class="scenario-content">
+                <p>Ce scénario teste qu'un device <strong>configuré</strong> fonctionne normalement.</p>
+                
+                <table class="bindings-table" id="bindings-table-configured">
+                    <thead>
+                        <tr>
+                            <th>Catégorie</th>
+                            <th>Action</th>
+                            <th>Input</th>
+                            <th>Opts</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Flight</td>
+                            <td>Pitch</td>
+                            <td><input type="text" name="input[0]" value="js1_button1"></td>
+                            <td><input type="text" name="opts[0]" value=""></td>
+                            <td><input type="text" name="value[0]" value=""></td>
+                        </tr>
+                        <tr>
+                            <td>Weapons</td>
+                            <td>Fire Primary</td>
+                            <td><input type="text" name="input[1]" value="js1_button2"></td>
+                            <td><input type="text" name="opts[1]" value=""></td>
+                            <td><input type="text" name="value[1]" value=""></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="device-info">
+                    <strong>Device configuré :</strong> Instance 1 (js1_xxx) → Device configuré dans devicesDataJs
+                </div>
+
+                <button class="test-button" onclick="testConfiguredDevice()">
+                    🧪 Tester Device Configuré
+                </button>
+            </div>
+        </div>
+
+        <!-- Scénario 2: Device non configuré avec système disponible -->
+        <div class="scenario-container" id="scenario-2">
+            <div class="scenario-header">
+                🔴 Scénario 2: Device Non Configuré - Système Disponible
+            </div>
+            <div class="scenario-content">
+                <p>Ce scénario teste qu'un device <strong>non configuré</strong> déclenche la proposition de configuration.</p>
+                
+                <table class="bindings-table" id="bindings-table-unconfigured">
+                    <thead>
+                        <tr>
+                            <th>Catégorie</th>
+                            <th>Action</th>
+                            <th>Input</th>
+                            <th>Opts</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Flight</td>
+                            <td>Pitch</td>
+                            <td><input type="text" name="input[0]" value="js1_button1"></td>
+                            <td><input type="text" name="opts[0]" value=""></td>
+                            <td><input type="text" name="value[0]" value=""></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="device-info">
+                    <strong>Device non configuré :</strong> Instance 2 (js2_xxx) → Device absent de devicesDataJs
+                </div>
+
+                <button class="test-button" onclick="testUnconfiguredDevice()">
+                    🧪 Tester Device Non Configuré
+                </button>
+                
+                <button class="test-button" onclick="simulateGamepad()">
+                    🎮 Simuler Gamepad Index 1
+                </button>
+            </div>
+        </div>
+
+        <!-- Scénario 3: Device non configuré sans système -->
+        <div class="scenario-container" id="scenario-3">
+            <div class="scenario-header">
+                🟠 Scénario 3: Device Non Configuré - Système Indisponible
+            </div>
+            <div class="scenario-content">
+                <p>Ce scénario teste le comportement quand le système de configuration automatique n'est pas disponible.</p>
+                
+                <table class="bindings-table" id="bindings-table-no-system">
+                    <thead>
+                        <tr>
+                            <th>Catégorie</th>
+                            <th>Action</th>
+                            <th>Input</th>
+                            <th>Opts</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Flight</td>
+                            <td>Pitch</td>
+                            <td><input type="text" name="input[0]" value="js1_button1"></td>
+                            <td><input type="text" name="opts[0]" value=""></td>
+                            <td><input type="text" name="value[0]" value=""></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="device-info">
+                    <strong>Système désactivé :</strong> window.deviceAutoDetection = undefined
+                </div>
+
+                <button class="test-button" onclick="testNoSystem()">
+                    🧪 Tester Sans Système
+                </button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Résultats des Tests</h2>
+            <div class="test-results" id="test-results">
+                <!-- Résultats générés dynamiquement -->
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Log des Tests</h2>
+            <button class="test-button" onclick="clearLog()">Effacer Log</button>
+            <div id="log" class="log-section"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SimplifiedBindingsHandler } from './assets/js/modules/simplifiedBindingsHandler.js';
+        import { DeviceAutoDetection } from './assets/js/modules/deviceAutoDetection.js';
+        import { DeviceSetupUI } from './assets/js/modules/deviceSetupUI.js';
+
+        let handler;
+        let testResults = {};
+        let originalDeviceAutoDetection, originalDeviceSetupUI;
+
+        // Configuration des données de test
+        window.devicesDataJs = [
+            {
+                id: "VKB Gladiator EVO R (Test)",
+                product: "VKBSim Gladiator EVO R",
+                vendor_id: "0x231d",
+                product_id: "0x0200",
+                xml_instance: "1" // Seule l'instance 1 est configurée
+            }
+        ];
+
+        function log(message, type = 'info') {
+            const now = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `status ${type}`;
+            logEntry.textContent = `[${now}] ${message}`;
+            document.getElementById('log').appendChild(logEntry);
+            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+        }
+
+        function recordTestResult(testName, passed, details) {
+            testResults[testName] = { passed, details, timestamp: new Date().toLocaleTimeString() };
+            updateTestResults();
+        }
+
+        function updateTestResults() {
+            const container = document.getElementById('test-results');
+            container.innerHTML = '';
+
+            for (const [testName, result] of Object.entries(testResults)) {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <h4>${testName}</h4>
+                    <div class="status ${result.passed ? 'success' : 'error'}">
+                        ${result.passed ? '✅ RÉUSSI' : '❌ ÉCHOUÉ'}
+                    </div>
+                    <p><strong>Détails:</strong> ${result.details}</p>
+                    <p><small>Testé à ${result.timestamp}</small></p>
+                `;
+                container.appendChild(card);
+            }
+        }
+
+        // Fonction pour simuler un gamepad
+        window.simulateGamepad = function() {
+            log('🎮 Simulation d\'un gamepad pour l\'instance 2...', 'info');
+            
+            // Créer un gamepad simulé
+            const mockGamepad = {
+                id: 'Mock Controller (Vendor: 1234 Product: 5678)',
+                index: 1,
+                buttons: new Array(16).fill().map(() => ({ pressed: false, touched: false, value: 0 })),
+                axes: new Array(6).fill(0),
+                connected: true,
+                mapping: 'standard',
+                timestamp: Date.now()
+            };
+
+            // Simuler l'ajout à navigator.getGamepads()
+            const originalGetGamepads = navigator.getGamepads;
+            navigator.getGamepads = function() {
+                const gamepads = originalGetGamepads.call(this);
+                const result = Array.from(gamepads);
+                result[1] = mockGamepad; // Index 1 pour instance 2
+                return result;
+            };
+
+            log('✅ Gamepad simulé créé à l\'index 1', 'success');
+        };
+
+        window.testConfiguredDevice = function() {
+            log('🧪 Test 1: Device configuré (instance 1)', 'info');
+            
+            // Utiliser le tableau avec device configuré
+            switchToTable('bindings-table-configured');
+            
+            handler = new SimplifiedBindingsHandler();
+            
+            // Test: instance 1 est valide
+            const isValid = handler.isDeviceInstanceValid(1);
+            log(`isDeviceInstanceValid(1) = ${isValid}`, isValid ? 'success' : 'error');
+            
+            if (!isValid) {
+                recordTestResult('Device Configuré', false, 'Instance 1 devrait être valide');
+                return;
+            }
+
+            // Test: ancrage devrait fonctionner
+            const result = handler.anchorToInput('button', 1, 'button1', '');
+            log(`anchorToInput(button, 1, button1) = ${result ? 'trouvé' : 'null'}`, result ? 'success' : 'error');
+
+            const passed = result !== null;
+            recordTestResult('Device Configuré', passed, passed ? 'Ancrage réussi sur device configuré' : 'Ancrage échoué');
+        };
+
+        window.testUnconfiguredDevice = function() {
+            log('🧪 Test 2: Device non configuré avec système disponible (instance 2)', 'info');
+            
+            // Initialiser le système de détection
+            initializeDetectionSystem();
+            
+            // Utiliser le tableau sans device configuré pour instance 2
+            switchToTable('bindings-table-unconfigured');
+            
+            handler = new SimplifiedBindingsHandler();
+            
+            // Test: instance 2 n'est pas valide
+            const isValid = handler.isDeviceInstanceValid(2);
+            log(`isDeviceInstanceValid(2) = ${isValid}`, !isValid ? 'success' : 'error');
+            
+            if (isValid) {
+                recordTestResult('Device Non Configuré', false, 'Instance 2 ne devrait pas être valide');
+                return;
+            }
+
+            // Test: ancrage devrait déclencher la proposition de configuration
+            log('🔄 Tentative d\'ancrage sur device non configuré...', 'info');
+            const result = handler.anchorToInput('button', 2, 'button1', '');
+            log(`anchorToInput(button, 2, button1) = ${result ? 'trouvé' : 'null'}`, result === null ? 'success' : 'error');
+
+            // Vérifier qu'un overlay de proposition a été créé
+            setTimeout(() => {
+                const proposalOverlay = document.querySelector('.gamepad-overlay-config-proposal');
+                const hasProposal = proposalOverlay && proposalOverlay.style.opacity === '1';
+                log(`Overlay de proposition affiché = ${hasProposal}`, hasProposal ? 'success' : 'error');
+                
+                const passed = result === null && hasProposal;
+                recordTestResult('Device Non Configuré', passed, 
+                    passed ? 'Proposition de configuration déclenchée' : 'Proposition non déclenchée');
+            }, 100);
+        };
+
+        window.testNoSystem = function() {
+            log('🧪 Test 3: Device non configuré sans système de détection', 'info');
+            
+            // Désactiver le système de détection
+            disableDetectionSystem();
+            
+            switchToTable('bindings-table-no-system');
+            
+            handler = new SimplifiedBindingsHandler();
+            
+            // Test: instance 3 n'est pas valide
+            const isValid = handler.isDeviceInstanceValid(3);
+            log(`isDeviceInstanceValid(3) = ${isValid}`, !isValid ? 'success' : 'error');
+            
+            // Test: ancrage devrait afficher overlay d'indisponibilité
+            const result = handler.anchorToInput('button', 3, 'button1', '');
+            log(`anchorToInput(button, 3, button1) = ${result ? 'trouvé' : 'null'}`, result === null ? 'success' : 'error');
+
+            // Vérifier qu'un overlay d'indisponibilité a été créé
+            setTimeout(() => {
+                const unavailableOverlay = document.querySelector('.gamepad-overlay-config-unavailable');
+                const hasUnavailable = unavailableOverlay && unavailableOverlay.style.opacity === '1';
+                log(`Overlay d'indisponibilité affiché = ${hasUnavailable}`, hasUnavailable ? 'success' : 'error');
+                
+                const passed = result === null && hasUnavailable;
+                recordTestResult('Système Indisponible', passed, 
+                    passed ? 'Overlay d\'indisponibilité affiché' : 'Comportement incorrect');
+            }, 100);
+        };
+
+        function switchToTable(tableId) {
+            // Masquer tous les tableaux
+            document.querySelectorAll('.bindings-table').forEach(table => {
+                table.id = table.id.replace('bindings-table', 'bindings-table-hidden');
+            });
+            
+            // Activer le tableau choisi
+            const targetTable = document.getElementById(tableId);
+            if (targetTable) {
+                targetTable.id = 'bindings-table';
+            }
+        }
+
+        function initializeDetectionSystem() {
+            log('🔧 Initialisation du système de détection...', 'info');
+            
+            // Sauvegarder les instances originales
+            originalDeviceAutoDetection = window.deviceAutoDetection;
+            originalDeviceSetupUI = window.deviceSetupUI;
+            
+            // Créer les instances
+            window.deviceAutoDetection = new DeviceAutoDetection();
+            window.deviceSetupUI = new DeviceSetupUI(null, window.deviceAutoDetection);
+            
+            log('✅ Système de détection initialisé', 'success');
+        }
+
+        function disableDetectionSystem() {
+            log('🔧 Désactivation du système de détection...', 'warning');
+            
+            window.deviceAutoDetection = undefined;
+            window.deviceSetupUI = undefined;
+            
+            log('⚠️ Système de détection désactivé', 'warning');
+        }
+
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        };
+
+        // Initialisation
+        log('🚀 Test de proposition de configuration initialisé', 'info');
+        log('📋 Données de test: Instance 1 configurée, autres instances non configurées', 'info');
+    </script>
+</body>
+</html>

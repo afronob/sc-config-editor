@@ -1,0 +1,42 @@
+{
+    "id": "Saitek Pro Flight X-56 Rhino Throttle (Vendor: 0738 Product: a221)",
+    "vendor_id": "0x0738",
+    "product_id": "0xa221",
+    "xml_instance": "0738_a221",
+    "axes_map": [
+        "x",
+        "y",
+        "z",
+        "rotx",
+        "roty",
+        "rotz",
+        "slider0",
+        "axis7"
+    ],
+    "hats": [
+        {
+            "directions": {
+                "up": {
+                    "axis": 7,
+                    "value_min": -1,
+                    "value_max": -0.5
+                },
+                "down": {
+                    "axis": 7,
+                    "value_min": 0.5,
+                    "value_max": 1
+                },
+                "left": {
+                    "axis": 7,
+                    "value_min": -1,
+                    "value_max": -0.5
+                },
+                "right": {
+                    "axis": 7,
+                    "value_min": 0.5,
+                    "value_max": 1
+                }
+            }
+        }
+    ]
+}

@@ -1,5 +1,22 @@
 {
-  "dependencies": {
-    "node-fetch": "^3.3.2"
-  }
+    "name": "sc-config-editor",
+    "version": "2.0.0",
+    "description": "Star Citizen Configuration Editor with Redis support",
+    "dependencies": {
+        "node-fetch": "^3.3.2"
+    },
+    "devDependencies": {
+        "redis": "^4.6.0"
+    },
+    "scripts": {
+        "redis:install": "docker run -d --name redis-sc-config -p 6379:6379 redis:alpine",
+        "redis:start": "redis-server --daemonize yes",
+        "redis:stop": "redis-cli shutdown",
+        "redis:logs": "docker logs redis-sc-config",
+        "redis:cli": "docker exec -it redis-sc-config redis-cli",
+        "test:redis": "php -f test_redis_connection.php",
+        "redis:status": "redis-cli ping",
+        "redis:monitor": "redis-cli monitor",
+        "redis:flushall": "redis-cli flushall"
+    }
 }
