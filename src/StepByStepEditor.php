@@ -110,9 +110,8 @@ class StepByStepEditor {
             case 2:
                 return isset($this->sessionData['xmlData']) && !empty($this->sessionData['xmlData']);
             case 3:
-                return $this->canAccessStep(2) && 
-                       isset($this->sessionData['devices']) && 
-                       !empty($this->sessionData['devices']);
+                // Permettre l'accès au Step 3 même sans dispositifs pour l'édition manuelle
+                return $this->canAccessStep(2);
             case 4:
                 return $this->canAccessStep(3) && 
                        isset($this->sessionData['mappings']) && 
@@ -541,6 +540,7 @@ class StepByStepEditor {
         $data['devices'] = $this->sessionData['devices'];
         $data['modifications'] = $this->sessionData['modifications'];
         $data['joysticks'] = $joysticks;
+        $data['bindings'] = $this->sessionData['bindings'] ?? [];
         
         unlink($xmlFile);
         

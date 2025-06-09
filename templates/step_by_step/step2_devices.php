@@ -429,12 +429,29 @@
                     🔍 Détecter les dispositifs connectés
                 </button>
             </div>
-            
-            <!-- Message d'invitation à la détection -->
-            <div class="detection-invitation" style="text-align: center; padding: 40px 20px; color: #666; background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; margin: 20px 0;">
-                <div style="font-size: 48px; margin-bottom: 15px;">🎮</div>
-                <h4 style="margin-bottom: 10px; color: #495057;">Dispositifs en attente de détection</h4>
-                <p style="margin: 0;">Cliquez sur "Détecter les dispositifs connectés" ci-dessus pour voir vos manettes et contrôleurs.</p>
+
+            <!-- Section d'information sur l'édition manuelle -->
+            <div class="manual-edit-info" style="background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border: 1px solid #81c784; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                <div style="font-size: 32px; margin-bottom: 15px;">✏️</div>
+                <h4 style="margin-bottom: 15px; color: #2e7d32;">Édition manuelle disponible</h4>
+                <p style="margin-bottom: 15px; color: #424242;">
+                    Vous pouvez également passer directement à l'<strong>édition manuelle</strong> de votre fichier XML 
+                    sans détecter de dispositifs. Cette option est utile pour :
+                </p>
+                <ul style="text-align: left; max-width: 600px; margin: 0 auto 20px auto; color: #424242;">
+                    <li>Éditer manuellement les mappings existants</li>
+                    <li>Ajouter des dispositifs qui ne sont pas connectés actuellement</li>
+                    <li>Modifier des paramètres avancés dans le XML</li>
+                    <li>Corriger des erreurs de configuration</li>
+                </ul>
+                <div class="action-buttons" style="justify-content: center; margin-top: 20px;">
+                    <a href="?step=3" class="btn btn-success" style="background: #4caf50; padding: 12px 25px; font-size: 16px; text-decoration: none; border-radius: 6px;">
+                        🚀 Passer à l'édition manuelle
+                    </a>
+                </div>
+                <p style="font-size: 14px; color: #666; margin-top: 15px; font-style: italic;">
+                    💡 Vous pourrez toujours revenir au Step 2 pour détecter des dispositifs si nécessaire
+                </p>
             </div>
             
             <!-- Sections des dispositifs - masquées par défaut -->
@@ -546,11 +563,40 @@
                 </div>
             </div>
             
-            <!-- Bouton suivant - masqué par défaut -->
+            <!-- Bouton suivant - masqué par défaut après détection -->
             <div id="nextButtonSection" style="display: none;">
                 <a href="?step=2&action=next" class="next-button">
                     Continuer vers l'édition →
                 </a>
+            </div>
+
+            <!-- Section de navigation toujours visible -->
+            <div class="navigation-section" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h4 style="margin-bottom: 20px; color: #495057;">🧭 Navigation</h4>
+                <div style="display: flex; gap: 15px; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                            <strong>Avec dispositifs détectés :</strong> Configurez automatiquement vos mappings
+                        </p>
+                        <button onclick="detectDevices()" class="btn btn-primary" style="margin-top: 8px; background: #007bff;">
+                            🔍 Détecter et configurer
+                        </button>
+                    </div>
+                    <div style="border-left: 1px solid #dee2e6; height: 60px; margin: 0 10px;"></div>
+                    <div style="flex: 1; min-width: 250px; text-align: right;">
+                        <p style="margin: 0; color: #6c757d; font-size: 14px;">
+                            <strong>Édition directe :</strong> Modifiez le XML manuellement
+                        </p>
+                        <a href="?step=3" class="btn btn-success" style="margin-top: 8px; background: #28a745; text-decoration: none; display: inline-block;">
+                            ✏️ Édition manuelle
+                        </a>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <p style="margin: 0; font-size: 13px; color: #6c757d; font-style: italic;">
+                        💡 L'édition manuelle est recommandée si vous connaissez les GUID de vos dispositifs ou si vous souhaitez des configurations avancées
+                    </p>
+                </div>
             </div>
             
             <div style="clear: both;"></div>
